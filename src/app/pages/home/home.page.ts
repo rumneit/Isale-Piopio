@@ -141,11 +141,11 @@ export class HomePage implements OnInit {
         { id: 'products', label: 'Sản phẩm', icon: 'pricetags-outline', color: '#6030ff', path: '/product' },
         { id: 'materials', label: 'Nguyên liệu', icon: 'cube-outline', color: '#47bdb5', path: '/material' },
         { id: 'received', label: 'Nhập hàng', icon: 'download-outline', color: '#e6bf00', path: '/received-note' },
-        { id: 'transfer', label: 'Chuyển hàng', icon: 'arrow-redo-outline', color: '#2dd55b', path: '/module/transfer-note' },
+        { id: 'transfer', label: 'Chuyển hàng', icon: 'arrow-redo-outline', color: '#2dd55b', path: '/transfer' },
         { id: 'delivery', label: 'Giao hàng', icon: 'boat-outline', color: '#ff7043', path: '/delivery' },
         { id: 'stock-check', label: 'Kiểm kho', icon: 'layers-outline', color: '#5c6bc0', path: '/stock-check' },
         { id: 'serial', label: 'Serial/IMEI', icon: 'grid-outline', color: '#ec407a', path: '/module/serial' },
-        { id: 'import', label: 'Nhập Excel', icon: 'download-outline', color: '#26c6da', path: '/module/import' },
+        { id: 'import', label: 'Nhập Excel', icon: 'download-outline', color: '#26c6da', path: '/import' },
       ],
     },
     {

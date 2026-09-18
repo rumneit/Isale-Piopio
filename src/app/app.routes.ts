@@ -53,6 +53,14 @@ export const routes: Routes = [
   { path: 'point', loadComponent: () => import('./pages/points/points.page').then((m) => m.PointsPage), canActivate: [authGuard] },
   // Barcode scan
   { path: 'scan', loadComponent: () => import('./pages/scan/scan.page').then((m) => m.ScanPage), canActivate: [authGuard] },
+  // Extended modules (đợt A)
+  { path: 'calendar', loadComponent: () => import('./pages/calendar/calendar.page').then((m) => m.CalendarPage), canActivate: [authGuard] },
+  { path: 'note', loadComponent: () => import('./pages/notes/notes.page').then((m) => m.NotesPage), canActivate: [authGuard] },
+  { path: 'shift', loadComponent: () => import('./pages/shift/shift.page').then((m) => m.ShiftPage), canActivate: [authGuard] },
+  { path: 'transfer', loadComponent: () => import('./pages/transfers/transfers.page').then((m) => m.TransfersPage), canActivate: [authGuard] },
+  { path: 'transfer/add', loadComponent: () => import('./pages/transfers/transfer-add.page').then((m) => m.TransferAddPage), canActivate: [authGuard] },
+  { path: 'cafe-tables', loadComponent: () => import('./pages/cafe-tables/cafe-tables.page').then((m) => m.CafeTablesPage), canActivate: [authGuard] },
+  { path: 'import', loadComponent: () => import('./pages/import/import.page').then((m) => m.ImportPage), canActivate: [authGuard] },
   // Notifications
   { path: 'notifications', loadComponent: () => import('./pages/notifications/notifications.page').then((m) => m.NotificationsPage), canActivate: [authGuard] },
   // Reports
