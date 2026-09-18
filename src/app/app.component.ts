@@ -41,6 +41,9 @@ import {
   restaurantOutline,
   cloudUploadOutline,
   downloadOutline,
+  linkOutline,
+  mailOutline,
+  cardOutline,
 } from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
@@ -94,6 +97,9 @@ export class AppComponent {
     { title: 'Ca làm việc', icon: 'time-outline', path: '/shift' },
     { title: 'Quản bàn', icon: 'restaurant-outline', path: '/cafe-tables' },
     { title: 'Nhập dữ liệu', icon: 'cloud-upload-outline', path: '/import' },
+    { title: 'Tích hợp', icon: 'link-outline', path: '/integrations' },
+    { title: 'Bảng giá', icon: 'card-outline', path: '/pricing' },
+    { title: 'Hỗ trợ', icon: 'mail-outline', path: '/support' },
     { title: 'CRM', icon: 'analytics-outline', path: '/crm' },
     { title: 'Nhân viên', icon: 'person-outline', path: '/staff' },
     { title: 'Cửa hàng', icon: 'storefront-outline', path: '/config' },
@@ -127,6 +133,9 @@ export class AppComponent {
       restaurantOutline,
       cloudUploadOutline,
       downloadOutline,
+      linkOutline,
+      mailOutline,
+      cardOutline,
     });
   }
 

@@ -24,6 +24,14 @@ import {
   walletOutline,
   barChartOutline,
   clipboardOutline,
+  calendarOutline,
+  timeOutline,
+  arrowRedoOutline,
+  restaurantOutline,
+  cloudUploadOutline,
+  linkOutline,
+  mailOutline,
+  cardOutline,
 } from 'ionicons/icons';
 
 interface HelpItem {
@@ -86,6 +94,54 @@ export class HelpPage {
       path: '/stock-check',
     },
     {
+      icon: 'calendar-outline',
+      title: 'Lịch & Ghi chú',
+      desc: 'Lên kế hoạch theo ngày với Lịch; lưu ý quick với Ghi chú (ghim bài quan trọng).',
+      path: '/calendar',
+    },
+    {
+      icon: 'time-outline',
+      title: 'Ca làm việc',
+      desc: 'Mở ca khi bắt đầu, kết thúc ca khi đóng cửa — lưu lịch sử từng ca.',
+      path: '/shift',
+    },
+    {
+      icon: 'arrow-redo-outline',
+      title: 'Chuyển hàng',
+      desc: 'Tạo phiếu chuyển đến kho phụ/chi nhánh — tự giảm tồn kho cửa hàng.',
+      path: '/transfer',
+    },
+    {
+      icon: 'restaurant-outline',
+      title: 'Quản bàn (F&B)',
+      desc: 'Sơ đồ bàn cho quán cafe/nhà hàng: trống, có khách, đặt trước.',
+      path: '/cafe-tables',
+    },
+    {
+      icon: 'cloud-upload-outline',
+      title: 'Nhập dữ liệu',
+      desc: 'Dán hoặc tải CSV để nhập hàng loạt sản phẩm / khách hàng vào hệ thống.',
+      path: '/import',
+    },
+    {
+      icon: 'link-outline',
+      title: 'Tích hợp',
+      desc: 'Kết nối SePay, Zalo OA, SMS, Facebook Page, External API, AI bằng khóa API của bạn.',
+      path: '/integrations',
+    },
+    {
+      icon: 'mail-outline',
+      title: 'Hỗ trợ',
+      desc: 'Gửi yêu cầu hỗ trợ trực tiếp và đánh giá trải nghiệm PioPio.',
+      path: '/support',
+    },
+    {
+      icon: 'card-outline',
+      title: 'Bảng giá',
+      desc: 'So sánh gói Miễn phí / Pro / Enterprise và nâng cấp khi cần.',
+      path: '/pricing',
+    },
+    {
       icon: 'documentTextOutline',
       title: 'Cấu hình cửa hàng',
       desc: 'Đổi tên cửa hàng, tên hiển thị của bạn, đăng xuất tài khoản.',
@@ -104,6 +160,14 @@ export class HelpPage {
       walletOutline,
       barChartOutline,
       clipboardOutline,
+      calendarOutline,
+      timeOutline,
+      arrowRedoOutline,
+      restaurantOutline,
+      cloudUploadOutline,
+      linkOutline,
+      mailOutline,
+      cardOutline,
     });
   }
 

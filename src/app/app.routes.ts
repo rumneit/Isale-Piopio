@@ -61,6 +61,14 @@ export const routes: Routes = [
   { path: 'transfer/add', loadComponent: () => import('./pages/transfers/transfer-add.page').then((m) => m.TransferAddPage), canActivate: [authGuard] },
   { path: 'cafe-tables', loadComponent: () => import('./pages/cafe-tables/cafe-tables.page').then((m) => m.CafeTablesPage), canActivate: [authGuard] },
   { path: 'import', loadComponent: () => import('./pages/import/import.page').then((m) => m.ImportPage), canActivate: [authGuard] },
+  // Extended modules (đợt B)
+  { path: 'crm-activities', loadComponent: () => import('./pages/crm/crm-activities.page').then((m) => m.CrmActivitiesPage), canActivate: [authGuard] },
+  { path: 'report/product', loadComponent: () => import('./pages/reports/report-product.page').then((m) => m.ReportProductPage), canActivate: [authGuard] },
+  { path: 'report/debt', loadComponent: () => import('./pages/reports/report-debt.page').then((m) => m.ReportDebtPage), canActivate: [authGuard] },
+  { path: 'integrations', loadComponent: () => import('./pages/integrations/integrations.page').then((m) => m.IntegrationsPage), canActivate: [authGuard] },
+  { path: 'pricing', loadComponent: () => import('./pages/pricing/pricing.page').then((m) => m.PricingPage), canActivate: [authGuard] },
+  { path: 'support', loadComponent: () => import('./pages/support/support.page').then((m) => m.SupportPage), canActivate: [authGuard] },
+  { path: 'org-chart', loadComponent: () => import('./pages/org-chart/org-chart.page').then((m) => m.OrgChartPage), canActivate: [authGuard] },
   // Notifications
   { path: 'notifications', loadComponent: () => import('./pages/notifications/notifications.page').then((m) => m.NotificationsPage), canActivate: [authGuard] },
   // Reports

@@ -126,7 +126,7 @@ export class ReportsService {
           cur.total += Number(it.total ?? 0);
           map.set(key, cur);
         }
-        topProducts = [...map.values()].sort((a, b) => b.total - a.total).slice(0, 5);
+        topProducts = [...map.values()].sort((a, b) => b.total - a.total).slice(0, 20);
       }
     }
 
