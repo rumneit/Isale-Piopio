@@ -1,18 +1,37 @@
 /*
- * App globals
- * For more info on Ionic global styles: https://ionicframework.com/docs/theming/global-css-styles
+ * PioPio global styles — professional design system
  */
 
-/* Basic setup */
 html {
   font-size: 16px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   background: var(--app-page-bg);
+  font-feature-settings: 'cv02', 'cv03';
 }
 
-/*center page content */
+/* ---------- Toolbars / headers ---------- */
+ion-header ion-toolbar {
+  --background: var(--app-surface);
+  --background: color-mix(in srgb, var(--app-surface) 88%, transparent);
+  --color: var(--app-text);
+  --border-width: 0;
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  box-shadow: inset 0 -1px 0 var(--app-border);
+}
+
+ion-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: 17px;
+}
+
+/* ---------- Page background ---------- */
 ion-content.app-page {
   --background: var(--app-page-bg);
 }
@@ -20,33 +39,36 @@ ion-content.app-page {
 .app-page-container {
   max-width: var(--app-page-max-width);
   margin: 0 auto;
-  padding: 12px 12px 24px;
+  padding: 14px 14px 32px;
 }
 
-/* Section card */
+/* ---------- Cards ---------- */
 .app-card {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 14px;
+  border-radius: var(--app-radius);
+  box-shadow: var(--app-shadow-sm);
   margin: 0 0 14px;
-  padding: 14px;
+  padding: 16px;
+  transition: box-shadow 0.2s ease;
 }
 
 .app-card-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 
   h4 {
     margin: 0;
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 800;
+    letter-spacing: -0.01em;
     color: var(--app-text);
   }
 }
 
-/* Quick action grid */
+/* ---------- Quick action grid ---------- */
 .app-actions-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -63,26 +85,33 @@ ion-content.app-page {
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  padding: 12px 4px;
+  padding: 14px 4px 12px;
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 14px;
+  border-radius: var(--app-radius);
   cursor: pointer;
   text-align: center;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: var(--app-shadow-sm);
+  transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.3, 1), box-shadow 0.16s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-3px);
+    box-shadow: var(--app-shadow-md);
+  }
+
+  &:active {
+    transform: scale(0.96);
+    box-shadow: var(--app-shadow-sm);
   }
 
   .app-action-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.16s ease;
 
     ion-icon {
       font-size: 24px;
@@ -91,13 +120,13 @@ ion-content.app-page {
 
   .app-action-label {
     font-size: 12px;
-    line-height: 1.25;
+    line-height: 1.3;
     color: var(--app-text);
-    font-weight: 500;
+    font-weight: 600;
   }
 }
 
-/* Stat cards */
+/* ---------- Stat cards ---------- */
 .app-stats-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -107,31 +136,80 @@ ion-content.app-page {
 .app-stat {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 14px;
-  padding: 12px;
+  border-radius: var(--app-radius);
+  padding: 14px;
+  box-shadow: var(--app-shadow-sm);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--ion-color-primary), var(--ion-color-secondary));
+    opacity: 0.85;
+  }
 
   .app-stat-label {
     font-size: 12px;
     color: var(--app-text-muted);
-    margin-bottom: 4px;
+    margin-bottom: 5px;
+    font-weight: 600;
   }
 
   .app-stat-value {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
     color: var(--app-text);
   }
 
   .app-stat-sub {
     font-size: 11px;
     color: var(--app-text-muted);
-    margin-top: 4px;
+    margin-top: 5px;
   }
 }
 
-/* Menu styling */
+/* ---------- Buttons ---------- */
+ion-button {
+  --border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+ion-fab-button {
+  --border-radius: 18px;
+  --box-shadow: var(--app-shadow-primary);
+  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
+}
+
+/* ---------- Segment ---------- */
+ion-segment {
+  --background: transparent;
+}
+
+.app-home-segment {
+  border-radius: 12px;
+}
+
+/* ---------- Skeleton ---------- */
+ion-skeleton-text {
+  --border-radius: 8px;
+  --background: linear-gradient(90deg, var(--app-surface-alt) 25%, color-mix(in srgb, var(--app-surface-alt) 55%, var(--app-border)) 50%, var(--app-surface-alt) 75%);
+  background-size: 200% 100%;
+  animation: appShimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes appShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---------- Menu ---------- */
 ion-menu.app-menu {
-  --width: 290px;
+  --width: 292px;
 
   ion-header ion-toolbar {
     --background: var(--app-surface);
@@ -141,23 +219,38 @@ ion-menu.app-menu {
   ion-content {
     --background: var(--app-surface);
   }
+
+  ion-item {
+    --border-radius: 12px;
+    --min-height: 44px;
+    margin: 2px 10px;
+    font-weight: 600;
+
+    ion-icon {
+      margin-inline-end: 12px;
+      font-size: 20px;
+    }
+  }
 }
 
 .app-menu-profile {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px;
+  padding: 18px 16px;
+  background: linear-gradient(135deg, rgba(var(--ion-color-primary-rgb), 0.1), rgba(var(--ion-color-secondary-rgb), 0.1));
+  border-bottom: 1px solid var(--app-border);
 
   .app-menu-avatar {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
-    background: rgba(var(--ion-color-primary-rgb), 0.12);
-    color: var(--ion-color-primary);
+    background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: var(--app-shadow-primary);
 
     ion-icon {
       font-size: 22px;
@@ -165,9 +258,10 @@ ion-menu.app-menu {
   }
 
   .app-menu-name {
-    font-weight: 600;
+    font-weight: 800;
     font-size: 15px;
     color: var(--app-text);
+    letter-spacing: -0.01em;
   }
 
   .app-menu-email {
@@ -180,7 +274,11 @@ ion-menu.app-menu {
   }
 }
 
-/* Login page */
+/* ---------- Login ---------- */
+ion-content.ion-page {
+  --background: var(--app-page-bg);
+}
+
 .login-wrapper {
   min-height: 100%;
   display: flex;
@@ -194,76 +292,144 @@ ion-menu.app-menu {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  margin-bottom: 26px;
+  margin-bottom: 28px;
 
   .login-logo-badge {
-    width: 74px;
-    height: 74px;
-    border-radius: 20px;
+    width: 80px;
+    height: 80px;
+    border-radius: 24px;
     background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 26px rgba(var(--ion-color-primary-rgb), 0.35);
+    box-shadow: var(--app-shadow-primary);
+    animation: logoFloat 3.2s ease-in-out infinite;
 
     ion-icon {
-      font-size: 38px;
+      font-size: 40px;
     }
   }
 
   h1 {
     margin: 0;
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--app-text);
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   p {
     margin: 0;
     color: var(--app-text-muted);
-    font-size: 13px;
+    font-size: 13.5px;
+    font-weight: 600;
   }
+}
+
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 .login-error {
   background: var(--app-danger-soft-bg);
   color: var(--app-danger-soft-text);
-  border-radius: 10px;
+  border-radius: var(--app-radius-sm);
   padding: 10px 12px;
   font-size: 13px;
   margin-bottom: 12px;
+  font-weight: 600;
 }
 
-/* Segment tabs on home */
+.login-success {
+  background: rgba(45, 213, 91, 0.12);
+  color: var(--ion-color-success);
+  border-radius: var(--app-radius-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.login-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--app-text-muted);
+  font-size: 13px;
+}
+
+code {
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+/* ---------- Segment tabs on home ---------- */
 ion-segment.app-home-segment {
   --background: var(--app-surface);
+  border-radius: var(--app-radius-sm);
 }
 
-/* empty state */
+/* ---------- Empty states ---------- */
 .app-empty {
   text-align: center;
   color: var(--app-text-muted);
-  padding: 26px 10px;
+  padding: 30px 10px;
   font-size: 13px;
 
+  > div {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    background: var(--app-surface-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   ion-icon {
-    font-size: 34px;
-    margin-bottom: 8px;
-    opacity: 0.6;
+    font-size: 30px;
+    opacity: 0.55;
   }
 }
 
-/* toast-like banner */
+/* ---------- Banner ---------- */
 .app-banner-warning {
   background: var(--app-warning-soft-bg);
   color: var(--app-warning-soft-text);
-  border-radius: 12px;
-  padding: 10px 14px;
+  border-radius: var(--app-radius-sm);
+  padding: 11px 14px;
   font-size: 13px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   margin-bottom: 12px;
+  line-height: 1.45;
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 17px;
+    margin-top: 1px;
+  }
+}
+
+/* ---------- Lists polish ---------- */
+ion-list ion-item {
+  --padding-start: 10px;
+  --min-height: 52px;
+}
+
+ion-badge {
+  font-weight: 700;
+  padding: 5px 9px;
+  border-radius: 8px;
 }

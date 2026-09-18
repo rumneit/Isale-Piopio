@@ -19,6 +19,7 @@ import {
   IonMenuButton,
   IonList,
   IonItem,
+  IonSkeletonText,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -108,6 +109,7 @@ interface HomeTab {
     IonMenuButton,
     IonList,
     IonItem,
+    IonSkeletonText,
   ],
 })
 export class HomePage implements OnInit {
@@ -207,6 +209,7 @@ export class HomePage implements OnInit {
   ];
 
   readonly selectedTab = signal('selling');
+  readonly now = new Date();
 
   constructor() {
     addIcons({

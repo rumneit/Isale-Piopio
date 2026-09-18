@@ -1,5 +1,5 @@
 ion-content {
-  --background: var(--app-page-bg);
+  --background: linear-gradient(160deg, color-mix(in srgb, var(--ion-color-primary) 14%, var(--app-page-bg)) 0%, var(--app-page-bg) 45%);
 }
 
 .login-input {
@@ -8,6 +8,9 @@ ion-content {
 
 .login-submit {
   margin-top: 8px;
+  --background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
+  --box-shadow: var(--app-shadow-primary);
+  height: 46px;
 }
 
 .login-switch {
@@ -24,4 +27,25 @@ code {
   background: rgba(0, 0, 0, 0.15);
   padding: 1px 4px;
   border-radius: 4px;
+}
+
+.login-error {
+  background: var(--app-danger-soft-bg);
+  color: var(--app-danger-soft-text);
+  border-radius: var(--app-radius-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.login-success {
+  background: rgba(45, 213, 91, 0.12);
+  color: var(--ion-color-success);
+  border-radius: var(--app-radius-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  line-height: 1.45;
+  font-weight: 600;
 }

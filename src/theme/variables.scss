@@ -145,4 +145,21 @@ html.ion-palette-dark {
 :root {
   --app-page-max-width: 980px;
   --app-page-max-width-lg: 1120px;
+
+  /* Typography */
+  --ion-font-family: 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont,
+    'Roboto', 'Helvetica Neue', 'Inter', sans-serif;
+
+  /* Design system */
+  --app-radius: 16px;
+  --app-radius-sm: 12px;
+  --app-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --app-shadow-md: 0 8px 20px -4px rgba(16, 24, 40, 0.1), 0 2px 6px -2px rgba(16, 24, 40, 0.06);
+  --app-shadow-primary: 0 8px 20px -6px rgba(var(--ion-color-primary-rgb), 0.45);
+}
+
+html.ion-palette-dark {
+  --app-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --app-shadow-md: 0 8px 20px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -2px rgba(0, 0, 0, 0.35);
+  --app-shadow-primary: 0 8px 20px -6px rgba(28, 159, 192, 0.5);
 }

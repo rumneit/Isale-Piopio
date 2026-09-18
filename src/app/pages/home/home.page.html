@@ -21,15 +21,16 @@
   </ion-refresher>
 
   <div class="app-page-container">
-    <!-- Greeting -->
-    <div class="home-greeting">
+    <!-- Greeting hero -->
+    <div class="home-hero">
       <div>
-        <div class="home-greeting-hi">{{ greeting }}, {{ auth.displayName() }} 👋</div>
-        <div class="home-greeting-shop">
+        <div class="home-hero-hi">{{ greeting }}, {{ auth.displayName() }} 👋</div>
+        <div class="home-hero-shop">
           <ion-icon name="storefront-outline" />
           {{ shopName }}
         </div>
       </div>
+      <div class="home-hero-date">{{ now | date: 'EEEE, dd/MM' }}</div>
     </div>
 
     <!-- Supabase not configured warning -->
@@ -44,26 +45,38 @@
     }
 
     <!-- Stats -->
-    <div class="app-stats-row">
-      <div class="app-stat">
-        <div class="app-stat-label">Doanh thu hôm nay</div>
-        <div class="app-stat-value">{{ formatMoney(stats?.revenueToday) }}</div>
-        <div class="app-stat-sub">{{ stats?.ordersToday ?? 0 }} đơn hàng</div>
+    @if (loading && !stats) {
+      <div class="app-stats-row">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="app-stat">
+            <ion-skeleton-text [animated]="true" style="width: 55%; height: 10px;" />
+            <ion-skeleton-text [animated]="true" style="width: 80%; height: 20px; margin-top: 8px;" />
+            <ion-skeleton-text [animated]="true" style="width: 40%; height: 9px; margin-top: 6px;" />
+          </div>
+        }
       </div>
-      <div class="app-stat">
-        <div class="app-stat-label">Doanh thu tháng này</div>
-        <div class="app-stat-value">{{ formatMoney(stats?.revenueMonth) }}</div>
-        <div class="app-stat-sub">Chi: {{ formatMoney(stats?.expenseMonth) }}</div>
+    } @else {
+      <div class="app-stats-row">
+        <div class="app-stat">
+          <div class="app-stat-label">Doanh thu hôm nay</div>
+          <div class="app-stat-value">{{ formatMoney(stats?.revenueToday) }}</div>
+          <div class="app-stat-sub">{{ stats?.ordersToday ?? 0 }} đơn hàng</div>
+        </div>
+        <div class="app-stat">
+          <div class="app-stat-label">Doanh thu tháng này</div>
+          <div class="app-stat-value">{{ formatMoney(stats?.revenueMonth) }}</div>
+          <div class="app-stat-sub">Chi: {{ formatMoney(stats?.expenseMonth) }}</div>
+        </div>
+        <div class="app-stat">
+          <div class="app-stat-label">Tổng công nợ</div>
+          <div class="app-stat-value">{{ formatMoney(stats?.debtTotal) }}</div>
+        </div>
+        <div class="app-stat">
+          <div class="app-stat-label">Sản phẩm / Khách hàng</div>
+          <div class="app-stat-value">{{ stats?.productCount ?? 0 }} / {{ stats?.customerCount ?? 0 }}</div>
+        </div>
       </div>
-      <div class="app-stat">
-        <div class="app-stat-label">Tổng công nợ</div>
-        <div class="app-stat-value">{{ formatMoney(stats?.debtTotal) }}</div>
-      </div>
-      <div class="app-stat">
-        <div class="app-stat-label">Sản phẩm / Khách hàng</div>
-        <div class="app-stat-value">{{ stats?.productCount ?? 0 }} / {{ stats?.customerCount ?? 0 }}</div>
-      </div>
-    </div>
+    }
 
     <!-- Quick actions -->
     <div class="app-card home-actions-card">
