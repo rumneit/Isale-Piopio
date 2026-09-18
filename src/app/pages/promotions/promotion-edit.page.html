@@ -1,0 +1,63 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="close-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ isEdit ? 'Sửa khuyến mãi' : 'Thêm khuyến mãi' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="busy()">
+        @if (busy()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          <ion-icon slot="icon-only" name="save-outline" />
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="app-page-container">
+    @if (error) {
+      <div class="form-error">{{ error }}</div>
+    }
+
+    <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="card-outline" /> Chương trình</h4></div>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-input label="Tên khuyến mãi *" labelPlacement="stacked" placeholder="VD: Sale cuối năm" [(ngModel)]="name" />
+        </ion-item>
+        <ion-item>
+          <ion-select label="Kiểu giảm" labelPlacement="floating" [(ngModel)]="type" interface="action-sheet" cancelText="Đóng">
+            <ion-select-option value="percent">Giảm theo %</ion-select-option>
+            <ion-select-option value="fixed">Giảm số tiền cố định</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-input [label]="valueLabel" labelPlacement="stacked" type="number" inputmode="decimal" min="0" [(ngModel)]="value" />
+        </ion-item>
+        <ion-item>
+          <ion-toggle [(ngModel)]="active">
+            <ion-label>
+              Đang chạy
+              <ion-note>Hiển thị khi tạo đơn hàng</ion-note>
+            </ion-label>
+          </ion-toggle>
+        </ion-item>
+        <ion-item>
+          <ion-textarea label="Ghi chú" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="note" />
+        </ion-item>
+      </ion-list>
+    </div>
+
+    @if (isEdit) {
+      <ion-button expand="block" color="danger" fill="outline" (click)="confirmDelete()" [disabled]="deleting()">
+        <ion-icon slot="start" name="trash-outline" />
+        {{ deleting() ? 'Đang xóa...' : 'Xóa khuyến mãi' }}
+      </ion-button>
+    }
+  </div>
+</ion-content>

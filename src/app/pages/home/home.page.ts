@@ -126,7 +126,7 @@ export class HomePage implements OnInit {
         { id: 'reports', label: 'Báo cáo doanh thu', icon: 'bar-chart-outline', color: '#2dd55b', path: '/report' },
         { id: 'debts', label: 'Công nợ', icon: 'document-text-outline', color: '#ff7043', path: '/debt' },
         { id: 'quotes', label: 'Báo giá', icon: 'receipt-outline', color: '#5c6bc0', path: '/quote' },
-        { id: 'promotions', label: 'Khuyến mãi', icon: 'card-outline', color: '#ec407a', path: '/module/promotion' },
+        { id: 'promotions', label: 'Khuyến mãi', icon: 'card-outline', color: '#ec407a', path: '/promotion' },
         { id: 'scan', label: 'Quét mã', icon: 'scan-outline', color: '#26c6da', path: '/module/scan' },
       ],
     },
@@ -135,7 +135,7 @@ export class HomePage implements OnInit {
       label: 'Kho/Sản phẩm',
       actions: [
         { id: 'products', label: 'Sản phẩm', icon: 'pricetags-outline', color: '#6030ff', path: '/product' },
-        { id: 'materials', label: 'Nguyên liệu', icon: 'cube-outline', color: '#47bdb5', path: '/module/material' },
+        { id: 'materials', label: 'Nguyên liệu', icon: 'cube-outline', color: '#47bdb5', path: '/material' },
         { id: 'received', label: 'Nhập hàng', icon: 'download-outline', color: '#e6bf00', path: '/received-note' },
         { id: 'transfer', label: 'Chuyển hàng', icon: 'arrow-redo-outline', color: '#2dd55b', path: '/module/transfer-note' },
         { id: 'delivery', label: 'Giao hàng', icon: 'boat-outline', color: '#ff7043', path: '/delivery' },

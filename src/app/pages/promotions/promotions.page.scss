@@ -1,0 +1,46 @@
+.page-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.promo-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(236, 64, 122, 0.12);
+  color: #ec407a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
+ion-list {
+  background: transparent;
+
+  ion-item {
+    --background: transparent;
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--app-text);
+    }
+
+    p {
+      color: var(--app-text-muted);
+      font-size: 12.5px;
+    }
+  }
+}
+
+.page-hint {
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  padding: 4px;
+}

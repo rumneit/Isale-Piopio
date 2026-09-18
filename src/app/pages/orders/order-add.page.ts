@@ -29,6 +29,7 @@ import { OrdersService } from '../../core/services/orders.service';
 import { ProductsService } from '../../core/services/products.service';
 import { CustomersService } from '../../core/services/customers.service';
 import { TransactionsService } from '../../core/services/transactions.service';
+import { PromotionsService, Promotion } from '../../core/services/promotions.service';
 import { Product, Customer } from '../../core/models/models';
 
 interface DraftItem {
@@ -72,6 +73,7 @@ export class OrderAddPage implements OnInit {
   private productsService = inject(ProductsService);
   private customersService = inject(CustomersService);
   private transactionsService = inject(TransactionsService);
+  readonly promotionsService = inject(PromotionsService);
   private toastCtrl = inject(ToastController);
 
   readonly busy = signal(false);
@@ -79,6 +81,8 @@ export class OrderAddPage implements OnInit {
   readonly customers = signal<Customer[]>([]);
   readonly items = signal<DraftItem[]>([]);
   readonly discount = signal(0);
+  readonly promotions = signal<Promotion[]>([]);
+  readonly selectedPromoId = signal<string>('');
 
   customerId: string | null = null;
   paid = true;
@@ -95,12 +99,14 @@ export class OrderAddPage implements OnInit {
   async ngOnInit(): Promise<void> {
     this.isQuoteMode.set(this.route.snapshot.queryParamMap.get('mode') === 'quote');
     try {
-      const [products, customers] = await Promise.all([
+      const [products, customers, promotions] = await Promise.all([
         this.productsService.list(),
         this.customersService.list(),
+        this.isQuoteMode() ? Promise.resolve([]) : this.promotionsService.list(true),
       ]);
       this.products.set(products);
       this.customers.set(customers);
+      this.promotions.set(promotions);
     } catch (e: any) {
       console.error('load order form data failed', e);
     }
@@ -135,6 +141,27 @@ export class OrderAddPage implements OnInit {
 
   onDiscount(ev: any) {
     this.discount.set(Number(ev?.detail?.value ?? 0) || 0);
+  }
+
+  get itemsTotal(): number {
+    return this.items().reduce((s, i) => s + i.price * i.qty, 0);
+  }
+
+  async onPromoChange(ev: CustomEvent) {
+    const promoId = (ev.detail.value as string) ?? '';
+    this.selectedPromoId.set(promoId);
+    if (!promoId) return;
+    const promo = this.promotions().find((p) => p.id === promoId);
+    if (!promo) return;
+    const discount = this.promotionsService.calcDiscount(promo, this.itemsTotal);
+    this.discount.set(discount);
+    const t = await this.toastCtrl.create({
+      message: `Áp dụng "${promo.name}": giảm ${this.formatMoney(discount)}`,
+      duration: 1800,
+      color: 'tertiary',
+      position: 'bottom',
+    });
+    await t.present();
   }
 
   async save() {

@@ -5,6 +5,9 @@
     </ion-buttons>
     <ion-title>{{ order()?.code ?? 'Đơn hàng' }}</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="printInvoice()" [disabled]="busy()">
+        <ion-icon slot="icon-only" name="print-outline" />
+      </ion-button>
       <ion-button (click)="confirmDelete()" [disabled]="busy()">
         <ion-icon slot="icon-only" name="trash-outline" color="danger" />
       </ion-button>

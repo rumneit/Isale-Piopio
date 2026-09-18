@@ -92,6 +92,25 @@
         </ion-list>
       }
 
+      @if (!isQuoteMode() && promotions().length > 0) {
+        <ion-item lines="full">
+          <ion-select
+            label="Khuyến mãi"
+            labelPlacement="floating"
+            placeholder="Không áp dụng"
+            [value]="selectedPromoId()"
+            (ionChange)="onPromoChange($any($event))"
+            interface="action-sheet"
+            cancelText="Bỏ khuyến mãi"
+          >
+            <ion-select-option value="">Không áp dụng</ion-select-option>
+            @for (p of promotions(); track p.id) {
+              <ion-select-option [value]="p.id">{{ p.name }} ({{ promotionsService.describe(p) }})</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      }
+
       <ion-item lines="full">
         <ion-input
           label="Giảm giá (₫)"

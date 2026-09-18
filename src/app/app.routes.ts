@@ -40,6 +40,12 @@ export const routes: Routes = [
   { path: 'delivery', loadComponent: () => import('./pages/delivery/delivery.page').then((m) => m.DeliveryPage), canActivate: [authGuard] },
   // Quotes
   { path: 'quote', loadComponent: () => import('./pages/quotes/quotes.page').then((m) => m.QuotesPage), canActivate: [authGuard] },
+  // Promotions
+  { path: 'promotion', loadComponent: () => import('./pages/promotions/promotions.page').then((m) => m.PromotionsPage), canActivate: [authGuard] },
+  { path: 'promotion/add', loadComponent: () => import('./pages/promotions/promotion-edit.page').then((m) => m.PromotionEditPage), canActivate: [authGuard] },
+  { path: 'promotion/:id', loadComponent: () => import('./pages/promotions/promotion-edit.page').then((m) => m.PromotionEditPage), canActivate: [authGuard] },
+  // Materials
+  { path: 'material', loadComponent: () => import('./pages/materials/materials.page').then((m) => m.MaterialsPage), canActivate: [authGuard] },
   // Reports
   { path: 'report', loadComponent: () => import('./pages/reports/reports.page').then((m) => m.ReportsPage), canActivate: [authGuard] },
   // Money accounts

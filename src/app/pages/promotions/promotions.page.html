@@ -1,0 +1,51 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Khuyến mãi</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="card-outline" /></div>
+        Chưa có chương trình khuyến mãi nào. Nhấn + để tạo.
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (item of items(); track item.id) {
+            <ion-item button (click)="openDetail(item)" detail="true">
+              <div class="promo-icon" slot="start">
+                <ion-icon [name]="item.type === 'percent' ? 'pricetag-outline' : 'cash-outline'" />
+              </div>
+              <ion-label>
+                <h3>{{ item.name }}</h3>
+                <p>{{ promotionsService.describe(item) }} · {{ promotionsService.typeLabel(item.type) }}</p>
+              </ion-label>
+              <ion-badge slot="end" [color]="item.active ? 'success' : 'medium'">
+                {{ item.active ? 'Đang chạy' : 'Tạm tắt' }}
+              </ion-badge>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">Khuyến mãi "Đang chạy" sẽ xuất hiện khi tạo đơn hàng</ion-note>
+    }
+  </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openAdd()">
+      <ion-icon name="add-outline" />
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
