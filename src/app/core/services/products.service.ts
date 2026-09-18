@@ -42,6 +42,19 @@ export class ProductsService {
     return (data as Product) ?? null;
   }
 
+  /** Tìm sản phẩm theo mã (SKU) — dùng cho quét barcode */
+  async getBySku(sku: string): Promise<Product | null> {
+    if (!this.sb.isConfigured || !this.shopId) return null;
+    const { data, error } = await this.sb
+      .from('products')
+      .select('*')
+      .eq('shop_id', this.shopId)
+      .eq('sku', sku.trim())
+      .maybeSingle();
+    if (error) throw error;
+    return (data as Product) ?? null;
+  }
+
   async create(input: Partial<Product>): Promise<Product> {
     const shopId = this.shopId;
     if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');

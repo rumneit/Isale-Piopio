@@ -30,6 +30,7 @@ import { ProductsService } from '../../core/services/products.service';
 import { CustomersService } from '../../core/services/customers.service';
 import { TransactionsService } from '../../core/services/transactions.service';
 import { PromotionsService, Promotion } from '../../core/services/promotions.service';
+import { PointsService } from '../../core/services/points.service';
 import { Product, Customer } from '../../core/models/models';
 
 interface DraftItem {
@@ -74,6 +75,7 @@ export class OrderAddPage implements OnInit {
   private customersService = inject(CustomersService);
   private transactionsService = inject(TransactionsService);
   readonly promotionsService = inject(PromotionsService);
+  private pointsService = inject(PointsService);
   private toastCtrl = inject(ToastController);
 
   readonly busy = signal(false);
@@ -194,6 +196,24 @@ export class OrderAddPage implements OnInit {
           note: `Thu tiền đơn ${order.code}`,
           occurred_at: new Date().toISOString(),
         });
+      }
+
+      // Tích điểm cho khách hàng khi đơn đã thanh toán
+      if (!this.isQuoteMode() && this.paid && customer && this.total > 0) {
+        try {
+          const earned = await this.pointsService.earnForOrder(customer, this.total, order.code);
+          if (earned > 0) {
+            const t = await this.toastCtrl.create({
+              message: `${customer.name} được tặng ${earned} điểm tích lũy`,
+              duration: 2200,
+              color: 'tertiary',
+              position: 'bottom',
+            });
+            await t.present();
+          }
+        } catch (e) {
+          console.error('earn points failed', e);
+        }
       }
 
       this.toast('Đã tạo đơn hàng ' + order.code);

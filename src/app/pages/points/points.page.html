@@ -1,0 +1,86 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Tích điểm</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Tìm khách hàng" [debounce]="300" (ionInput)="onSearch($any($event))" />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else {
+      <div class="points-rule">
+        <ion-icon name="gift-outline" />
+        Quy tắc: mỗi {{ pointsService.earnRate | number }}₫ mua hàng được 1 điểm
+      </div>
+
+      @if (items().length === 0) {
+        <div class="app-empty">
+          <div><ion-icon name="person-outline" /></div>
+          Chưa có khách hàng nào
+        </div>
+      } @else {
+        <div class="app-card">
+          <ion-list lines="full">
+            @for (item of items(); track item.id) {
+              <ion-item>
+                <div class="point-avatar" slot="start">{{ (item.name || '?') | uppercase }}</div>
+                <ion-label>
+                  <h3>{{ item.name }}</h3>
+                  <p>
+                    <ion-badge color="tertiary" class="point-badge" (click)="addPoints(item)">
+                      <ion-icon name="add-circle-outline" /> Cộng
+                    </ion-badge>
+                    <ion-badge color="warning" class="point-badge" (click)="redeemPoints(item)">
+                      <ion-icon name="remove-circle-outline" /> Đổi
+                    </ion-badge>
+                    <ion-badge color="light" class="point-badge" (click)="viewHistory(item)">
+                      <ion-icon name="time-outline" /> Lịch sử
+                    </ion-badge>
+                  </p>
+                </ion-label>
+                <ion-badge slot="end" color="primary">
+                  <ion-icon name="star-outline" /> {{ fmt(item.points) }}
+                </ion-badge>
+              </ion-item>
+            }
+          </ion-list>
+        </div>
+      }
+
+      @if (historyCustomer(); as hc) {
+        <div class="app-card">
+          <div class="app-card-title">
+            <h4><ion-icon name="time-outline" /> Lịch sử — {{ hc.name }}</h4>
+            <ion-button fill="clear" size="small" (click)="closeHistory()">Đóng</ion-button>
+          </div>
+          @if (history().length === 0) {
+            <div class="app-empty">Chưa có giao dịch điểm nào</div>
+          } @else {
+            <ion-list lines="full">
+              @for (row of history(); track row.id) {
+                <ion-item>
+                  <ion-icon slot="start" name="star-outline" [color]="row.points >= 0 ? 'success' : 'warning'" />
+                  <ion-label>
+                    <h3>{{ typeLabel(row.type) }} · {{ row.points > 0 ? '+' : '' }}{{ fmt(row.points) }} điểm</h3>
+                    <p>{{ row.note ?? '—' }} · {{ row.created_at | date: 'dd/MM HH:mm' }}</p>
+                  </ion-label>
+                </ion-item>
+              }
+            </ion-list>
+          }
+        </div>
+      }
+    }
+  </div>
+</ion-content>

@@ -1,0 +1,60 @@
+.page-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.points-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--app-warning-soft-bg);
+  color: var(--app-warning-soft-text);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.point-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(var(--ion-color-tertiary-rgb), 0.15);
+  color: var(--ion-color-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.point-badge {
+  cursor: pointer;
+
+  ion-icon {
+    vertical-align: -2px;
+    font-size: 12px;
+  }
+}
+
+ion-list {
+  background: transparent;
+
+  ion-item {
+    --background: transparent;
+    align-items: center;
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--app-text);
+    }
+
+    p {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+  }
+}

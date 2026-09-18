@@ -1,0 +1,91 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Quét mã</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="app-page-container">
+    <!-- Camera -->
+    <div class="app-card scan-camera-card">
+      <div class="scan-camera-wrap" [class.active]="cameraActive()">
+        <video #video playsinline muted class="scan-video" [class.hidden]="!cameraActive()"></video>
+        @if (!cameraActive()) {
+          <div class="scan-placeholder">
+            <ion-icon name="barcode-outline" />
+            <p>Đưa mã vạch vào khung để quét</p>
+          </div>
+        }
+      </div>
+
+      <ion-button expand="block" (click)="toggleCamera()">
+        <ion-icon slot="start" [name]="cameraActive() ? 'videocam-off-outline' : 'videocam-outline'" />
+        {{ cameraActive() ? 'Dừng camera' : 'Bật camera quét' }}
+      </ion-button>
+
+      @if (!detectorSupported()) {
+        <ion-note class="scan-note">
+          Trình duyệt này chưa hỗ trợ quét camera (BarcodeDetector). Dùng Chrome trên Android hoặc nhập mã tay bên dưới.
+        </ion-note>
+      }
+    </div>
+
+    <!-- Manual input -->
+    <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="barcode-outline" /> Nhập mã tay</h4></div>
+      <ion-input
+        label="Mã vạch / SKU / tên SP"
+        labelPlacement="floating"
+        fill="outline"
+        [(ngModel)]="manualCode"
+        (keyup.enter)="lookup()"
+        placeholder="VD: TS001"
+        class="scan-input"
+      />
+      <ion-button expand="block" fill="outline" class="scan-lookup-btn" (click)="lookup()">
+        <ion-icon slot="start" name="scan-outline" />
+        Tra cứu
+      </ion-button>
+    </div>
+
+    <!-- Result -->
+    @if (found(); as p) {
+      <div class="app-card scan-result">
+        <div class="scan-result-head">
+          <div class="scan-result-icon"><ion-icon name="pricetags-outline" /></div>
+          <div>
+            <h3>{{ p.name }}</h3>
+            @if (p.sku) {
+              <p class="scan-sku">{{ p.sku }}</p>
+            }
+          </div>
+          <ion-button fill="clear" size="small" (click)="found.set(null)">
+            <ion-icon slot="icon-only" name="close-circle-outline" />
+          </ion-button>
+        </div>
+        <div class="scan-result-row">
+          <span>Giá bán</span>
+          <strong>{{ formatMoney(p.price) }}</strong>
+        </div>
+        <div class="scan-result-row">
+          <span>Tồn kho</span>
+          <strong>{{ p.stock }}</strong>
+        </div>
+        <ion-button expand="block" color="success" (click)="createOrderWithProduct()">
+          <ion-icon slot="start" name="cart-outline" />
+          Tạo đơn hàng
+        </ion-button>
+      </div>
+    }
+
+    @if (notFoundMsg()) {
+      <div class="app-banner-warning">
+        <ion-icon name="barcode-outline" />
+        <span>{{ notFoundMsg() }}</span>
+      </div>
+    }
+  </div>
+</ion-content>

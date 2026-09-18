@@ -56,6 +56,16 @@
             <p>Đã kết nối · dữ liệu đồng bộ theo shop</p>
           </ion-label>
         </ion-item>
+        <ion-item button (click)="backupData()" detail="false">
+          <ion-icon slot="start" name="cloud-download-outline" />
+          <ion-label>
+            <h3>Backup dữ liệu</h3>
+            <p>Tải toàn bộ dữ liệu cửa hàng về máy (.json)</p>
+          </ion-label>
+          @if (backingUp()) {
+            <ion-spinner slot="end" name="crescent" />
+          }
+        </ion-item>
         <ion-item>
           <ion-icon slot="start" name="settings-outline" />
           <ion-label>

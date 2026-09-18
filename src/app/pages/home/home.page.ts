@@ -127,7 +127,7 @@ export class HomePage implements OnInit {
         { id: 'debts', label: 'Công nợ', icon: 'document-text-outline', color: '#ff7043', path: '/debt' },
         { id: 'quotes', label: 'Báo giá', icon: 'receipt-outline', color: '#5c6bc0', path: '/quote' },
         { id: 'promotions', label: 'Khuyến mãi', icon: 'card-outline', color: '#ec407a', path: '/promotion' },
-        { id: 'scan', label: 'Quét mã', icon: 'scan-outline', color: '#26c6da', path: '/module/scan' },
+        { id: 'scan', label: 'Quét mã', icon: 'scan-outline', color: '#26c6da', path: '/scan' },
       ],
     },
     {
@@ -164,7 +164,7 @@ export class HomePage implements OnInit {
       actions: [
         { id: 'customers', label: 'Khách hàng', icon: 'people-outline', color: '#6030ff', path: '/contact' },
         { id: 'staff', label: 'Nhân viên', icon: 'person-outline', color: '#47bdb5', path: '/staff' },
-        { id: 'point', label: 'Tích điểm', icon: 'star-half-outline', color: '#e6bf00', path: '/module/point' },
+        { id: 'point', label: 'Tích điểm', icon: 'star-half-outline', color: '#e6bf00', path: '/point' },
         { id: 'levels', label: 'Hạng thành viên', icon: 'diamond-outline', color: '#2dd55b', path: '/module/level-config' },
         { id: 'shift', label: 'Ca làm việc', icon: 'time-outline', color: '#ff7043', path: '/module/shift' },
         { id: 'org-chart', label: 'Sơ đồ tổ chức', icon: 'git-network-outline', color: '#5c6bc0', path: '/module/org-chart' },

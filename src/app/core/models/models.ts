@@ -35,6 +35,7 @@ export interface Customer {
   email: string | null;
   address: string | null;
   debt: number;
+  points?: number;
   created_at?: string;
 }
 
