@@ -78,7 +78,7 @@ export class AppComponent {
     { title: 'Công nợ', icon: 'document-text-outline', path: '/debt' },
     { title: 'Báo cáo', icon: 'bar-chart-outline', path: '/report' },
     { title: 'Kiểm kho', icon: 'clipboard-outline', path: '/stock-check' },
-    { title: 'CRM', icon: 'analytics-outline', path: '/module/crm-leads' },
+    { title: 'CRM', icon: 'analytics-outline', path: '/crm' },
     { title: 'Nhân viên', icon: 'person-outline', path: '/staff' },
     { title: 'Cửa hàng', icon: 'storefront-outline', path: '/config' },
     { title: 'Trợ giúp', icon: 'help-circle-outline', path: '/help' },

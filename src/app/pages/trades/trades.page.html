@@ -4,6 +4,11 @@
       <ion-back-button defaultHref="/home" />
     </ion-buttons>
     <ion-title>Giao dịch</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="exportCsv()">
+        <ion-icon slot="icon-only" name="download-outline" />
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
   <ion-toolbar>
     <ion-segment [value]="typeFilter()" (ionChange)="onFilter($any($event))">

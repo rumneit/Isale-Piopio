@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Giao hàng</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="statusFilter()" (ionChange)="onFilter($any($event))" [scrollable]="true">
+      @for (s of statusOptions; track s.value) {
+        <ion-segment-button [value]="s.value">
+          <ion-label>{{ s.label }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Tìm theo mã đơn hoặc khách" [debounce]="300" (ionInput)="onSearch($any($event))" />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="boat-outline" /></div>
+        Không có đơn hàng ở trạng thái này
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (order of items(); track order.id) {
+            <ion-item>
+              <ion-icon slot="start" name="boat-outline" color="medium" />
+              <ion-label>
+                <h3>{{ order.code }}</h3>
+                <p>{{ order.customer_name ?? 'Khách lẻ' }} · {{ order.created_at | date: 'dd/MM HH:mm' }}</p>
+              </ion-label>
+              <div class="delivery-end" slot="end">
+                <ion-badge [color]="order.paid ? 'success' : 'warning'">{{ formatMoney(order.total) }}</ion-badge>
+                <ion-badge color="tertiary" (click)="changeStatus(order)">
+                  {{ statusLabel(order.status) }}
+                </ion-badge>
+              </div>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">Nhấn badge trạng thái để chuyển bước giao hàng · nhấn đơn để xem chi tiết</ion-note>
+    }
+  </div>
+</ion-content>

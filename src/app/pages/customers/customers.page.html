@@ -4,6 +4,11 @@
       <ion-back-button defaultHref="/home" />
     </ion-buttons>
     <ion-title>Khách hàng</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="exportCsv()">
+        <ion-icon slot="icon-only" name="download-outline" />
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
   <ion-toolbar>
     <ion-searchbar placeholder="Tìm theo tên hoặc SĐT" [debounce]="300" (ionInput)="onSearch($any($event))" />

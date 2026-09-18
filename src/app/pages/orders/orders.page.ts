@@ -25,8 +25,9 @@ import {
   IonNote,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, cartOutline, checkmarkCircleOutline, alertCircleOutline } from 'ionicons/icons';
+import { addOutline, cartOutline, checkmarkCircleOutline, alertCircleOutline, downloadOutline } from 'ionicons/icons';
 import { OrdersService } from '../../core/services/orders.service';
+import { CsvExportService } from '../../core/services/csv-export.service';
 import { Order } from '../../core/models/models';
 
 @Component({
@@ -60,6 +61,7 @@ import { Order } from '../../core/models/models';
 })
 export class OrdersPage implements OnInit {
   private ordersService = inject(OrdersService);
+  private csvExport = inject(CsvExportService);
   private router = inject(Router);
 
   readonly items = signal<Order[]>([]);
@@ -68,7 +70,7 @@ export class OrdersPage implements OnInit {
   search = '';
 
   constructor() {
-    addIcons({ addOutline, cartOutline, checkmarkCircleOutline, alertCircleOutline });
+    addIcons({ addOutline, cartOutline, checkmarkCircleOutline, alertCircleOutline, downloadOutline });
   }
 
   ngOnInit(): void {
@@ -107,6 +109,19 @@ export class OrdersPage implements OnInit {
 
   openAdd() {
     this.router.navigateByUrl('/order/add');
+  }
+
+  exportCsv() {
+    const rows = this.items().map((o) => [
+      o.code,
+      o.customer_name ?? 'Khách lẻ',
+      OrdersService.statusLabel(o.status),
+      o.paid ? 'Đã trả' : 'Còn nợ',
+      this.csvExport.formatMoney(o.total),
+      this.csvExport.formatMoney(o.discount),
+      this.csvExport.formatDateTime(o.created_at),
+    ]);
+    this.csvExport.export('don-hang', ['Mã đơn', 'Khách hàng', 'Trạng thái', 'Thanh toán', 'Tổng tiền', 'Giảm giá', 'Ngày tạo'], rows);
   }
 
   formatMoney(v: number | null | undefined): string {

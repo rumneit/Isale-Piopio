@@ -22,6 +22,7 @@ import {
   IonSegment,
   IonSegmentButton,
   IonNote,
+  IonButton,
   AlertController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
@@ -31,8 +32,10 @@ import {
   trendingUpOutline,
   trendingDownOutline,
   trashOutline,
+  downloadOutline,
 } from 'ionicons/icons';
 import { TransactionsService } from '../../core/services/transactions.service';
+import { CsvExportService } from '../../core/services/csv-export.service';
 import { Transaction } from '../../core/models/models';
 
 @Component({
@@ -61,10 +64,12 @@ import { Transaction } from '../../core/models/models';
     IonSegment,
     IonSegmentButton,
     IonNote,
+    IonButton,
   ],
 })
 export class TradesPage implements OnInit {
   private transactionsService = inject(TransactionsService);
+  private csvExport = inject(CsvExportService);
   private router = inject(Router);
   private alertCtrl = inject(AlertController);
 
@@ -74,7 +79,7 @@ export class TradesPage implements OnInit {
   search = '';
 
   constructor() {
-    addIcons({ addOutline, swapHorizontalOutline, trendingUpOutline, trendingDownOutline, trashOutline });
+    addIcons({ addOutline, swapHorizontalOutline, trendingUpOutline, trendingDownOutline, trashOutline, downloadOutline });
   }
 
   ngOnInit(): void {
@@ -109,6 +114,17 @@ export class TradesPage implements OnInit {
 
   openAdd() {
     this.router.navigateByUrl('/trade/add');
+  }
+
+  exportCsv() {
+    const rows = this.items().map((t) => [
+      t.type === 'income' ? 'Thu' : 'Chi',
+      t.category ?? '',
+      t.note ?? '',
+      this.csvExport.formatMoney(t.amount),
+      this.csvExport.formatDateTime(t.occurred_at),
+    ]);
+    this.csvExport.export('giao-dich', ['Loại', 'Nhóm', 'Ghi chú', 'Số tiền', 'Thời gian'], rows);
   }
 
   async confirmDelete(item: Transaction) {

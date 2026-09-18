@@ -19,10 +19,12 @@ import {
   IonFab,
   IonFabButton,
   IonSpinner,
+  IonButton,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, peopleOutline, callOutline } from 'ionicons/icons';
+import { addOutline, peopleOutline, callOutline, downloadOutline } from 'ionicons/icons';
 import { CustomersService } from '../../core/services/customers.service';
+import { CsvExportService } from '../../core/services/csv-export.service';
 import { Customer } from '../../core/models/models';
 
 @Component({
@@ -48,10 +50,12 @@ import { Customer } from '../../core/models/models';
     IonFab,
     IonFabButton,
     IonSpinner,
+    IonButton,
   ],
 })
 export class CustomersPage implements OnInit {
   private customersService = inject(CustomersService);
+  private csvExport = inject(CsvExportService);
   private router = inject(Router);
 
   readonly items = signal<Customer[]>([]);
@@ -59,7 +63,7 @@ export class CustomersPage implements OnInit {
   search = '';
 
   constructor() {
-    addIcons({ addOutline, peopleOutline, callOutline });
+    addIcons({ addOutline, peopleOutline, callOutline, downloadOutline });
   }
 
   ngOnInit(): void {
@@ -93,6 +97,18 @@ export class CustomersPage implements OnInit {
 
   openAdd() {
     this.router.navigateByUrl('/contact/add');
+  }
+
+  exportCsv() {
+    const rows = this.items().map((c) => [
+      c.name,
+      c.phone ?? '',
+      c.email ?? '',
+      c.address ?? '',
+      this.csvExport.formatMoney(c.debt),
+      this.csvExport.formatDateTime(c.created_at),
+    ]);
+    this.csvExport.export('khach-hang', ['Tên', 'SĐT', 'Email', 'Địa chỉ', 'Công nợ', 'Ngày tạo'], rows);
   }
 
   initial(name: string): string {

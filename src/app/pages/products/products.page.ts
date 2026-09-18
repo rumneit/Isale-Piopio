@@ -23,8 +23,9 @@ import {
   IonBackButton,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, searchOutline, pricetagsOutline, closeCircleOutline } from 'ionicons/icons';
+import { addOutline, searchOutline, pricetagsOutline, closeCircleOutline, downloadOutline } from 'ionicons/icons';
 import { ProductsService } from '../../core/services/products.service';
+import { CsvExportService } from '../../core/services/csv-export.service';
 import { Product } from '../../core/models/models';
 
 @Component({
@@ -56,6 +57,7 @@ import { Product } from '../../core/models/models';
 })
 export class ProductsPage implements OnInit {
   private productsService = inject(ProductsService);
+  private csvExport = inject(CsvExportService);
   private router = inject(Router);
 
   readonly items = signal<Product[]>([]);
@@ -64,7 +66,7 @@ export class ProductsPage implements OnInit {
   search = '';
 
   constructor() {
-    addIcons({ addOutline, searchOutline, pricetagsOutline, closeCircleOutline });
+    addIcons({ addOutline, searchOutline, pricetagsOutline, closeCircleOutline, downloadOutline });
   }
 
   ngOnInit(): void {
@@ -103,6 +105,20 @@ export class ProductsPage implements OnInit {
 
   openAdd() {
     this.router.navigateByUrl('/product/add');
+  }
+
+  exportCsv() {
+    const rows = this.items().map((p) => [
+      p.name,
+      p.sku ?? '',
+      p.unit ?? '',
+      this.csvExport.formatMoney(p.price),
+      this.csvExport.formatMoney(p.cost),
+      this.csvExport.formatMoney(p.stock),
+      p.active ? 'Đang bán' : 'Ngừng bán',
+      this.csvExport.formatDateTime(p.created_at),
+    ]);
+    this.csvExport.export('san-pham', ['Tên', 'Mã SP', 'Đơn vị', 'Giá bán', 'Giá vốn', 'Tồn kho', 'Trạng thái', 'Ngày tạo'], rows);
   }
 
   formatMoney(v: number | null | undefined): string {

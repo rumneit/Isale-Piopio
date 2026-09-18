@@ -29,6 +29,17 @@ export const routes: Routes = [
   { path: 'contact/:id', loadComponent: () => import('./pages/customers/customer-edit.page').then((m) => m.CustomerEditPage), canActivate: [authGuard] },
   // Debt
   { path: 'debt', loadComponent: () => import('./pages/debt/debt.page').then((m) => m.DebtPage), canActivate: [authGuard] },
+  // CRM
+  { path: 'crm', loadComponent: () => import('./pages/crm/crm-list.page').then((m) => m.CrmListPage), canActivate: [authGuard] },
+  { path: 'crm/add', loadComponent: () => import('./pages/crm/crm-edit.page').then((m) => m.CrmEditPage), canActivate: [authGuard] },
+  { path: 'crm/:id', loadComponent: () => import('./pages/crm/crm-edit.page').then((m) => m.CrmEditPage), canActivate: [authGuard] },
+  // Received notes (nhập hàng)
+  { path: 'received-note', loadComponent: () => import('./pages/received-notes/received-notes.page').then((m) => m.ReceivedNotesPage), canActivate: [authGuard] },
+  { path: 'received-note/add', loadComponent: () => import('./pages/received-notes/received-note-add.page').then((m) => m.ReceivedNoteAddPage), canActivate: [authGuard] },
+  // Delivery
+  { path: 'delivery', loadComponent: () => import('./pages/delivery/delivery.page').then((m) => m.DeliveryPage), canActivate: [authGuard] },
+  // Quotes
+  { path: 'quote', loadComponent: () => import('./pages/quotes/quotes.page').then((m) => m.QuotesPage), canActivate: [authGuard] },
   // Reports
   { path: 'report', loadComponent: () => import('./pages/reports/reports.page').then((m) => m.ReportsPage), canActivate: [authGuard] },
   // Money accounts

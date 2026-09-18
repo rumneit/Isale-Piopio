@@ -1,0 +1,76 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>CRM — Khách hàng tiềm năng</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="stageFilter()" (ionChange)="onStage($any($event))" [scrollable]="true">
+      <ion-segment-button value="all"><ion-label>Tất cả</ion-label></ion-segment-button>
+      @for (s of crmService.stages; track s.value) {
+        <ion-segment-button [value]="s.value">
+          <ion-label>{{ s.label }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Tìm theo tên hoặc SĐT" [debounce]="300" (ionInput)="onSearch($any($event))" />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="person-outline" /></div>
+        Chưa có khách hàng tiềm năng nào
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (lead of items(); track lead.id) {
+            <ion-item button (click)="openEdit(lead)" detail="true">
+              <div class="lead-avatar" slot="start" [class.lead-won]="lead.stage === 'won'" [class.lead-lost]="lead.stage === 'lost'">
+                {{ (lead.name || '?').charAt(0) | uppercase }}
+              </div>
+              <ion-label>
+                <h3>{{ lead.name }}</h3>
+                <p>
+                  @if (lead.phone) {
+                    <ion-icon name="call-outline" />
+                    {{ lead.phone }} ·
+                  }
+                  {{ lead.source ?? '—' }}
+                </p>
+              </ion-label>
+              <div class="lead-end" slot="end">
+                @if ((lead.value ?? 0) > 0) {
+                  <ion-badge [color]="lead.stage === 'won' ? 'success' : 'tertiary'">{{ formatMoney(lead.value) }}</ion-badge>
+                }
+                <ion-badge [color]="lead.stage === 'won' ? 'success' : (lead.stage === 'lost' ? 'medium' : 'primary')"
+                  (click)="$event.stopPropagation(); changeStage(lead)">
+                  {{ crmService.stageLabel(lead.stage) }}
+                </ion-badge>
+              </div>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">Nhấn badge stage để chuyển lead nhanh qua các giai đoạn</ion-note>
+    }
+  </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openAdd()">
+      <ion-icon name="add-outline" />
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

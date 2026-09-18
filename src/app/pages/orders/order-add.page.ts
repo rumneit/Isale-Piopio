@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
@@ -66,6 +66,7 @@ interface DraftItem {
   ],
 })
 export class OrderAddPage implements OnInit {
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private ordersService = inject(OrdersService);
   private productsService = inject(ProductsService);
@@ -89,7 +90,10 @@ export class OrderAddPage implements OnInit {
     addIcons({ saveOutline, closeOutline, addOutline, trashOutline, personOutline, cubeOutline });
   }
 
+  readonly isQuoteMode = signal(false);
+
   async ngOnInit(): Promise<void> {
+    this.isQuoteMode.set(this.route.snapshot.queryParamMap.get('mode') === 'quote');
     try {
       const [products, customers] = await Promise.all([
         this.productsService.list(),
@@ -147,15 +151,15 @@ export class OrderAddPage implements OnInit {
         {
           customer_id: this.customerId,
           customer_name: customer?.name ?? 'Khách lẻ',
-          status: 'completed',
+          status: this.isQuoteMode() ? 'quote' : 'pending',
           discount: Number(this.discount() || 0),
-          paid: this.paid,
+          paid: this.isQuoteMode() ? false : this.paid,
           note: this.note.trim() || null,
         },
         this.items()
       );
 
-      if (this.paid && this.recordIncome && this.total > 0) {
+      if (!this.isQuoteMode() && this.paid && this.recordIncome && this.total > 0) {
         await this.transactionsService.create({
           type: 'income',
           category: 'Bán hàng',

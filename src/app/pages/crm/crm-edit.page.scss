@@ -1,0 +1,25 @@
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+}
+
+.form-error {
+  background: var(--app-danger-soft-bg);
+  color: var(--app-danger-soft-text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.form-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px 0;
+  font-size: 12px;
+  color: var(--app-text-muted);
+}

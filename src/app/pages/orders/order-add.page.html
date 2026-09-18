@@ -5,7 +5,7 @@
         <ion-icon slot="icon-only" name="close-outline" />
       </ion-button>
     </ion-buttons>
-    <ion-title>Đơn hàng mới</ion-title>
+    <ion-title>{{ isQuoteMode() ? 'Tạo báo giá' : 'Đơn hàng mới' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="save()" [disabled]="busy()">
         @if (busy()) {
@@ -135,7 +135,7 @@
     </div>
 
     <ion-button expand="block" size="large" (click)="save()" [disabled]="busy()">
-      Tạo đơn hàng
+      {{ isQuoteMode() ? 'Lưu báo giá' : 'Tạo đơn hàng' }}
     </ion-button>
   </div>
 </ion-content>

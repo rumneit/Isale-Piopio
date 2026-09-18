@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Báo giá</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Tìm theo mã hoặc khách hàng" [debounce]="300" (ionInput)="onSearch($any($event))" />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="receipt-outline" /></div>
+        Chưa có báo giá nào. Nhấn + để tạo báo giá.
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (quote of items(); track quote.id) {
+            <ion-item>
+              <ion-icon slot="start" name="receipt-outline" color="tertiary" />
+              <ion-label>
+                <h3>{{ quote.code }}</h3>
+                <p>{{ quote.customer_name ?? 'Khách lẻ' }} · {{ quote.created_at | date: 'dd/MM HH:mm' }}</p>
+              </ion-label>
+              <div class="quote-end" slot="end">
+                <ion-badge color="tertiary">{{ formatMoney(quote.total) }}</ion-badge>
+                <ion-button fill="solid" size="small" color="success" (click)="closeDeal(quote)">
+                  <ion-icon slot="start" name="checkmark-circle-outline" />
+                  Chốt
+                </ion-button>
+              </div>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">Chốt báo giá sẽ chuyển thành đơn hàng "Chờ xử lý"</ion-note>
+    }
+  </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openAdd()">
+      <ion-icon name="add-outline" />
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

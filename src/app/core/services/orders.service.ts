@@ -18,7 +18,7 @@ export class OrdersService {
     return `DH-${ymd}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
   }
 
-  async list(search = '', status = 'all'): Promise<Order[]> {
+  async list(search = '', status = 'all', statusField: 'all' | string = 'all'): Promise<Order[]> {
     if (!this.sb.isConfigured || !this.shopId) return [];
     let query = this.sb
       .from('orders')
@@ -32,10 +32,24 @@ export class OrdersService {
     }
     if (status === 'paid') query = query.eq('paid', true);
     if (status === 'unpaid') query = query.eq('paid', false);
+    if (statusField !== 'all') query = query.eq('status', statusField);
 
     const { data, error } = await query;
     if (error) throw error;
     return (data ?? []) as Order[];
+  }
+
+  static readonly orderStatuses = [
+    { value: 'pending', label: 'Chờ xử lý' },
+    { value: 'shipping', label: 'Đang giao' },
+    { value: 'delivered', label: 'Đã giao' },
+    { value: 'completed', label: 'Hoàn tất' },
+    { value: 'quote', label: 'Báo giá' },
+    { value: 'cancelled', label: 'Đã hủy' },
+  ];
+
+  static statusLabel(status: string | null | undefined): string {
+    return OrdersService.orderStatuses.find((s) => s.value === status)?.label ?? (status ?? '—');
   }
 
   async getWithItems(id: string): Promise<{ order: Order | null; items: OrderItem[] }> {
