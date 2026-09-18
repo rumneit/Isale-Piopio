@@ -69,6 +69,7 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { DataService } from '../../core/services/data.service';
 import { SupabaseService } from '../../core/services/supabase.service';
+import { NotificationsService } from '../../core/services/notifications.service';
 
 interface QuickAction {
   id: string;
@@ -114,6 +115,9 @@ export class HomePage implements OnInit {
   private data = inject(DataService);
   private sb = inject(SupabaseService);
   private router = inject(Router);
+  private notificationsService = inject(NotificationsService);
+
+  readonly unreadCount = signal(0);
 
   readonly tabs: HomeTab[] = [
     {
@@ -282,6 +286,16 @@ export class HomePage implements OnInit {
 
   ngOnInit(): void {
     this.data.refreshHome();
+    this.refreshUnread();
+  }
+
+  async refreshUnread() {
+    try {
+      const list = await this.notificationsService.build();
+      this.unreadCount.set(this.notificationsService.countUnread(list));
+    } catch (e) {
+      console.error('load unread failed', e);
+    }
   }
 
   doRefresh(event: CustomEvent) {

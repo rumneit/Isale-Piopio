@@ -68,6 +68,10 @@
           <ion-icon slot="end" name="arrow-forward-outline" />
         }
       </ion-button>
+
+      @if (mode() === 'login') {
+        <ion-button expand="block" fill="clear" size="small" (click)="forgotPassword()">Quên mật khẩu?</ion-button>
+      }
     </div>
 
     <div class="login-switch">

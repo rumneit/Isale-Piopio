@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Thông báo</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="markRead()">
+        <ion-icon slot="icon-only" name="checkmark-done-outline" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="notifications-outline" /></div>
+        Không có thông báo nào. Mọi thứ đang ổn! 🎉
+      </div>
+    } @else {
+      @if (unread() > 0) {
+        <div class="notif-unread-bar">
+          <ion-badge color="danger">{{ unread() }} chưa đọc</ion-badge>
+          <ion-button fill="clear" size="small" (click)="markRead()">Đánh dấu đã đọc</ion-button>
+        </div>
+      }
+
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (item of items(); track item.id) {
+            <ion-item button (click)="open(item)" detail="true">
+              <div class="notif-icon" slot="start">
+                <ion-icon [name]="item.icon" [color]="item.color" />
+              </div>
+              <ion-label>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.desc }}</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">Thông báo được cập nhật tự động từ dữ liệu cửa hàng</ion-note>
+    }
+  </div>
+</ion-content>

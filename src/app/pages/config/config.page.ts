@@ -28,10 +28,12 @@ import {
   informationCircleOutline,
   cloudOutline,
   cloudDownloadOutline,
+  lockClosedOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
+import { SettingsService } from '../../core/services/settings.service';
 
 @Component({
   selector: 'app-config',
@@ -62,12 +64,20 @@ export class ConfigPage implements OnInit {
   private router = inject(Router);
   private toastCtrl = inject(ToastController);
   private csvExport = inject(CsvExportService);
+  private settingsService = inject(SettingsService);
 
   readonly busy = signal(false);
 
   shopName = '';
   fullName = '';
   error = '';
+
+  pointRate: number | null = 10000;
+  lowStockThreshold: number | null = 5;
+
+  newPassword = '';
+  confirmPassword = '';
+  changingPw = signal(false);
 
   constructor() {
     addIcons({
@@ -79,12 +89,17 @@ export class ConfigPage implements OnInit {
       informationCircleOutline,
       cloudOutline,
       cloudDownloadOutline,
+      lockClosedOutline,
     });
   }
 
   ngOnInit(): void {
     this.shopName = this.auth.shop()?.name ?? '';
     this.fullName = this.auth.profile()?.full_name ?? '';
+    this.settingsService.load().then(() => {
+      this.pointRate = this.settingsService.pointRate();
+      this.lowStockThreshold = this.settingsService.lowStockThreshold();
+    });
   }
 
   get email(): string {
@@ -107,12 +122,41 @@ export class ConfigPage implements OnInit {
       if (userId) {
         await this.sb.from('profiles').update({ full_name: this.fullName.trim() }).eq('id', userId);
       }
+      if (this.pointRate && Number(this.pointRate) > 0) {
+        await this.settingsService.set('point_rate', String(Number(this.pointRate)));
+      }
+      if (this.lowStockThreshold && Number(this.lowStockThreshold) > 0) {
+        await this.settingsService.set('low_stock_threshold', String(Number(this.lowStockThreshold)));
+      }
       await this.auth.reloadUserData();
       this.toast('Đã lưu cài đặt');
     } catch (e: any) {
       this.error = e?.message ?? 'Lưu thất bại.';
     } finally {
       this.busy.set(false);
+    }
+  }
+
+  async changePassword() {
+    this.error = '';
+    if (!this.newPassword || this.newPassword.length < 6) {
+      this.error = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.error = 'Xác nhận mật khẩu không khớp.';
+      return;
+    }
+    this.changingPw.set(true);
+    try {
+      await this.sb.auth.updateUser({ password: this.newPassword });
+      this.newPassword = '';
+      this.confirmPassword = '';
+      this.toast('Đã đổi mật khẩu');
+    } catch (e: any) {
+      this.error = e?.message ?? 'Đổi mật khẩu thất bại.';
+    } finally {
+      this.changingPw.set(false);
     }
   }
 

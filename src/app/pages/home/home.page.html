@@ -5,8 +5,11 @@
     </ion-buttons>
     <ion-title>Trang chủ</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="openPath('/module/notifications')">
+      <ion-button (click)="openPath('/notifications')">
         <ion-icon slot="icon-only" name="notifications-outline" />
+        @if (unreadCount() > 0) {
+          <ion-badge class="bell-badge" color="danger">{{ unreadCount() }}</ion-badge>
+        }
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

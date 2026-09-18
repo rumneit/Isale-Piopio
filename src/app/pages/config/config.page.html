@@ -47,6 +47,60 @@
     </div>
 
     <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="settings-outline" /> Vận hành</h4></div>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-input
+            label="Số tiền cho 1 điểm tích lũy (₫)"
+            labelPlacement="stacked"
+            type="number"
+            inputmode="decimal"
+            min="1000"
+            [(ngModel)]="pointRate"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Ngưỡng cảnh báo tồn kho thấp"
+            labelPlacement="stacked"
+            type="number"
+            inputmode="decimal"
+            min="1"
+            [(ngModel)]="lowStockThreshold"
+          />
+        </ion-item>
+      </ion-list>
+      <ion-note class="config-hint">Nhấn nút lưu ở góc trên bên phải để áp dụng</ion-note>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="lock-closed-outline" /> Đổi mật khẩu</h4></div>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-input
+            label="Mật khẩu mới"
+            labelPlacement="stacked"
+            type="password"
+            [(ngModel)]="newPassword"
+            placeholder="••••••••"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Xác nhận mật khẩu mới"
+            labelPlacement="stacked"
+            type="password"
+            [(ngModel)]="confirmPassword"
+            placeholder="••••••••"
+          />
+        </ion-item>
+      </ion-list>
+      <ion-button expand="block" fill="outline" class="pw-btn" (click)="changePassword()" [disabled]="changingPw()">
+        {{ changingPw() ? 'Đang cập nhật...' : 'Đổi mật khẩu' }}
+      </ion-button>
+    </div>
+
+    <div class="app-card">
       <div class="app-card-title"><h4><ion-icon name="information-circle-outline" /> Thông tin</h4></div>
       <ion-list lines="full">
         <ion-item>

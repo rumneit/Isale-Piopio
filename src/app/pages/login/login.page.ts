@@ -8,6 +8,7 @@ import {
   IonToolbar,
   IonHeader,
   IonTitle,
+  AlertController,
 } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -26,6 +27,7 @@ export class LoginPage {
   private auth = inject(AuthService);
   private sb = inject(SupabaseService);
   private router = inject(Router);
+  private alertCtrl = inject(AlertController);
 
   mode = signal<'login' | 'register'>('login');
   email = '';
@@ -45,6 +47,46 @@ export class LoginPage {
   switchMode(mode: 'login' | 'register') {
     this.mode.set(mode);
     this.error.set('');
+  }
+
+  async forgotPassword() {
+    const alert = await this.alertCtrl.create({
+      header: 'Quên mật khẩu',
+      message: 'Nhập email đăng ký — chúng tôi sẽ gửi link đặt lại mật khẩu.',
+      inputs: [
+        { name: 'email', type: 'email', placeholder: 'ban@cuahang.vn', value: this.email },
+      ],
+      buttons: [
+        { text: 'Hủy', role: 'cancel' },
+        {
+          text: 'Gửi link',
+          handler: async (data) => {
+            const email = (data?.email ?? '').trim();
+            if (!email) return false;
+            if (!this.sb.isConfigured) {
+              this.error.set('Chưa cấu hình Supabase.');
+              return false;
+            }
+            try {
+              await this.sb.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/#/login',
+              });
+              const t = await this.alertCtrl.create({
+                header: 'Đã gửi',
+                message: `Kiểm tra hộp thư ${email} và làm theo link đặt lại mật khẩu.`,
+                buttons: ['OK'],
+              });
+              await t.present();
+              return true;
+            } catch (e: any) {
+              this.error.set(e?.message ?? 'Gửi email thất bại.');
+              return true;
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   async submit() {

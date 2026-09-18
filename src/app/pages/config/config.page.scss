@@ -27,3 +27,14 @@ ion-item {
   font-size: 13px;
   margin-bottom: 12px;
 }
+
+.config-hint {
+  display: block;
+  padding: 8px 14px 2px;
+  font-size: 11.5px;
+  color: var(--app-text-muted);
+}
+
+.pw-btn {
+  margin: 10px 14px 14px;
+}

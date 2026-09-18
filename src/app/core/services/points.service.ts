@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { SettingsService } from './settings.service';
 import { Customer } from '../models/models';
 
 export interface PointTransaction {
@@ -17,9 +18,12 @@ export interface PointTransaction {
 export class PointsService {
   private sb = inject(SupabaseService);
   private auth = inject(AuthService);
+  private settings = inject(SettingsService);
 
-  /** 1 điểm tích lũy / 10.000₫ */
-  readonly earnRate = 10000;
+  /** 1 điểm tích lũy / pointRate (₫) — cấu hình trong Cấu hình cửa hàng */
+  get earnRate(): number {
+    return this.settings.pointRate();
+  }
 
   private get shopId(): string | null {
     return this.auth.shop()?.id ?? null;
