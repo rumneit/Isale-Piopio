@@ -1,0 +1,44 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Nhân viên</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="people-outline" /></div>
+        Chưa có thành viên nào trong cửa hàng
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (item of items(); track item.id) {
+            <ion-item>
+              <div class="staff-avatar" slot="start">{{ initial(item.full_name) }}</div>
+              <ion-label>
+                <h3>{{ item.full_name ?? 'Chưa đặt tên' }}</h3>
+                <p>
+                  <ion-icon name="shield-checkmark-outline" />
+                  {{ roleLabel(item.role) }}
+                </p>
+              </ion-label>
+              @if (item.id === auth.session()?.user?.id) {
+                <ion-badge slot="end" color="primary">Bạn</ion-badge>
+              }
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">
+        Tính năng mời nhân viên qua email sẽ ra mắt ở phiên bản sau
+      </ion-note>
+    }
+  </div>
+</ion-content>

@@ -29,6 +29,18 @@ export const routes: Routes = [
   { path: 'contact/:id', loadComponent: () => import('./pages/customers/customer-edit.page').then((m) => m.CustomerEditPage), canActivate: [authGuard] },
   // Debt
   { path: 'debt', loadComponent: () => import('./pages/debt/debt.page').then((m) => m.DebtPage), canActivate: [authGuard] },
+  // Reports
+  { path: 'report', loadComponent: () => import('./pages/reports/reports.page').then((m) => m.ReportsPage), canActivate: [authGuard] },
+  // Money accounts
+  { path: 'money-account', loadComponent: () => import('./pages/money-accounts/money-accounts.page').then((m) => m.MoneyAccountsPage), canActivate: [authGuard] },
+  // Config
+  { path: 'config', loadComponent: () => import('./pages/config/config.page').then((m) => m.ConfigPage), canActivate: [authGuard] },
+  // Stock check
+  { path: 'stock-check', loadComponent: () => import('./pages/stock-check/stock-check.page').then((m) => m.StockCheckPage), canActivate: [authGuard] },
+  // Staff
+  { path: 'staff', loadComponent: () => import('./pages/staff/staff.page').then((m) => m.StaffPage), canActivate: [authGuard] },
+  // Help
+  { path: 'help', loadComponent: () => import('./pages/help/help.page').then((m) => m.HelpPage), canActivate: [authGuard] },
   // Placeholder for future modules
   {
     path: 'module/:id',

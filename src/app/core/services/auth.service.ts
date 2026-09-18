@@ -47,8 +47,7 @@ export class AuthService {
     }
   }
 
-  private async loadUserData(userId: string) {
-    try {
+  private async loadUserData(userId: string) {    try {
       let { data: profile } = await this.sb
         .from('profiles')
         .select('*')
@@ -87,6 +86,14 @@ export class AuthService {
       }
     } catch (e) {
       console.error('loadUserData failed', e);
+    }
+  }
+
+  /** Tải lại thông tin shop + profile (dùng sau khi cập nhật cài đặt) */
+  async reloadUserData() {
+    const userId = (this.session() as any)?.user?.id;
+    if (userId) {
+      await this.loadUserData(userId);
     }
   }
 

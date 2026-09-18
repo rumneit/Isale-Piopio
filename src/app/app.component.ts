@@ -74,15 +74,15 @@ export class AppComponent {
     { title: 'Sản phẩm', icon: 'pricetags-outline', path: '/product' },
     { title: 'Khách hàng', icon: 'people-outline', path: '/contact' },
     { title: 'Giao dịch', icon: 'swap-horizontal-outline', path: '/trade' },
-    { title: 'Sổ tiền', icon: 'wallet-outline', path: '/module/money-account' },
+    { title: 'Sổ tiền', icon: 'wallet-outline', path: '/money-account' },
     { title: 'Công nợ', icon: 'document-text-outline', path: '/debt' },
-    { title: 'Báo cáo', icon: 'bar-chart-outline', path: '/module/report' },
-    { title: 'Kiểm kho', icon: 'clipboard-outline', path: '/module/stock-check' },
+    { title: 'Báo cáo', icon: 'bar-chart-outline', path: '/report' },
+    { title: 'Kiểm kho', icon: 'clipboard-outline', path: '/stock-check' },
     { title: 'CRM', icon: 'analytics-outline', path: '/module/crm-leads' },
-    { title: 'Nhân viên', icon: 'person-outline', path: '/module/staff' },
-    { title: 'Cửa hàng', icon: 'storefront-outline', path: '/module/store' },
-    { title: 'Trợ giúp', icon: 'help-circle-outline', path: '/module/help' },
-    { title: 'Cấu hình', icon: 'settings-outline', path: '/module/config' },
+    { title: 'Nhân viên', icon: 'person-outline', path: '/staff' },
+    { title: 'Cửa hàng', icon: 'storefront-outline', path: '/config' },
+    { title: 'Trợ giúp', icon: 'help-circle-outline', path: '/help' },
+    { title: 'Cấu hình', icon: 'settings-outline', path: '/config' },
   ];
 
   constructor() {

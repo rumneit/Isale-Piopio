@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Kiểm kho</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Tìm sản phẩm" [debounce]="300" (ionInput)="onSearch($any($event))" />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="clipboard-outline" /></div>
+        Không có sản phẩm để kiểm kho
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (item of items(); track item.id) {
+            <ion-item>
+              <ion-icon slot="start" name="pricetags-outline" color="medium" />
+              <ion-label>
+                <h3>{{ item.name }}</h3>
+                <p>{{ item.sku ?? '—' }} · {{ formatMoney(item.price) }}</p>
+              </ion-label>
+              <div class="stock-actions" slot="end">
+                <ion-badge [color]="(item.stock ?? 0) > 0 ? 'primary' : 'danger'">Tồn: {{ item.stock }}</ion-badge>
+                <ion-button fill="clear" size="small" (click)="adjustStock(item)">
+                  <ion-icon slot="icon-only" name="create-outline" />
+                </ion-button>
+              </div>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">
+        <ion-icon name="checkmark-done-outline" />
+        Nhấn bút chì để nhập số lượng thực tế đếm được
+      </ion-note>
+    }
+  </div>
+</ion-content>

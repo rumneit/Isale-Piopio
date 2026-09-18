@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Cấu hình</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="busy()">
+        @if (busy()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          <ion-icon slot="icon-only" name="save-outline" />
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="app-page-container">
+    @if (error) {
+      <div class="form-error">{{ error }}</div>
+    }
+
+    <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="storefront-outline" /> Cửa hàng</h4></div>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-input label="Tên cửa hàng" labelPlacement="stacked" [(ngModel)]="shopName" />
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="person-outline" /> Tài khoản</h4></div>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-input label="Tên hiển thị" labelPlacement="stacked" [(ngModel)]="fullName" />
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <p>Email đăng nhập</p>
+            <h3 class="config-email">{{ email }}</h3>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="information-circle-outline" /> Thông tin</h4></div>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-icon slot="start" name="cloud-outline" />
+          <ion-label>
+            <h3>Supabase</h3>
+            <p>Đã kết nối · dữ liệu đồng bộ theo shop</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon slot="start" name="settings-outline" />
+          <ion-label>
+            <h3>Phiên bản</h3>
+            <p>ISale v1.0 — bản web (Ionic Angular + Supabase)</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <ion-button expand="block" color="danger" fill="outline" (click)="logout()">
+      <ion-icon slot="start" name="log-out-outline" />
+      Đăng xuất
+    </ion-button>
+  </div>
+</ion-content>
