@@ -35,6 +35,7 @@ export class LoginPage {
   fullName = '';
   busy = signal(false);
   error = signal('');
+  info = signal('');
 
   constructor() {
     addIcons({ storefrontOutline, lockClosedOutline, mailOutline, personOutline, arrowForwardOutline });
@@ -47,6 +48,7 @@ export class LoginPage {
   switchMode(mode: 'login' | 'register') {
     this.mode.set(mode);
     this.error.set('');
+    this.info.set('');
   }
 
   async forgotPassword() {
@@ -91,6 +93,7 @@ export class LoginPage {
 
   async submit() {
     this.error.set('');
+    this.info.set('');
     const email = this.email.trim();
     const password = this.password;
 
@@ -103,14 +106,27 @@ export class LoginPage {
     try {
       if (this.mode() === 'login') {
         await this.auth.login(email, password);
+        this.router.navigateByUrl('/home', { replaceUrl: true });
       } else {
         if (!this.fullName.trim()) {
           this.error.set('Vui lòng nhập tên của bạn.');
           return;
         }
-        await this.auth.register(email, password, this.fullName.trim());
+        const result = await this.auth.register(email, password, this.fullName.trim());
+        if (result?.session) {
+          // Email confirmation đã tắt — đăng nhập luôn
+          this.router.navigateByUrl('/home', { replaceUrl: true });
+        } else {
+          // Supabase yêu cầu xác nhận email
+          this.switchMode('login');
+          this.email = email;
+          this.info.set(
+            'Tài khoản đã được tạo! Kiểm tra hộp thư ' +
+              email +
+              ' để xác nhận email, sau đó đăng nhập bình thường.'
+          );
+        }
       }
-      this.router.navigateByUrl('/home', { replaceUrl: true });
     } catch (e: any) {
       this.error.set(this.translateError(e?.message ?? 'Đăng nhập thất bại.'));
     } finally {
@@ -124,6 +140,8 @@ export class LoginPage {
     if (m.includes('user already registered')) return 'Email này đã được đăng ký.';
     if (m.includes('password should be at least')) return 'Mật khẩu phải có ít nhất 6 ký tự.';
     if (m.includes('email format')) return 'Email không hợp lệ.';
+    if (m.includes('signups not allowed')) return 'Chưa mở đăng ký. Bật Email provider trong Supabase → Authentication.';
+    if (m.includes('email not confirmed')) return 'Email chưa xác nhận. Kiểm tra hộp thư để xác nhận.';
     if (m.includes('failed to fetch')) return 'Không kết nối được máy chủ. Kiểm tra cấu hình Supabase.';
     return msg;
   }

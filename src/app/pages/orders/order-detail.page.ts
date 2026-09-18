@@ -152,7 +152,7 @@ export class OrderDetailPage implements OnInit {
     const o = this.order();
     if (!o) return;
     const items = this.items();
-    const shopName = this.auth.shop()?.name ?? 'ISale';
+    const shopName = this.auth.shop()?.name ?? 'PioPio';
     const esc = (s: any) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const money = (v: number) => new Intl.NumberFormat('vi-VN').format(Math.round(v)) + '₫';
 

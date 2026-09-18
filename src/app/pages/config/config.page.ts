@@ -208,7 +208,7 @@ export class ConfigPage implements OnInit {
       const d = new Date();
       const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
       a.href = url;
-      a.download = `isale-backup-${stamp}.json`;
+      a.download = `piopio-backup-${stamp}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

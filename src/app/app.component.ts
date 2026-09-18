@@ -114,7 +114,7 @@ export class AppComponent {
   }
 
   get shopName(): string {
-    return this.auth.shop()?.name ?? 'ISale';
+    return this.auth.shop()?.name ?? 'PioPio';
   }
 
   async logout() {

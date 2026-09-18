@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>ISale</ion-title>
+    <ion-title>PioPio</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -10,9 +10,13 @@
       <div class="login-logo-badge">
         <ion-icon name="storefront-outline" />
       </div>
-      <h1>ISale</h1>
+      <h1>PioPio</h1>
       <p>Quản lý bán hàng thông minh</p>
     </div>
+
+    @if (info()) {
+      <div class="login-success">{{ info() }}</div>
+    }
 
     @if (supabaseMissing) {
       <div class="app-banner-warning">
