@@ -1,0 +1,42 @@
+.page-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.customer-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(var(--ion-color-primary-rgb), 0.12);
+  color: var(--ion-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.app-card ion-list {
+  background: transparent;
+
+  ion-item {
+    --background: transparent;
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--app-text);
+    }
+
+    p {
+      color: var(--app-text-muted);
+      font-size: 12.5px;
+
+      ion-icon {
+        vertical-align: -2px;
+        margin-right: 2px;
+      }
+    }
+  }
+}

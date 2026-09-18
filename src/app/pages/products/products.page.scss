@@ -1,0 +1,47 @@
+.products-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.products-card {
+  padding: 4px 0;
+
+  ion-list {
+    background: transparent;
+  }
+
+  ion-item {
+    --background: transparent;
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--app-text);
+    }
+
+    p {
+      color: var(--app-text-muted);
+      font-size: 12.5px;
+    }
+  }
+}
+
+.product-thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  color: var(--ion-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
+.product-sku {
+  font-weight: 600;
+}

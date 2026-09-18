@@ -1,0 +1,74 @@
+import { Injectable, inject } from '@angular/core';
+import { SupabaseService } from './supabase.service';
+import { AuthService } from './auth.service';
+import { Product } from '../models/models';
+
+@Injectable({ providedIn: 'root' })
+export class ProductsService {
+  private sb = inject(SupabaseService);
+  private auth = inject(AuthService);
+
+  private get shopId(): string | null {
+    return this.auth.shop()?.id ?? null;
+  }
+
+  async list(search = ''): Promise<Product[]> {
+    if (!this.sb.isConfigured || !this.shopId) return [];
+    let query = this.sb
+      .from('products')
+      .select('*')
+      .eq('shop_id', this.shopId)
+      .order('created_at', { ascending: false });
+
+    if (search.trim()) {
+      const term = `%${search.trim()}%`;
+      query = query.or(`name.ilike.${term},sku.ilike.${term}`);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data ?? []) as Product[];
+  }
+
+  async get(id: string): Promise<Product | null> {
+    if (!this.sb.isConfigured || !this.shopId) return null;
+    const { data, error } = await this.sb
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .eq('shop_id', this.shopId)
+      .maybeSingle();
+    if (error) throw error;
+    return (data as Product) ?? null;
+  }
+
+  async create(input: Partial<Product>): Promise<Product> {
+    const shopId = this.shopId;
+    if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
+    const { data, error } = await this.sb
+      .from('products')
+      .insert({ ...input, shop_id: shopId })
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Product;
+  }
+
+  async update(id: string, input: Partial<Product>): Promise<void> {
+    const { error } = await this.sb
+      .from('products')
+      .update(input)
+      .eq('id', id)
+      .eq('shop_id', this.shopId!);
+    if (error) throw error;
+  }
+
+  async remove(id: string): Promise<void> {
+    const { error } = await this.sb
+      .from('products')
+      .delete()
+      .eq('id', id)
+      .eq('shop_id', this.shopId!);
+    if (error) throw error;
+  }
+}

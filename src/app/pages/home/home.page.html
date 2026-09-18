@@ -1,0 +1,127 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="app-menu" />
+    </ion-buttons>
+    <ion-title>Trang chủ</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openPath('/module/notifications')">
+        <ion-icon slot="icon-only" name="notifications-outline" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    <!-- Greeting -->
+    <div class="home-greeting">
+      <div>
+        <div class="home-greeting-hi">{{ greeting }}, {{ auth.displayName() }} 👋</div>
+        <div class="home-greeting-shop">
+          <ion-icon name="storefront-outline" />
+          {{ shopName }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Supabase not configured warning -->
+    @if (!supabaseReady) {
+      <div class="app-banner-warning">
+        <ion-icon name="cloud-offline-outline" />
+        <span>
+          Chưa kết nối Supabase — đang chạy ở chế độ xem trước. Điền credentials vào
+          <code>environment.ts</code> để kích hoạt dữ liệu thật.
+        </span>
+      </div>
+    }
+
+    <!-- Stats -->
+    <div class="app-stats-row">
+      <div class="app-stat">
+        <div class="app-stat-label">Doanh thu hôm nay</div>
+        <div class="app-stat-value">{{ formatMoney(stats?.revenueToday) }}</div>
+        <div class="app-stat-sub">{{ stats?.ordersToday ?? 0 }} đơn hàng</div>
+      </div>
+      <div class="app-stat">
+        <div class="app-stat-label">Doanh thu tháng này</div>
+        <div class="app-stat-value">{{ formatMoney(stats?.revenueMonth) }}</div>
+        <div class="app-stat-sub">Chi: {{ formatMoney(stats?.expenseMonth) }}</div>
+      </div>
+      <div class="app-stat">
+        <div class="app-stat-label">Tổng công nợ</div>
+        <div class="app-stat-value">{{ formatMoney(stats?.debtTotal) }}</div>
+      </div>
+      <div class="app-stat">
+        <div class="app-stat-label">Sản phẩm / Khách hàng</div>
+        <div class="app-stat-value">{{ stats?.productCount ?? 0 }} / {{ stats?.customerCount ?? 0 }}</div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="app-card home-actions-card">
+      <div class="app-card-title">
+        <h4><ion-icon name="grid-outline" /> Thao tác nhanh</h4>
+      </div>
+
+      <ion-segment class="app-home-segment" [value]="selectedTab()" (ionChange)="selectTab($any($event))" [scrollable]="true">
+        @for (tab of tabs; track tab.id) {
+          <ion-segment-button [value]="tab.id">
+            <ion-label>{{ tab.label }}</ion-label>
+          </ion-segment-button>
+        }
+      </ion-segment>
+
+      @for (tab of tabs; track tab.id) {
+        @if (selectedTab() === tab.id) {
+          <div class="app-actions-grid home-actions-grid">
+            @for (action of tab.actions; track action.id) {
+              <div class="app-action" (click)="openAction(action)">
+                <div class="app-action-icon" [style.background]="action.color + '1a'">
+                  <ion-icon [name]="action.icon" [style.color]="action.color" />
+                </div>
+                <span class="app-action-label">{{ action.label }}</span>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Recent orders -->
+    <div class="app-card">
+      <div class="app-card-title">
+        <h4><ion-icon name="receipt-outline" /> Đơn hàng gần đây</h4>
+        <ion-button fill="clear" size="small" (click)="openPath('/order')">Xem tất cả</ion-button>
+      </div>
+
+      @if (loading) {
+        <div class="home-loading"><ion-spinner name="crescent" /></div>
+      } @else if (recentOrders.length === 0) {
+        <div class="app-empty">
+          <div><ion-icon name="checkmark-done-outline" /></div>
+          Chưa có đơn hàng nào trong tháng này
+        </div>
+      } @else {
+        <ion-list lines="full" class="home-orders-list">
+          @for (order of recentOrders; track order.id) {
+            <ion-item button (click)="openPath('/order')">
+              <ion-icon slot="start" name="cart-outline" color="primary" />
+              <ion-label>
+                <h3>{{ order.code }} — {{ order.customer_name ?? 'Khách lẻ' }}</h3>
+                <p>{{ order.created_at | date: 'dd/MM/yyyy HH:mm' }}</p>
+              </ion-label>
+              <ion-badge slot="end" [color]="order.paid ? 'success' : 'warning'">
+                {{ formatMoney(order.total) }}
+              </ion-badge>
+            </ion-item>
+          }
+        </ion-list>
+      }
+    </div>
+  </div>
+</ion-content>

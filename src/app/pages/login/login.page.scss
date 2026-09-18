@@ -1,0 +1,27 @@
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+.login-input {
+  margin-bottom: 12px;
+}
+
+.login-submit {
+  margin-top: 8px;
+}
+
+.login-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--app-text-muted);
+  font-size: 13px;
+}
+
+code {
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 1px 4px;
+  border-radius: 4px;
+}

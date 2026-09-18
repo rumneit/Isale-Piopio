@@ -1,0 +1,29 @@
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+
+  ion-note {
+    font-size: 11px;
+    color: var(--app-text-muted);
+  }
+}
+
+ion-toggle {
+  --track-background-checked: rgba(var(--ion-color-primary-rgb), 0.4);
+}
+
+.login-error {
+  background: var(--app-danger-soft-bg);
+  color: var(--app-danger-soft-text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}

@@ -1,0 +1,141 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="close-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Đơn hàng mới</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="busy()">
+        @if (busy()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          <ion-icon slot="icon-only" name="save-outline" />
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="app-page-container">
+    @if (error) {
+      <div class="form-error">{{ error }}</div>
+    }
+
+    <!-- Customer -->
+    <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="person-outline" /> Khách hàng</h4></div>
+      <ion-item lines="none">
+        <ion-select
+          placeholder="Khách lẻ"
+          [(ngModel)]="customerId"
+          interface="action-sheet"
+          cancelText="Đóng"
+        >
+          <ion-select-option [value]="null">Khách lẻ</ion-select-option>
+          @for (c of customers(); track c.id) {
+            <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+    </div>
+
+    <!-- Items -->
+    <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="cube-outline" /> Sản phẩm</h4></div>
+
+      <ion-item lines="full">
+        <ion-select
+          placeholder="+ Chọn sản phẩm để thêm vào đơn"
+          (ionChange)="addProduct($any($event))"
+          interface="action-sheet"
+          cancelText="Đóng"
+        >
+          @for (p of products(); track p.id) {
+            <ion-select-option [value]="p.id">{{ p.name }} — {{ formatMoney(p.price) }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      @if (items().length === 0) {
+        <div class="app-empty">Chưa có sản phẩm trong đơn</div>
+      } @else {
+        <ion-list lines="none">
+          @for (item of items(); track $index; let i = $index) {
+            <div class="draft-item">
+              <div class="draft-item-main">
+                <div class="draft-item-name">{{ item.name }}</div>
+                <div class="draft-item-row">
+                  <ion-input
+                    class="draft-qty"
+                    type="number"
+                    min="1"
+                    [(ngModel)]="items()[i].qty"
+                  />
+                  <span class="draft-x">×</span>
+                  <ion-input
+                    class="draft-price"
+                    type="number"
+                    min="0"
+                    [(ngModel)]="items()[i].price"
+                  />
+                  <ion-badge color="light">{{ formatMoney(item.price * item.qty) }}</ion-badge>
+                  <ion-button fill="clear" size="small" color="danger" (click)="removeItem(i)">
+                    <ion-icon slot="icon-only" name="trash-outline" />
+                  </ion-button>
+                </div>
+              </div>
+            </div>
+          }
+        </ion-list>
+      }
+
+      <ion-item lines="full">
+        <ion-input
+          label="Giảm giá (₫)"
+          labelPlacement="floating"
+          type="number"
+          min="0"
+          [value]="discount()"
+          (ionInput)="onDiscount($event)"
+        />
+      </ion-item>
+    </div>
+
+    <!-- Payment -->
+    <div class="app-card">
+      <ion-list lines="full">
+        <ion-item>
+          <ion-checkbox [(ngModel)]="paid" labelPlacement="end" justify="start">
+            <ion-label>Đã thanh toán</ion-label>
+          </ion-checkbox>
+        </ion-item>
+        @if (paid) {
+          <ion-item>
+            <ion-checkbox [(ngModel)]="recordIncome" labelPlacement="end" justify="start">
+              <ion-label>
+                Ghi nhận thu tiền vào sổ
+                <ion-note>Tự tạo giao dịch thu cho đơn này</ion-note>
+              </ion-label>
+            </ion-checkbox>
+          </ion-item>
+        }
+        <ion-item>
+          <ion-input label="Ghi chú" labelPlacement="floating" [(ngModel)]="note" placeholder="Ghi chú đơn hàng..." />
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <!-- Total -->
+    <div class="order-total">
+      <span>Tổng cộng</span>
+      <strong>{{ formatMoney(total) }}</strong>
+    </div>
+
+    <ion-button expand="block" size="large" (click)="save()" [disabled]="busy()">
+      Tạo đơn hàng
+    </ion-button>
+  </div>
+</ion-content>

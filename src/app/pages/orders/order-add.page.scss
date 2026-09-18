@@ -1,0 +1,80 @@
+.form-error {
+  background: var(--app-danger-soft-bg);
+  color: var(--app-danger-soft-text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+
+  ion-note {
+    font-size: 11px;
+    color: var(--app-text-muted);
+  }
+}
+
+.draft-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--app-border);
+
+  .draft-item-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--app-text);
+    margin-bottom: 6px;
+  }
+
+  .draft-item-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .draft-qty {
+      width: 64px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+
+    .draft-x {
+      color: var(--app-text-muted);
+      flex-shrink: 0;
+    }
+
+    .draft-price {
+      flex: 1;
+      min-width: 0;
+    }
+
+    ion-badge {
+      flex-shrink: 0;
+    }
+  }
+}
+
+.order-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+
+  span {
+    color: var(--app-text-muted);
+    font-size: 14px;
+  }
+
+  strong {
+    font-size: 20px;
+    color: var(--ion-color-primary);
+  }
+}

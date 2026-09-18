@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Sản phẩm</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Tìm theo tên hoặc mã SP"
+      [debounce]="300"
+      (ionInput)="onSearch($any($event))"
+    />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="products-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="pricetags-outline" /></div>
+        @if (search) {
+          <span>Không tìm thấy sản phẩm nào khớp "{{ search }}"</span>
+        } @else {
+          <span>Chưa có sản phẩm nào. Nhấn nút + để thêm sản phẩm đầu tiên.</span>
+        }
+      </div>
+    } @else {
+      <div class="app-card products-card">
+        <ion-list lines="full">
+          @for (item of items(); track item.id) {
+            <ion-item button (click)="openDetail(item)" detail="true">
+              <div class="product-thumb" slot="start">
+                <ion-icon name="pricetags-outline" />
+              </div>
+              <ion-label>
+                <h3>{{ item.name }}</h3>
+                <p>
+                  @if (item.sku) {
+                    <span class="product-sku">{{ item.sku }}</span>
+                    <span> · </span>
+                  }
+                  Tồn: {{ item.stock }}
+                </p>
+              </ion-label>
+              <ion-badge slot="end" [color]="item.stock > 0 ? 'primary' : 'medium'">
+                {{ formatMoney(item.price) }}
+              </ion-badge>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+    }
+  </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openAdd()">
+      <ion-icon name="add-outline" />
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

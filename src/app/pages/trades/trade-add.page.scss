@@ -1,0 +1,32 @@
+.form-error {
+  background: var(--app-danger-soft-bg);
+  color: var(--app-danger-soft-text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.trade-type-segment {
+  margin-bottom: 14px;
+}
+
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+}
+
+.trade-amount-input {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.trade-date-note {
+  display: block;
+  padding: 10px 14px 0;
+  font-size: 11.5px;
+  color: var(--app-text-muted);
+}

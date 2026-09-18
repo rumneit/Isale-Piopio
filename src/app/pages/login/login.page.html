@@ -1,0 +1,83 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>ISale</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="login-wrapper">
+    <div class="login-logo">
+      <div class="login-logo-badge">
+        <ion-icon name="storefront-outline" />
+      </div>
+      <h1>ISale</h1>
+      <p>Quản lý bán hàng thông minh</p>
+    </div>
+
+    @if (supabaseMissing) {
+      <div class="app-banner-warning">
+        <ion-icon name="lock-closed-outline" />
+        <span>
+          Chưa cấu hình Supabase. Hãy điền <b>supabaseUrl</b> và <b>supabaseAnonKey</b> vào
+          <code>src/environments/environment.ts</code> rồi chạy lại app.
+        </span>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="login-error">{{ error() }}</div>
+    }
+
+    <div class="app-card">
+      @if (mode() === 'register') {
+        <ion-input
+          class="login-input"
+          label="Tên của bạn"
+          labelPlacement="floating"
+          fill="outline"
+          [(ngModel)]="fullName"
+          placeholder="Nguyễn Văn A"
+        />
+      }
+
+      <ion-input
+        class="login-input"
+        label="Email"
+        labelPlacement="floating"
+        fill="outline"
+        type="email"
+        [(ngModel)]="email"
+        placeholder="ban@cuahang.vn"
+      />
+
+      <ion-input
+        class="login-input"
+        label="Mật khẩu"
+        labelPlacement="floating"
+        fill="outline"
+        type="password"
+        [(ngModel)]="password"
+        placeholder="••••••••"
+      />
+
+      <ion-button expand="block" class="login-submit" (click)="submit()" [disabled]="busy()">
+        @if (busy()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          {{ mode() === 'login' ? 'Đăng nhập' : 'Tạo tài khoản' }}
+          <ion-icon slot="end" name="arrow-forward-outline" />
+        }
+      </ion-button>
+    </div>
+
+    <div class="login-switch">
+      @if (mode() === 'login') {
+        <span>Chưa có tài khoản?</span>
+        <ion-button fill="clear" size="small" (click)="switchMode('register')">Đăng ký</ion-button>
+      } @else {
+        <span>Đã có tài khoản?</span>
+        <ion-button fill="clear" size="small" (click)="switchMode('login')">Đăng nhập</ion-button>
+      }
+    </div>
+  </div>
+</ion-content>

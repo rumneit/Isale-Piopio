@@ -1,0 +1,90 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="close-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ isEdit ? 'Sửa sản phẩm' : 'Thêm sản phẩm' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="busy()">
+        @if (busy()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          <ion-icon slot="icon-only" name="save-outline" />
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="app-page-container">
+    @if (error) {
+      <div class="login-error">{{ error }}</div>
+    }
+
+    <div class="app-card">
+      <ion-list lines="full">
+        <ion-item>
+          <ion-input
+            label="Tên sản phẩm *"
+            labelPlacement="stacked"
+            placeholder="VD: Trà sữa trân châu"
+            [(ngModel)]="name"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-input label="Mã SP (SKU)" labelPlacement="stacked" placeholder="VD: TS001" [(ngModel)]="sku" />
+        </ion-item>
+        <ion-item>
+          <ion-input label="Đơn vị" labelPlacement="stacked" placeholder="Cái / Ly / Kg" [(ngModel)]="unit" />
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Giá bán (₫)"
+            labelPlacement="stacked"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            [(ngModel)]="price"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Giá vốn (₫)"
+            labelPlacement="stacked"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            [(ngModel)]="cost"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Tồn kho"
+            labelPlacement="stacked"
+            type="number"
+            inputmode="decimal"
+            [(ngModel)]="stock"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-toggle [(ngModel)]="active">
+            <ion-label>
+              Đang kinh doanh
+              <ion-note>Có thể bán trên sổ bán hàng</ion-note>
+            </ion-label>
+          </ion-toggle>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    @if (isEdit) {
+      <ion-button expand="block" color="danger" fill="outline" (click)="confirmDelete()" [disabled]="deleting()">
+        <ion-icon slot="start" name="trash-outline" />
+        {{ deleting() ? 'Đang xóa...' : 'Xóa sản phẩm' }}
+      </ion-button>
+    }
+  </div>
+</ion-content>

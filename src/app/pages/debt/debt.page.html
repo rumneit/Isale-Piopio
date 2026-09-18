@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Công nợ</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="document-text-outline" /></div>
+        Không có khách hàng nào còn nợ 🎉
+      </div>
+    } @else {
+      <div class="debt-total-card">
+        <span>Tổng công nợ phải thu</span>
+        <strong>{{ formatMoney(totalDebt) }}</strong>
+      </div>
+
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (item of items(); track item.id) {
+            <ion-item>
+              <ion-icon slot="start" name="person-outline" color="warning" />
+              <ion-label>
+                <h3>{{ item.name }}</h3>
+                <p>{{ item.phone ?? '—' }}</p>
+              </ion-label>
+              <div class="debt-actions" slot="end">
+                <ion-badge color="warning">{{ formatMoney(item.debt) }}</ion-badge>
+                <ion-button fill="solid" size="small" color="success" (click)="collectDebt(item)">
+                  <ion-icon slot="start" name="cash-outline" />
+                  Thu nợ
+                </ion-button>
+              </div>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="debt-hint">Thu nợ sẽ tự tạo giao dịch thu và cập nhật tổng nợ của khách</ion-note>
+    }
+  </div>
+</ion-content>

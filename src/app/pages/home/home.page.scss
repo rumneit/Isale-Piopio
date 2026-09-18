@@ -1,0 +1,76 @@
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+.home-greeting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px 14px;
+
+  .home-greeting-hi {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--app-text);
+    letter-spacing: -0.02em;
+  }
+
+  .home-greeting-shop {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--app-text-muted);
+
+    ion-icon {
+      font-size: 15px;
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+.home-actions-card ion-segment {
+  margin-bottom: 14px;
+}
+
+.home-actions-grid {
+  margin-top: 12px;
+}
+
+.home-loading {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.home-orders-list {
+  background: transparent;
+  border-radius: 10px;
+
+  ion-item {
+    --background: transparent;
+    --padding-start: 4px;
+
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--app-text);
+    }
+
+    p {
+      color: var(--app-text-muted);
+    }
+  }
+}
+
+.app-card-title ion-icon {
+  margin-right: 6px;
+  vertical-align: -2px;
+  color: var(--ion-color-primary);
+}
+
+code {
+  font-size: 11px;
+  opacity: 0.8;
+}

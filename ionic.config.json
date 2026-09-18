@@ -1,0 +1,7 @@
+{
+  "name": "isale-scaffold",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
