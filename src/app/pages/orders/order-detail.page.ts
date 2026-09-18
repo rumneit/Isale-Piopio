@@ -28,6 +28,7 @@ import {
   ellipseOutline,
   checkmarkCircleOutline,
   printOutline,
+  returnDownBackOutline,
 } from 'ionicons/icons';
 import { OrdersService } from '../../core/services/orders.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -69,7 +70,14 @@ export class OrderDetailPage implements OnInit {
   readonly busy = signal(false);
 
   constructor() {
-    addIcons({ trashOutline, cashOutline, receiptOutline, personOutline, ellipseOutline, checkmarkCircleOutline, printOutline });
+    addIcons({ trashOutline, cashOutline, receiptOutline, personOutline, ellipseOutline, checkmarkCircleOutline, printOutline, returnDownBackOutline });
+  }
+
+  goReturn() {
+    const o = this.order();
+    if (o) {
+      this.router.navigateByUrl(`/order/${o.id}/return`);
+    }
   }
 
   async ngOnInit(): Promise<void> {

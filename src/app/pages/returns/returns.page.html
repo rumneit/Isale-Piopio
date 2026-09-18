@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+    </ion-buttons>
+    <ion-title>Trả hàng</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Tìm theo mã phiếu hoặc mã đơn" [debounce]="300" (ionInput)="onSearch($any($event))" />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="return-down-back-outline" /></div>
+        Chưa có phiếu trả hàng nào. Mở chi tiết đơn hàng để tạo.
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (note of items(); track note.id) {
+            <ion-item>
+              <ion-icon slot="start" name="return-down-back-outline" color="warning" />
+              <ion-label>
+                <h3>{{ note.code }} ← {{ note.order_code ?? '—' }}</h3>
+                <p>
+                  {{ note.items.length }} món
+                  @if (note.note) {
+                    · {{ note.note }}
+                  }
+                  · {{ note.created_at | date: 'dd/MM HH:mm' }}
+                </p>
+              </ion-label>
+              <ion-badge slot="end" [color]="note.refunded ? 'warning' : 'medium'">
+                -{{ formatMoney(note.total) }}
+              </ion-badge>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">Tồn kho đã được hoàn lại tự động khi tạo phiếu</ion-note>
+    }
+  </div>
+</ion-content>

@@ -19,7 +19,10 @@ export const routes: Routes = [
   // Orders
   { path: 'order', loadComponent: () => import('./pages/orders/orders.page').then((m) => m.OrdersPage), canActivate: [authGuard] },
   { path: 'order/add', loadComponent: () => import('./pages/orders/order-add.page').then((m) => m.OrderAddPage), canActivate: [authGuard] },
+  { path: 'order/:id/return', loadComponent: () => import('./pages/returns/order-return.page').then((m) => m.OrderReturnPage), canActivate: [authGuard] },
   { path: 'order/:id', loadComponent: () => import('./pages/orders/order-detail.page').then((m) => m.OrderDetailPage), canActivate: [authGuard] },
+  // Returns
+  { path: 'returns', loadComponent: () => import('./pages/returns/returns.page').then((m) => m.ReturnsPage), canActivate: [authGuard] },
   // Transactions (thu chi)
   { path: 'trade', loadComponent: () => import('./pages/trades/trades.page').then((m) => m.TradesPage), canActivate: [authGuard] },
   { path: 'trade/add', loadComponent: () => import('./pages/trades/trade-add.page').then((m) => m.TradeAddPage), canActivate: [authGuard] },

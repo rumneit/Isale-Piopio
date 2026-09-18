@@ -39,7 +39,7 @@
       <div class="app-card">
         <ion-list lines="full">
           @for (item of items(); track item.id) {
-            <ion-item button (click)="confirmDelete(item)" detail="false">
+            <ion-item button (click)="openItemActions(item)" detail="false">
               <div class="trade-icon" slot="start" [class.trade-income]="item.type === 'income'">
                 <ion-icon [name]="item.type === 'income' ? 'trending-up-outline' : 'trending-down-outline'" />
               </div>
@@ -54,7 +54,7 @@
           }
         </ion-list>
       </div>
-      <ion-note class="trades-hint">Nhấn vào giao dịch để xóa</ion-note>
+      <ion-note class="trades-hint">Nhấn vào giao dịch để sửa hoặc xóa</ion-note>
     }
   </div>
 

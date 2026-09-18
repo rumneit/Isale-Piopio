@@ -50,4 +50,13 @@ export class TransactionsService {
     const { error } = await this.sb.from('transactions').delete().eq('id', id).eq('shop_id', this.shopId!);
     if (error) throw error;
   }
+
+  async update(id: string, patch: Partial<Transaction>): Promise<void> {
+    const { error } = await this.sb
+      .from('transactions')
+      .update(patch)
+      .eq('id', id)
+      .eq('shop_id', this.shopId!);
+    if (error) throw error;
+  }
 }

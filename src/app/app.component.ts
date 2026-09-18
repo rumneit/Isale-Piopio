@@ -33,6 +33,7 @@ import {
   logOutOutline,
   personOutline,
   gridOutline,
+  returnDownBackOutline,
 } from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
@@ -71,6 +72,7 @@ export class AppComponent {
   readonly menuItems: MenuItem[] = [
     { title: 'Trang chủ', icon: 'grid-outline', path: '/home' },
     { title: 'Đơn hàng', icon: 'cart-outline', path: '/order' },
+    { title: 'Trả hàng', icon: 'return-down-back-outline', path: '/returns' },
     { title: 'Sản phẩm', icon: 'pricetags-outline', path: '/product' },
     { title: 'Khách hàng', icon: 'people-outline', path: '/contact' },
     { title: 'Giao dịch', icon: 'swap-horizontal-outline', path: '/trade' },
@@ -103,6 +105,7 @@ export class AppComponent {
       logOutOutline,
       personOutline,
       gridOutline,
+      returnDownBackOutline,
     });
   }
 

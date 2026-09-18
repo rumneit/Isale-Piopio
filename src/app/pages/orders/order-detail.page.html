@@ -8,6 +8,9 @@
       <ion-button (click)="printInvoice()" [disabled]="busy()">
         <ion-icon slot="icon-only" name="print-outline" />
       </ion-button>
+      <ion-button (click)="goReturn()" [disabled]="busy()">
+        <ion-icon slot="icon-only" name="return-down-back-outline" color="warning" />
+      </ion-button>
       <ion-button (click)="confirmDelete()" [disabled]="busy()">
         <ion-icon slot="icon-only" name="trash-outline" color="danger" />
       </ion-button>

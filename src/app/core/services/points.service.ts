@@ -41,6 +41,14 @@ export class PointsService {
     return earned;
   }
 
+  /** Trừ lại điểm khi khách trả hàng (không âm hơn 0) */
+  async revokeForReturn(customerId: string, returnAmount: number, orderCode: string): Promise<number> {
+    const revoke = this.pointsForOrder(returnAmount);
+    if (revoke <= 0) return 0;
+    await this.changePoints(customerId, -revoke, 'adjust', `Trừ điểm do trả hàng ${orderCode}`);
+    return revoke;
+  }
+
   /** Điều chỉnh thủ công (cộng/trừ) */
   async adjust(customerId: string, delta: number, note: string): Promise<void> {
     if (!delta) return;
