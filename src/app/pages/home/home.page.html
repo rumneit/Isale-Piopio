@@ -21,31 +21,6 @@
   </ion-refresher>
 
   <div class="app-page-container">
-    <!-- 1. Pro plan banner (kiểu ISale gốc) -->
-    @if (!proBannerDismissed()) {
-      <div class="pro-plan-section">
-        <button class="pro-close" (click)="dismissProBanner()">
-          <ion-icon name="close-outline" />
-        </button>
-        <div class="pro-plan-content">
-          <div class="pro-plan-left">
-            <div class="pro-plan-badge">
-              <ion-icon name="diamond-outline" />
-              PRO
-            </div>
-            <div class="pro-plan-text">
-              <strong>Mở khóa toàn bộ sức mạnh PioPio</strong>
-              <span>Không giới hạn sản phẩm · CRM · Tích hợp SePay/Zalo/SMS</span>
-            </div>
-          </div>
-          <ion-button class="pro-plan-button" size="small" (click)="openPath('/pricing')">
-            <ion-icon slot="start" name="rocket-outline" />
-            Nâng cấp
-          </ion-button>
-        </div>
-      </div>
-    }
-
     <!-- Cảnh báo Supabase (nếu chưa cấu hình) -->
     @if (!supabaseReady) {
       <div class="app-banner-warning">
