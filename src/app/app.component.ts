@@ -44,6 +44,8 @@ import {
   linkOutline,
   mailOutline,
   cardOutline,
+  pulseOutline,
+  lockClosedOutline,
 } from 'ionicons/icons';
 import { ActionSheetController, AlertController } from '@ionic/angular';
 import { AuthService } from './core/services/auth.service';
@@ -194,6 +196,8 @@ export class AppComponent implements OnInit {
       linkOutline,
       mailOutline,
       cardOutline,
+      pulseOutline,
+      lockClosedOutline,
     });
   }
 
