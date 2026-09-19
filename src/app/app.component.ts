@@ -46,6 +46,7 @@ import {
   cardOutline,
 } from 'ionicons/icons';
 import { Router } from '@angular/router';
+import { ActionSheetController } from '@ionic/angular';
 import { AuthService } from './core/services/auth.service';
 
 interface MenuItem {
@@ -78,6 +79,7 @@ interface MenuItem {
 export class AppComponent {
   readonly auth = inject(AuthService);
   private router = inject(Router);
+  private actionSheetCtrl = inject(ActionSheetController);
 
   readonly menuItems: MenuItem[] = [
     { title: 'Trang chủ', icon: 'grid-outline', path: '/home' },
@@ -97,6 +99,8 @@ export class AppComponent {
     { title: 'Ca làm việc', icon: 'time-outline', path: '/shift' },
     { title: 'Quản bàn', icon: 'restaurant-outline', path: '/cafe-tables' },
     { title: 'Nhập dữ liệu', icon: 'cloud-upload-outline', path: '/import' },
+    { title: 'Lịch sử thay đổi', icon: 'pulse-outline', path: '/activity-log' },
+    { title: 'Phân quyền', icon: 'lock-closed-outline', path: '/permission' },
     { title: 'Tích hợp', icon: 'link-outline', path: '/integrations' },
     { title: 'Bảng giá', icon: 'card-outline', path: '/pricing' },
     { title: 'Hỗ trợ', icon: 'mail-outline', path: '/support' },
@@ -145,6 +149,21 @@ export class AppComponent {
 
   get shopName(): string {
     return this.auth.shop()?.name ?? 'PioPio';
+  }
+
+  async openShopSwitcher() {
+    const shops = this.auth.shopsOwned();
+    const sheet = await this.actionSheetCtrl.create({
+      header: 'Chọn cửa hàng',
+      buttons: [
+        ...shops.map((s) => ({
+          text: s.name + (s.id === this.auth.shop()?.id ? ' ✓' : ''),
+          handler: () => this.auth.switchShop(s.id),
+        })),
+        { text: 'Hủy', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
   }
 
   async logout() {

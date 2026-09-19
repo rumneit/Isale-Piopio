@@ -1,12 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { LogService } from './log.service';
 import { Product } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
   private sb = inject(SupabaseService);
   private auth = inject(AuthService);
+  private logService = inject(LogService);
 
   private get shopId(): string | null {
     return this.auth.shop()?.id ?? null;
@@ -64,6 +66,7 @@ export class ProductsService {
       .select()
       .single();
     if (error) throw error;
+    this.logService.log('create', 'product', (data as Product).name);
     return data as Product;
   }
 
@@ -74,6 +77,7 @@ export class ProductsService {
       .eq('id', id)
       .eq('shop_id', this.shopId!);
     if (error) throw error;
+    if (input.name) this.logService.log('update', 'product', input.name);
   }
 
   async remove(id: string): Promise<void> {

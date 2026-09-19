@@ -7,6 +7,7 @@ export class AuthService {
   readonly session = signal<any | null>(null);
   readonly profile = signal<Profile | null>(null);
   readonly shop = signal<Shop | null>(null);
+  readonly shopsOwned = signal<Shop[]>([]);
   readonly initialized = signal(false);
 
   readonly isLoggedIn = computed(() => !!this.session());
@@ -47,7 +48,8 @@ export class AuthService {
     }
   }
 
-  private async loadUserData(userId: string) {    try {
+  private async loadUserData(userId: string) {
+    try {
       let { data: profile } = await this.sb
         .from('profiles')
         .select('*')
@@ -65,10 +67,24 @@ export class AuthService {
       }
       this.profile.set(profile as Profile);
 
-      if (profile?.shop_id) {
-        const { data: shop } = await this.sb.from('shops').select('*').eq('id', profile.shop_id).maybeSingle();
-        this.shop.set(shop as Shop);
-      } else {
+      // Danh sách cửa hàng user sở hữu (đa cửa hàng)
+      const { data: owned } = await this.sb
+        .from('shops')
+        .select('*')
+        .eq('owner_id', userId)
+        .order('created_at', { ascending: true });
+      const ownedShops = (owned ?? []) as Shop[];
+      this.shopsOwned.set(ownedShops);
+
+      // Xác định shop đang hoạt động: override localStorage > profile.shop_id > shop đầu tiên
+      const overrideId = localStorage.getItem('piopio-active-shop');
+      let activeShop =
+        (overrideId && ownedShops.find((s) => s.id === overrideId)) ||
+        (profile?.shop_id ? ownedShops.find((s) => s.id === profile.shop_id) : null) ||
+        ownedShops[0] ||
+        null;
+
+      if (!activeShop) {
         // Auto-provision a shop for the new owner
         const email = this.session()?.user?.email ?? 'Cửa hàng';
         const name = (email.split('@')[0] || 'Cửa hàng của tôi') + ' Store';
@@ -78,15 +94,33 @@ export class AuthService {
           .select()
           .maybeSingle();
         if (shop) {
-          this.shop.set(shop as Shop);
+          activeShop = shop as Shop;
+          this.shopsOwned.update((list) => [...list, activeShop!]);
           await this.sb.from('profiles').update({ shop_id: shop.id }).eq('id', userId);
           // default money account
           await this.sb.from('money_accounts').insert({ shop_id: shop.id, name: 'Tiền mặt', type: 'cash', balance: 0 });
         }
       }
+
+      if (activeShop) {
+        // Nếu profile chưa trỏ đúng shop đang active thì cập nhật (để RLS member hoạt động)
+        if (profile && profile.shop_id !== activeShop.id) {
+          await this.sb.from('profiles').update({ shop_id: activeShop.id }).eq('id', userId);
+        }
+        this.shop.set(activeShop);
+      }
     } catch (e) {
       console.error('loadUserData failed', e);
     }
+  }
+
+  /** Đổi cửa hàng đang hoạt động (dành cho chủ nhiều cửa hàng) */
+  async switchShop(shopId: string): Promise<void> {
+    if (this.shop()?.id === shopId) return;
+    localStorage.setItem('piopio-active-shop', shopId);
+    await this.reloadUserData();
+    // Tải lại toàn app để mọi trang đọc dữ liệu shop mới
+    location.reload();
   }
 
   /** Tải lại thông tin shop + profile (dùng sau khi cập nhật cài đặt) */
@@ -122,8 +156,10 @@ export class AuthService {
     if (this.sb.isConfigured) {
       await this.sb.auth.signOut();
     }
+    localStorage.removeItem('piopio-active-shop');
     this.session.set(null);
     this.profile.set(null);
     this.shop.set(null);
+    this.shopsOwned.set([]);
   }
 }

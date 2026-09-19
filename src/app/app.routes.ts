@@ -34,8 +34,12 @@ export const routes: Routes = [
   { path: 'debt', loadComponent: () => import('./pages/debt/debt.page').then((m) => m.DebtPage), canActivate: [authGuard] },
   // CRM
   { path: 'crm', loadComponent: () => import('./pages/crm/crm-list.page').then((m) => m.CrmListPage), canActivate: [authGuard] },
+  { path: 'crm/pipeline', loadComponent: () => import('./pages/crm/crm-pipeline.page').then((m) => m.CrmPipelinePage), canActivate: [authGuard] },
   { path: 'crm/add', loadComponent: () => import('./pages/crm/crm-edit.page').then((m) => m.CrmEditPage), canActivate: [authGuard] },
   { path: 'crm/:id', loadComponent: () => import('./pages/crm/crm-edit.page').then((m) => m.CrmEditPage), canActivate: [authGuard] },
+  // Activity log + permissions
+  { path: 'activity-log', loadComponent: () => import('./pages/activity-log/activity-log.page').then((m) => m.ActivityLogPage), canActivate: [authGuard] },
+  { path: 'permission', loadComponent: () => import('./pages/permissions/permissions.page').then((m) => m.PermissionsPage), canActivate: [authGuard] },
   // Received notes (nhập hàng)
   { path: 'received-note', loadComponent: () => import('./pages/received-notes/received-notes.page').then((m) => m.ReceivedNotesPage), canActivate: [authGuard] },
   { path: 'received-note/add', loadComponent: () => import('./pages/received-notes/received-note-add.page').then((m) => m.ReceivedNoteAddPage), canActivate: [authGuard] },

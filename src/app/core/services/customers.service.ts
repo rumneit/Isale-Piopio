@@ -1,12 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { LogService } from './log.service';
 import { Customer } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class CustomersService {
   private sb = inject(SupabaseService);
   private auth = inject(AuthService);
+  private logService = inject(LogService);
 
   private get shopId(): string | null {
     return this.auth.shop()?.id ?? null;
@@ -52,6 +54,7 @@ export class CustomersService {
       .select()
       .single();
     if (error) throw error;
+    this.logService.log('create', 'customer', (data as Customer).name);
     return data as Customer;
   }
 

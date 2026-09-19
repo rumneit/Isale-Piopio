@@ -185,7 +185,7 @@ export class HomePage implements OnInit {
       label: 'CRM',
       actions: [
         { id: 'crm-leads', label: 'Leads', icon: 'people-outline', color: '#6030ff', path: '/crm' },
-        { id: 'crm-pipeline', label: 'Pipeline', icon: 'git-branch-outline', color: '#47bdb5', path: '/crm' },
+        { id: 'crm-pipeline', label: 'Pipeline', icon: 'git-branch-outline', color: '#47bdb5', path: '/crm/pipeline' },
         { id: 'crm-deals', label: 'Deals', icon: 'hand-left-outline', color: '#e6bf00', path: '/crm' },
         { id: 'crm-forecast', label: 'Dự báo', icon: 'trending-up-outline', color: '#2dd55b', path: '/module/crm-forecast' },
         { id: 'crm-activities', label: 'Hoạt động', icon: 'pulse-outline', color: '#ff7043', path: '/crm-activities' },
@@ -199,7 +199,7 @@ export class HomePage implements OnInit {
       label: 'Cấu hình',
       actions: [
         { id: 'store', label: 'Cửa hàng', icon: 'storefront-outline', color: '#6030ff', path: '/config' },
-        { id: 'staff-permission', label: 'Phân quyền', icon: 'lock-closed-outline', color: '#47bdb5', path: '/module/permission' },
+        { id: 'staff-permission', label: 'Phân quyền', icon: 'lock-closed-outline', color: '#47bdb5', path: '/permission' },
         { id: 'external-api', label: 'External API', icon: 'code-slash-outline', color: '#e6bf00', path: '/integrations' },
         { id: 'sales-channels', label: 'Kênh bán', icon: 'storefront-outline', color: '#2dd55b', path: '/module/sales-channels' },
         { id: 'shipping', label: 'Vận chuyển', icon: 'boat-outline', color: '#ff7043', path: '/module/shipping' },

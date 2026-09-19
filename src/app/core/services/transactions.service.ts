@@ -1,12 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { LogService } from './log.service';
 import { Transaction } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionsService {
   private sb = inject(SupabaseService);
   private auth = inject(AuthService);
+  private logService = inject(LogService);
 
   private get shopId(): string | null {
     return this.auth.shop()?.id ?? null;
@@ -43,7 +45,9 @@ export class TransactionsService {
       .select()
       .single();
     if (error) throw error;
-    return data as Transaction;
+    const t = data as Transaction;
+    this.logService.log('create', 'transaction', `${t.type === 'income' ? 'Thu' : 'Chi'} ${new Intl.NumberFormat('vi-VN').format(t.amount)}₫`);
+    return t;
   }
 
   async remove(id: string): Promise<void> {

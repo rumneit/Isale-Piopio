@@ -1,12 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { LogService } from './log.service';
 import { Order, OrderItem } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
   private sb = inject(SupabaseService);
   private auth = inject(AuthService);
+  private logService = inject(LogService);
 
   private get shopId(): string | null {
     return this.auth.shop()?.id ?? null;
@@ -90,6 +92,7 @@ export class OrdersService {
       const { error: itemsError } = await this.sb.from('order_items').insert(rows);
       if (itemsError) throw itemsError;
     }
+    this.logService.log('create', 'order', order.code);
     return order as Order;
   }
 
