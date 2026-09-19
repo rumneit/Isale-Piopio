@@ -45,7 +45,7 @@ import {
   mailOutline,
   cardOutline,
 } from 'ionicons/icons';
-import { ActionSheetController } from '@ionic/angular';
+import { ActionSheetController, AlertController } from '@ionic/angular';
 import { AuthService } from './core/services/auth.service';
 
 interface MenuItem {
@@ -79,6 +79,7 @@ export class AppComponent implements OnInit {
   readonly auth = inject(AuthService);
   private router = inject(Router);
   private actionSheetCtrl = inject(ActionSheetController);
+  private alertCtrl = inject(AlertController);
 
   /**
    * Tự phục hồi khi tab đang mở dùng bản JS cũ (sau deploy mới):
@@ -89,12 +90,12 @@ export class AppComponent implements OnInit {
       if (e instanceof NavigationEnd) {
         sessionStorage.removeItem('piopio-chunk-reload');
       } else if (e instanceof NavigationError) {
-        this.recoverFromStaleChunk();
+        this.reportNavError(e);
       }
     });
     window.addEventListener('unhandledrejection', (ev) => {
       const msg = String((ev as PromiseRejectionEvent)?.reason?.message ?? ev);
-      if (/loading chunk|dynamically imported module|failed to fetch/i.test(msg)) {
+      if (/loading chunk|dynamically imported module/i.test(msg)) {
         this.recoverFromStaleChunk();
       }
     });
@@ -104,6 +105,27 @@ export class AppComponent implements OnInit {
         this.recoverFromStaleChunk();
       }
     });
+  }
+
+  /** Hiện lỗi điều hướng thay vì nuốt im lặng — để dễ chẩn đoán */
+  private async reportNavError(e: NavigationError) {
+    console.error('Navigation error:', (e as any).error ?? e);
+    const message = String((e as any).error?.message ?? (e as any).error ?? 'Không xác định');
+    try {
+      const alert = await this.alertCtrl.create({
+        header: 'Lỗi điều hướng',
+        message,
+        buttons: [
+          {
+            text: 'Tải lại trang',
+            handler: () => this.recoverFromStaleChunk(),
+          },
+        ],
+      });
+      await alert.present();
+    } catch {
+      this.recoverFromStaleChunk();
+    }
   }
 
   private recoverFromStaleChunk(): void {
