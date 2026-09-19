@@ -66,6 +66,8 @@ import {
   lockClosedOutline,
   codeSlashOutline,
   cloudOfflineOutline,
+  closeOutline,
+  rocketOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { DataService } from '../../core/services/data.service';
@@ -210,6 +212,18 @@ export class HomePage implements OnInit {
 
   readonly selectedTab = signal('selling');
   readonly now = new Date();
+  readonly proBannerDismissed = signal(localStorage.getItem('piopio-pro-banner-dismissed') === '1');
+  readonly surveyDismissed = signal(localStorage.getItem('piopio-survey-dismissed') === '1');
+
+  dismissProBanner() {
+    this.proBannerDismissed.set(true);
+    localStorage.setItem('piopio-pro-banner-dismissed', '1');
+  }
+
+  dismissSurvey() {
+    this.surveyDismissed.set(true);
+    localStorage.setItem('piopio-survey-dismissed', '1');
+  }
 
   constructor() {
     addIcons({
@@ -256,6 +270,8 @@ export class HomePage implements OnInit {
       lockClosedOutline,
       codeSlashOutline,
       cloudOfflineOutline,
+      closeOutline,
+      rocketOutline,
     });
   }
 

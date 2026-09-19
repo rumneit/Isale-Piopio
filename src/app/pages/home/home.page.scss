@@ -2,6 +2,204 @@ ion-content {
   --background: var(--app-page-bg);
 }
 
+/* ---------- Pro plan banner (kiểu ISale gốc) ---------- */
+.pro-plan-section {
+  position: relative;
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
+  border-radius: 18px;
+  padding: 16px;
+  color: #fff;
+  box-shadow: var(--app-shadow-primary);
+  margin: 2px 2px 14px;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: -30px;
+    top: -30px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.pro-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 16px;
+  }
+}
+
+.pro-plan-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pro-plan-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.pro-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 15px;
+  }
+}
+
+.pro-plan-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+
+  strong {
+    font-size: 14.5px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  span {
+    font-size: 11.5px;
+    opacity: 0.9;
+    line-height: 1.35;
+  }
+}
+
+.pro-plan-button {
+  --background: rgba(255, 255, 255, 0.22);
+  --background-activated: rgba(255, 255, 255, 0.35);
+  --border-radius: 20px;
+  --box-shadow: none;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  flex-shrink: 0;
+  font-size: 12.5px;
+
+  ion-icon {
+    font-size: 14px;
+  }
+}
+
+/* ---------- Survey spotlight (viền gradient động như bản gốc) ---------- */
+.home-survey-spotlight {
+  border-radius: 18px;
+  padding: 3px;
+  margin: 14px 2px;
+  background: linear-gradient(125deg, #ff6b9d, #a855f7, #22d3ee, #fbbf24, #fb7185);
+  background-size: 400% 400%;
+  animation: surveyBorderFlow 8s ease infinite;
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.25);
+}
+
+.home-survey-inner {
+  border-radius: 15px;
+  padding: 14px 16px;
+  background: var(--app-surface);
+}
+
+.home-survey-layout {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.home-survey-bubble {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #ff8a5c, #ff5e9c, #a855f7);
+  box-shadow: 0 6px 18px rgba(168, 85, 247, 0.4);
+  animation: surveyBubblePulse 2.4s ease-in-out infinite;
+
+  ion-icon {
+    font-size: 26px;
+    color: #fff;
+  }
+}
+
+.home-survey-main {
+  flex: 1;
+  min-width: 180px;
+
+  h4 {
+    margin: 0 0 3px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--app-text);
+  }
+
+  p {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--app-text-muted);
+  }
+}
+
+.home-survey-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+@keyframes surveyBorderFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes surveyBubblePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-survey-spotlight,
+  .home-survey-bubble {
+    animation: none;
+  }
+}
+
 .home-hero {
   display: flex;
   align-items: center;

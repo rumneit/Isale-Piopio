@@ -21,7 +21,43 @@
   </ion-refresher>
 
   <div class="app-page-container">
-    <!-- Greeting hero -->
+    <!-- 1. Pro plan banner (kiểu ISale gốc) -->
+    @if (!proBannerDismissed()) {
+      <div class="pro-plan-section">
+        <button class="pro-close" (click)="dismissProBanner()">
+          <ion-icon name="close-outline" />
+        </button>
+        <div class="pro-plan-content">
+          <div class="pro-plan-left">
+            <div class="pro-plan-badge">
+              <ion-icon name="diamond-outline" />
+              PRO
+            </div>
+            <div class="pro-plan-text">
+              <strong>Mở khóa toàn bộ sức mạnh PioPio</strong>
+              <span>Không giới hạn sản phẩm · CRM · Tích hợp SePay/Zalo/SMS</span>
+            </div>
+          </div>
+          <ion-button class="pro-plan-button" size="small" (click)="openPath('/pricing')">
+            <ion-icon slot="start" name="rocket-outline" />
+            Nâng cấp
+          </ion-button>
+        </div>
+      </div>
+    }
+
+    <!-- Cảnh báo Supabase (nếu chưa cấu hình) -->
+    @if (!supabaseReady) {
+      <div class="app-banner-warning">
+        <ion-icon name="cloud-offline-outline" />
+        <span>
+          Chưa kết nối Supabase — đang chạy ở chế độ xem trước. Điền credentials vào
+          <code>environment.ts</code> để kích hoạt dữ liệu thật.
+        </span>
+      </div>
+    }
+
+    <!-- 2. Greeting hero -->
     <div class="home-hero">
       <div>
         <div class="home-hero-hi">{{ greeting }}, {{ auth.displayName() }} 👋</div>
@@ -33,18 +69,7 @@
       <div class="home-hero-date">{{ now | date: 'EEEE, dd/MM' }}</div>
     </div>
 
-    <!-- Supabase not configured warning -->
-    @if (!supabaseReady) {
-      <div class="app-banner-warning">
-        <ion-icon name="cloud-offline-outline" />
-        <span>
-          Chưa kết nối Supabase — đang chạy ở chế độ xem trước. Điền credentials vào
-          <code>environment.ts</code> để kích hoạt dữ liệu thật.
-        </span>
-      </div>
-    }
-
-    <!-- Stats -->
+    <!-- 3. Stats -->
     @if (loading && !stats) {
       <div class="app-stats-row">
         @for (i of [1, 2, 3, 4]; track i) {
@@ -78,7 +103,30 @@
       </div>
     }
 
-    <!-- Quick actions -->
+    <!-- Spotlight khảo sát (viền gradient động như bản gốc) -->
+    @if (!surveyDismissed()) {
+      <div class="home-survey-spotlight">
+        <div class="home-survey-inner">
+          <div class="home-survey-layout">
+            <div class="home-survey-bubble">
+              <ion-icon name="star-half-outline" />
+            </div>
+            <div class="home-survey-main">
+              <h4>PioPio đang tốt hơn mỗi ngày</h4>
+              <p>Chỉ 30 giây đánh giá của bạn giúp chúng tôi hoàn thiện app cho hàng nghìn chủ shop.</p>
+            </div>
+            <div class="home-survey-actions">
+              <ion-button size="small" (click)="openPath('/support')">Đánh giá ngay</ion-button>
+              <ion-button size="small" fill="clear" (click)="dismissSurvey()">
+                <ion-icon slot="icon-only" name="close-outline" />
+              </ion-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- 4. Quick actions -->
     <div class="app-card home-actions-card">
       <div class="app-card-title">
         <h4><ion-icon name="grid-outline" /> Thao tác nhanh</h4>
@@ -108,7 +156,7 @@
       }
     </div>
 
-    <!-- Recent orders -->
+    <!-- 5. Recent orders -->
     <div class="app-card">
       <div class="app-card-title">
         <h4><ion-icon name="receipt-outline" /> Đơn hàng gần đây</h4>
