@@ -422,6 +422,27 @@ ion-segment.app-home-segment {
   }
 }
 
+/* ---------- Plain Angular router outlet layout (thay IonRouterOutlet) ---------- */
+.app-main {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+router-outlet {
+  display: none;
+}
+
+router-outlet + * {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 /* ---------- Lists polish ---------- */
 ion-list ion-item {
   --padding-start: 10px;

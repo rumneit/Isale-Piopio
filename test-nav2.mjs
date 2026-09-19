@@ -48,7 +48,7 @@ await new Promise((r) => server.listen(8334, r));
 console.log('server on :8334');
 
 const browser = await chromium.launch();
-const context = await browser.newContext();
+const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
 await context.addInitScript(([key, val]) => {
   localStorage.setItem(key, val);
 }, [`sb-${REF}-auth-token`, JSON.stringify(session)]);
@@ -83,6 +83,52 @@ if ((await rep.count()) > 0) {
   await page.waitForTimeout(2500);
   console.log('=== URL after report click:', page.url());
 }
+
+// TEST NÚT BACK + MENU: về home (đổi hash), mở menu, vào Sản phẩm, bấm back
+await page.evaluate(() => {
+  location.hash = '#/home';
+});
+await page.waitForTimeout(3000);
+console.log('=== URL ve home:', page.url());
+let pass = true;
+
+// mở menu
+const menuBtn = page.locator('ion-menu-button').first();
+if ((await menuBtn.count()) > 0) {
+  await menuBtn.click();
+  await page.waitForTimeout(1200);
+  const menuItem = page.locator('ion-menu ion-item', { hasText: 'Sản phẩm' }).first();
+  if ((await menuItem.count()) > 0) {
+    await menuItem.click();
+    await page.waitForTimeout(2000);
+    console.log('=== URL after menu->product:', page.url());
+    if (!page.url().includes('/product')) pass = false;
+
+    const backBtn = page.locator('ion-back-button').first();
+    if ((await backBtn.count()) > 0) {
+      await backBtn.click();
+      await page.waitForTimeout(2000);
+      console.log('=== URL after BACK click:', page.url());
+      if (!page.url().includes('/home')) pass = false;
+    } else {
+      console.log('!!! no back button found on product page');
+      pass = false;
+    }
+  } else {
+    console.log('!!! menu item Sản phẩm not found');
+    pass = false;
+  }
+} else {
+  console.log('!!! menu button not found');
+  pass = false;
+}
+
+// Kiểm tra trang đích render đúng (không chỉ URL đổi)
+const heroVisible = await page.locator('.home-hero').isVisible().catch(() => false);
+console.log('=== home hero visible after back:', heroVisible ? 'YES' : 'NO');
+if (!heroVisible) pass = false;
+
+console.log('\n=== KET QUA NGHIEM THU:', pass ? 'PASS ✓' : 'FAIL ✗');
 
 console.log('\n=== CONSOLE (last 45) ===');
 console.log(logs.slice(-45).join('\n'));

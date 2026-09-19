@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import {
   IonApp,
-  IonRouterOutlet,
   IonMenu,
   IonHeader,
   IonToolbar,
@@ -23,6 +22,7 @@ import {
   NavigationSkipped,
   RouterLink,
   RouterLinkActive,
+  RouterOutlet,
   ActivatedRouteSnapshot,
   RouteReuseStrategy,
 } from '@angular/router';
@@ -82,7 +82,7 @@ export class NoReuseRouteStrategy extends IonicRouteStrategy implements RouteReu
   templateUrl: 'app.component.html',
   imports: [
     IonApp,
-    IonRouterOutlet,
+    RouterOutlet,
     IonMenu,
     IonHeader,
     IonToolbar,
@@ -94,6 +94,7 @@ export class NoReuseRouteStrategy extends IonicRouteStrategy implements RouteReu
     IonLabel,
     IonMenuToggle,
     IonFooter,
+    RouterOutlet,
     RouterLink,
     RouterLinkActive,
   ],
