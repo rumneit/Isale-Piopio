@@ -98,6 +98,7 @@ export class AppComponent implements OnInit {
    * chunk cũ bị xóa trên server → điều hướng lỗi → reload 1 lần để lấy bản mới.
    */
   ngOnInit(): void {
+    console.info('[PioPio] build 2026-09-19-16:35 — pipeline-fix-2 (NoReuse + zone.js)');
     this.router.events.subscribe((e) => {
       if (e instanceof NavigationEnd) {
         sessionStorage.removeItem('piopio-chunk-reload');
