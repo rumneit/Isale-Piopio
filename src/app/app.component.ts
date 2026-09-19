@@ -14,7 +14,8 @@ import {
   IonMenuToggle,
   IonFooter,
 } from '@ionic/angular';
-import { Router, NavigationEnd, NavigationError, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, NavigationEnd, NavigationError, RouterLink, RouterLinkActive, ActivatedRouteSnapshot, RouteReuseStrategy } from '@angular/router';
+import { IonicRouteStrategy, ActionSheetController, AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   storefrontOutline,
@@ -47,13 +48,22 @@ import {
   pulseOutline,
   lockClosedOutline,
 } from 'ionicons/icons';
-import { ActionSheetController, AlertController } from '@ionic/angular';
 import { AuthService } from './core/services/auth.service';
 
 interface MenuItem {
   title: string;
   icon: string;
   path: string;
+}
+
+/**
+ * Không tái sử dụng component cũ khi điều hướng — chống lỗi
+ * outlet kẹt trang cũ (URL đổi nhưng view không swap).
+ */
+export class NoReuseRouteStrategy extends IonicRouteStrategy implements RouteReuseStrategy {
+  override shouldReuseRoute(_future: ActivatedRouteSnapshot, _curr: ActivatedRouteSnapshot): boolean {
+    return false;
+  }
 }
 
 @Component({
