@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import {
   IonApp,
   IonRouterOutlet,
@@ -14,7 +14,7 @@ import {
   IonMenuToggle,
   IonFooter,
 } from '@ionic/angular';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, NavigationEnd, NavigationError, RouterLink, RouterLinkActive } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   storefrontOutline,
@@ -45,7 +45,6 @@ import {
   mailOutline,
   cardOutline,
 } from 'ionicons/icons';
-import { Router } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
 import { AuthService } from './core/services/auth.service';
 
@@ -76,10 +75,43 @@ interface MenuItem {
     RouterLinkActive,
   ],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   readonly auth = inject(AuthService);
   private router = inject(Router);
   private actionSheetCtrl = inject(ActionSheetController);
+
+  /**
+   * Tự phục hồi khi tab đang mở dùng bản JS cũ (sau deploy mới):
+   * chunk cũ bị xóa trên server → điều hướng lỗi → reload 1 lần để lấy bản mới.
+   */
+  ngOnInit(): void {
+    this.router.events.subscribe((e) => {
+      if (e instanceof NavigationEnd) {
+        sessionStorage.removeItem('piopio-chunk-reload');
+      } else if (e instanceof NavigationError) {
+        this.recoverFromStaleChunk();
+      }
+    });
+    window.addEventListener('unhandledrejection', (ev) => {
+      const msg = String((ev as PromiseRejectionEvent)?.reason?.message ?? ev);
+      if (/loading chunk|dynamically imported module|failed to fetch/i.test(msg)) {
+        this.recoverFromStaleChunk();
+      }
+    });
+    window.addEventListener('error', (ev) => {
+      const msg = String(ev?.message ?? '');
+      if (/loading chunk|dynamically imported module/i.test(msg)) {
+        this.recoverFromStaleChunk();
+      }
+    });
+  }
+
+  private recoverFromStaleChunk(): void {
+    if (!sessionStorage.getItem('piopio-chunk-reload')) {
+      sessionStorage.setItem('piopio-chunk-reload', '1');
+      location.reload();
+    }
+  }
 
   readonly menuItems: MenuItem[] = [
     { title: 'Trang chủ', icon: 'grid-outline', path: '/home' },
