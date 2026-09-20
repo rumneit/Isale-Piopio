@@ -134,6 +134,70 @@
     <!-- TAB: Cấu hình khác -->
     @if (tab() === 'other') {
       <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="settings-outline" /> Cấu hình khác</h4></div>
+
+        <ion-list lines="full">
+          <ion-item>
+            <ion-select label="Ngôn ngữ" labelPlacement="stacked" [(ngModel)]="language" interface="action-sheet" cancelText="Đóng">
+              @for (o of languageOptions; track o.value) {
+                <ion-select-option [value]="o.value">{{ o.label }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-input label="Khoá API Gemini" labelPlacement="stacked" [(ngModel)]="geminiApiKey" placeholder="AIza..." />
+          </ion-item>
+          <ion-item>
+            <ion-select label="Đơn vị tiền" labelPlacement="stacked" [(ngModel)]="currency" interface="action-sheet" cancelText="Đóng">
+              @for (o of currencyOptions; track o.value) {
+                <ion-select-option [value]="o.value">{{ o.label }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-select label="Định dạng ngày" labelPlacement="stacked" [(ngModel)]="dateFormat" interface="action-sheet" cancelText="Đóng">
+              @for (o of dateFormatOptions; track o) {
+                <ion-select-option [value]="o">{{ o }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-select label="Định dạng giờ" labelPlacement="stacked" [(ngModel)]="timeFormat" interface="action-sheet" cancelText="Đóng">
+              @for (o of timeFormatOptions; track o) {
+                <ion-select-option [value]="o">{{ o }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+        </ion-list>
+      </div>
+
+      <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="settings-outline" /> Tính năng &amp; in ấn</h4></div>
+        <ion-list lines="full">
+          @for (t of toggleSettings; track t.key) {
+            <ion-item>
+              <ion-toggle [(ngModel)]="toggleValues[t.key]">
+                <ion-label class="setting-label">{{ t.label }}</ion-label>
+              </ion-toggle>
+            </ion-item>
+          }
+          <ion-item>
+            <ion-input
+              label="Điền dòng trống để tăng số dòng lý (số dòng thêm khi in)"
+              labelPlacement="stacked"
+              type="number"
+              min="0"
+              [(ngModel)]="emptyRows"
+            />
+          </ion-item>
+          <ion-item>
+            <ion-input label="Ghi chú trên đơn in" labelPlacement="stacked" [(ngModel)]="printNote" placeholder="VD: Cảm ơn quý khách!" />
+          </ion-item>
+        </ion-list>
+        <ion-note class="config-hint">Nhấn nút ✓ góc trên bên phải để lưu</ion-note>
+      </div>
+
+      <div class="app-card">
         <div class="app-card-title"><h4><ion-icon name="person-outline" /> Tài khoản</h4></div>
         <ion-list lines="full">
           <ion-item>
@@ -146,33 +210,6 @@
             </ion-label>
           </ion-item>
         </ion-list>
-      </div>
-
-      <div class="app-card">
-        <div class="app-card-title"><h4><ion-icon name="settings-outline" /> Vận hành</h4></div>
-        <ion-list lines="full">
-          <ion-item>
-            <ion-input
-              label="Số tiền cho 1 điểm tích lũy (₫)"
-              labelPlacement="stacked"
-              type="number"
-              inputmode="decimal"
-              min="1000"
-              [(ngModel)]="pointRate"
-            />
-          </ion-item>
-          <ion-item>
-            <ion-input
-              label="Ngưỡng cảnh báo tồn kho thấp"
-              labelPlacement="stacked"
-              type="number"
-              inputmode="decimal"
-              min="1"
-              [(ngModel)]="lowStockThreshold"
-            />
-          </ion-item>
-        </ion-list>
-        <ion-note class="config-hint">Nhấn nút ✓ góc trên bên phải để lưu</ion-note>
       </div>
 
       <div class="app-card">
@@ -211,33 +248,83 @@
 
     <!-- TAB: Template hóa đơn -->
     @if (tab() === 'template') {
-      <div class="app-card">
-        <div class="app-card-title"><h4><ion-icon name="document-text-outline" /> Mẫu hóa đơn</h4></div>
-        <p class="website-desc">Chọn khổ hóa đơn dùng khi in đơn hàng.</p>
-        <div class="template-list">
-          <button class="template-item" [class.active]="invoiceTemplate() === '80mm'" (click)="invoiceTemplate.set('80mm')">
-            <ion-icon name="document-text-outline" />
-            <div>
-              <strong>Khổ 80mm</strong>
-              <span>Máy in nhiệt, hóa đơn bán lẻ</span>
-            </div>
-          </button>
-          <button class="template-item" [class.active]="invoiceTemplate() === 'a5'" (click)="invoiceTemplate.set('a5')">
-            <ion-icon name="document-text-outline" />
-            <div>
-              <strong>Khổ A5</strong>
-              <span>Hóa đơn gọn, in máy thường</span>
-            </div>
-          </button>
-          <button class="template-item" [class.active]="invoiceTemplate() === 'a4'" (click)="invoiceTemplate.set('a4')">
-            <ion-icon name="document-text-outline" />
-            <div>
-              <strong>Khổ A4</strong>
-              <span>Hóa đơn đầy đủ, có logo shop</span>
-            </div>
-          </button>
-        </div>
+      <ion-toolbar class="template-toolbar">
+        <ion-segment [value]="templateTab()" (ionChange)="templateTab.set($any($event.detail.value))">
+          <ion-segment-button value="edit">
+            <ion-icon name="code-slash-outline" slot="start" />
+            <ion-label>Soạn thảo</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="preview">
+            <ion-icon name="eye-outline" slot="start" />
+            <ion-label>Xem trước</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </ion-toolbar>
+
+      <div class="template-actions">
+        <label class="template-icon-btn" title="Nạp template">
+          <ion-icon name="cloud-upload-outline" />
+          <input type="file" accept=".hbs,.html,.txt" (change)="importTemplate($any($event))" hidden />
+        </label>
+        <button class="template-icon-btn" (click)="exportTemplate()" title="Tải template">
+          <ion-icon name="download-outline" />
+        </button>
+        <button class="template-icon-btn" (click)="resetTemplate()" title="Khôi phục mặc định">
+          <ion-icon name="refresh-outline" />
+        </button>
       </div>
+
+      @if (templateTab() === 'edit') {
+        <div class="app-card">
+          <div class="app-card-title"><h4><ion-icon name="code-slash-outline" /> Mẫu hóa đơn (Handlebars)</h4></div>
+          <ion-textarea
+            class="template-editor"
+            [(ngModel)]="invoiceTemplate"
+            [rows]="18"
+            [autoGrow]="false"
+            spellcheck="false"
+          ></ion-textarea>
+        </div>
+
+        <div class="app-card">
+          <div class="app-card-title"><h4><ion-icon name="code-slash-outline" /> Biến template (Handlebars)</h4></div>
+          @for (g of templateVars; track g.group) {
+            <div class="var-group">
+              <h5>{{ g.group }}</h5>
+              <div class="var-chips">
+                @for (v of g.vars; track v) {
+                  <code>{{ '{{' + v + '}}' }}</code>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="app-card">
+          <div class="app-card-title"><h4><ion-icon name="eye-outline" /> Xem trước</h4></div>
+          <div class="template-preview">
+            <div class="preview-title">HÓA ĐƠN BÁN HÀNG</div>
+            <div class="preview-shop">{{ shopName || 'Tên cửa hàng' }}</div>
+            @if (shopPhone) { <div class="preview-line">ĐT: {{ shopPhone }}</div> }
+            @if (shopAddress) { <div class="preview-line">{{ shopAddress }}</div> }
+            <div class="preview-sep"></div>
+            <div class="preview-line">Mã đơn: DH-XXXX</div>
+            <div class="preview-line">Ngày: {{ todayLabel }}</div>
+            <div class="preview-sep"></div>
+            <table class="preview-table">
+              <tr><th>STT</th><th>Tên</th><th>SL</th><th>Thành tiền</th></tr>
+              <tr><td>1</td><td>Sản phẩm mẫu</td><td>1</td><td>{{ '15.000 ₫' }}</td></tr>
+              <tr><td colspan="3"><strong>TỔNG CỘNG</strong></td><td><strong>{{ '15.000 ₫' }}</strong></td></tr>
+            </table>
+            @if (printNote) { <div class="preview-note">{{ printNote }}</div> }
+            <div class="preview-sign">
+              <span>NGƯỜI MUA</span>
+              <span>NGƯỜI BÁN</span>
+            </div>
+          </div>
+          <ion-note class="config-hint">Đây là bản xem trước mô phỏng. Hóa đơn thật in theo template ở tab Soạn thảo.</ion-note>
+        </div>
+      }
     }
   </div>
 </ion-content>

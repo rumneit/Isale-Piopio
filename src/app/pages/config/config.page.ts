@@ -19,6 +19,8 @@ import {
   IonToggle,
   IonSegment,
   IonSegmentButton,
+  IonSelect,
+  IonSelectOption,
   ToastController,
 } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
@@ -33,15 +35,24 @@ import {
   informationCircleOutline,
   cardOutline,
   cloudUploadOutline,
-  saveOutline,
   personOutline,
   lockClosedOutline,
   cloudDownloadOutline,
+  codeSlashOutline,
+  eyeOutline,
+  downloadOutline,
+  refreshOutline,
+  chevronForwardOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { SettingsService } from '../../core/services/settings.service';
+
+interface ToggleSetting {
+  key: string;
+  label: string;
+}
 
 @Component({
   selector: 'app-config',
@@ -66,6 +77,8 @@ import { SettingsService } from '../../core/services/settings.service';
     IonToggle,
     IonSegment,
     IonSegmentButton,
+    IonSelect,
+    IonSelectOption,
     FormsModule,
   ],
 })
@@ -80,6 +93,7 @@ export class ConfigPage implements OnInit {
   readonly busy = signal(false);
   readonly backingUp = signal(false);
   readonly changingPw = signal(false);
+  readonly templateTab = signal<'edit' | 'preview'>('edit');
   readonly tab = signal<'shop' | 'website' | 'other' | 'template'>('shop');
 
   // Thông tin shop
@@ -100,12 +114,110 @@ export class ConfigPage implements OnInit {
   newPassword = '';
   confirmPassword = '';
 
-  // Cấu hình khác
-  pointRate: number | null = 10000;
-  lowStockThreshold: number | null = 5;
+  // Cấu hình khác — lựa chọn
+  language = 'vi';
+  geminiApiKey = '';
+  currency = 'VND';
+  dateFormat = 'dd/MM/yyyy';
+  timeFormat = 'HH:mm';
+
+  readonly languageOptions = [
+    { value: 'vi', label: 'Tiếng Việt' },
+    { value: 'en', label: 'English' },
+  ];
+  readonly currencyOptions = [
+    { value: 'VND', label: 'VNĐ (₫)' },
+    { value: 'USD', label: 'USD ($)' },
+  ];
+  readonly dateFormatOptions = ['dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd'];
+  readonly timeFormatOptions = ['HH:mm', 'hh:mm A'];
+
+  // Cấu hình khác — danh sách switch (khớp bản gốc)
+  readonly toggleSettings: ToggleSetting[] = [
+    { key: 'no_sell_zero_qty', label: 'Số lượng 0, không thể bán' },
+    { key: 'hide_materials', label: 'Ẩn tính năng Nguyên Vật Liệu' },
+    { key: 'hide_table', label: 'Ẩn tính năng Đặt bàn' },
+    { key: 'hide_booking', label: 'Ẩn tính năng Đặt lịch' },
+    { key: 'enable_export_note', label: 'Bật chức năng Phiếu Xuất' },
+    { key: 'hide_promotion', label: 'Ẩn tính năng Khuyến mại' },
+    { key: 'hide_tax', label: 'Ẩn thuế khỏi đơn' },
+    { key: 'print_large_invoice', label: 'In hóa đơn dạng Hóa đơn bán hàng (khổ lớn)' },
+    { key: 'hide_discount_column', label: 'Ẩn cột chiết khấu khi in đơn' },
+    { key: 'show_staff_phone', label: 'Hiện SĐT nhân viên khi in đơn' },
+    { key: 'show_staff_sign', label: 'Hiện tên nhân viên dưới phần chữ ký' },
+    { key: 'hide_product_code', label: 'Ẩn mã sản phẩm khi in đơn' },
+    { key: 'profit_latest_cost', label: 'Tính lợi nhuận theo Chi phí mới nhất (không tích sổ tính theo thời điểm lên đơn)' },
+    { key: 'sync_cost_from_received', label: 'Đồng bộ Giá Nhập từ Phiếu Nhập' },
+    { key: 'stock_by_variant', label: 'Bật Tồn kho cho Phân loại sản phẩm' },
+    { key: 'print_qr', label: 'In QR code khi in đơn' },
+    { key: 'enable_shift_close', label: 'Bật tính năng kết ca' },
+    { key: 'auto_order_code', label: 'Mã đơn hàng tự động' },
+    { key: 'auto_product_code', label: 'Mã SP tự động' },
+    { key: 'sms_marketing', label: 'Bật tính năng SMS Marketing' },
+    { key: 'zalo_marketing', label: 'Bật tính năng Zalo Marketing' },
+  ];
+  toggleValues: Record<string, boolean> = {};
+  printNote = '';
+  emptyRows: number | null = 2;
 
   // Template hóa đơn
-  invoiceTemplate = signal<'80mm' | 'a5' | 'a4'>('80mm');
+  invoiceTemplate = '';
+  readonly defaultInvoiceTemplate = `{{!-- Mẫu hóa đơn mặc định của PioPio --}}
+{{#if shop.name}}
+<div style="border-bottom: 1px solid #000; padding-bottom: 8px;">
+  <div style="text-align: center;">
+    <strong style="font-size: 1.1em;">{{shop.name}}</strong><br>
+    {{#if shop.phone}}ĐT: {{shop.phone}}<br>{{/if}}
+    {{#if shop.address}}{{shop.address}}{{/if}}
+  </div>
+</div>
+{{/if}}
+<div style="text-align: center; margin: 8px 0;">
+  <h2 style="font-size: 18px; text-transform: uppercase;">HÓA ĐƠN BÁN HÀNG</h2>
+</div>
+<table style="width: 100%;">
+  <tr><td>Mã đơn:</td><td>{{order.orderCode}}</td></tr>
+  <tr><td>Ngày:</td><td>{{order.createdAt}}</td></tr>
+  <tr><td>Khách hàng:</td><td>{{customerName}}</td></tr>
+</table>
+<table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+  <tr>
+    <th style="border: 1px solid #000; padding: 4px;">STT</th>
+    <th style="border: 1px solid #000; padding: 4px;">Tên</th>
+    <th style="border: 1px solid #000; padding: 4px;">SL</th>
+    <th style="border: 1px solid #000; padding: 4px;">Đơn giá</th>
+    <th style="border: 1px solid #000; padding: 4px;">Thành tiền</th>
+  </tr>
+  {{#each items}}
+  <tr>
+    <td style="border: 1px solid #000; padding: 4px; text-align: center;">{{index}}</td>
+    <td style="border: 1px solid #000; padding: 4px;">{{productName}}</td>
+    <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{count}}</td>
+    <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{priceFormatted}}</td>
+    <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{totalFormatted}}</td>
+  </tr>
+  {{/each}}
+  <tr>
+    <td colspan="4" style="border: 1px solid #000; padding: 4px;"><strong>TỔNG CỘNG</strong></td>
+    <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{order.totalFormatted}}</td>
+  </tr>
+</table>
+<div style="margin-top: 8px;">Số tiền viết bằng chữ: {{amountToText}}</div>
+<div style="margin-top: 16px;">
+  <table style="width: 100%;">
+    <tr>
+      <td style="width: 50%; text-align: center;"><strong>NGƯỜI MUA</strong><br>(Ký, ghi rõ họ tên)</td>
+      <td style="width: 50%; text-align: center;"><strong>NGƯỜI BÁN</strong><br>(Ký, ghi rõ họ tên)</td>
+    </tr>
+  </table>
+</div>`;
+
+  readonly templateVars = [
+    { group: 'Shop', vars: ['shop.name', 'shop.phone', 'shop.address', 'shop.email', 'shop.bankName'] },
+    { group: 'Đơn hàng', vars: ['order.orderCode', 'order.createdAt', 'order.totalFormatted', 'amountToText'] },
+    { group: 'Sản phẩm', vars: ['items', 'productName', 'count', 'priceFormatted', 'totalFormatted'] },
+    { group: 'QR / Nhận', vars: ['showQr', 'qrCodeUrl', 'sellerName', 'customerName'] },
+  ];
 
   error = '';
 
@@ -120,10 +232,14 @@ export class ConfigPage implements OnInit {
       informationCircleOutline,
       cardOutline,
       cloudUploadOutline,
-      saveOutline,
       personOutline,
       lockClosedOutline,
       cloudDownloadOutline,
+      codeSlashOutline,
+      eyeOutline,
+      downloadOutline,
+      refreshOutline,
+      chevronForwardOutline,
     });
   }
 
@@ -139,6 +255,12 @@ export class ConfigPage implements OnInit {
     return `https://piopio.app/${this.shopId.slice(0, 8)}/${this.toSlug(this.shopName)}`;
   }
 
+  get todayLabel(): string {
+    const d = new Date();
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+
   private toSlug(s: string): string {
     return (s || 'cua-hang')
       .toLowerCase()
@@ -149,7 +271,7 @@ export class ConfigPage implements OnInit {
       .replace(/^-+|-+$/g, '');
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     const shop = this.auth.shop();
     this.shopName = shop?.name ?? '';
     this.shopDescription = shop?.description ?? '';
@@ -161,10 +283,21 @@ export class ConfigPage implements OnInit {
     this.bankOwner = shop?.bank_owner ?? '';
     this.bankAccount = shop?.bank_account ?? '';
     this.fullName = this.auth.profile()?.full_name ?? '';
-    this.settingsService.load().then(() => {
-      this.pointRate = this.settingsService.pointRate();
-      this.lowStockThreshold = this.settingsService.lowStockThreshold();
-    });
+
+    await this.settingsService.load();
+    this.language = this.settingsService.get('language') ?? 'vi';
+    this.geminiApiKey = this.settingsService.get('gemini_api_key') ?? '';
+    this.currency = this.settingsService.get('currency') ?? 'VND';
+    this.dateFormat = this.settingsService.get('date_format') ?? 'dd/MM/yyyy';
+    this.timeFormat = this.settingsService.get('time_format') ?? 'HH:mm';
+    this.printNote = this.settingsService.get('print_note') ?? '';
+    this.emptyRows = this.settingsService.numberValue('invoice_empty_rows', 2);
+    this.invoiceTemplate = this.settingsService.get('invoice_template') ?? this.defaultInvoiceTemplate;
+
+    for (const t of this.toggleSettings) {
+      const raw = this.settingsService.get(t.key);
+      this.toggleValues[t.key] = raw === 'true';
+    }
   }
 
   selectTab(tab: 'shop' | 'website' | 'other' | 'template') {
@@ -174,7 +307,7 @@ export class ConfigPage implements OnInit {
 
   async save() {
     this.error = '';
-    if (!this.shopName.trim()) {
+    if (this.tab() === 'shop' && !this.shopName.trim()) {
       this.error = 'Tên cửa hàng không được trống.';
       return;
     }
@@ -201,12 +334,20 @@ export class ConfigPage implements OnInit {
       if (userId) {
         await this.sb.from('profiles').update({ full_name: this.fullName.trim() }).eq('id', userId);
       }
-      if (this.pointRate && Number(this.pointRate) > 0) {
-        await this.settingsService.set('point_rate', String(Number(this.pointRate)));
+
+      // Lưu cấu hình khác
+      await this.settingsService.set('language', this.language);
+      await this.settingsService.set('gemini_api_key', this.geminiApiKey.trim());
+      await this.settingsService.set('currency', this.currency);
+      await this.settingsService.set('date_format', this.dateFormat);
+      await this.settingsService.set('time_format', this.timeFormat);
+      await this.settingsService.set('print_note', this.printNote.trim());
+      await this.settingsService.set('invoice_empty_rows', String(Number(this.emptyRows ?? 0)));
+      for (const t of this.toggleSettings) {
+        await this.settingsService.set(t.key, String(!!this.toggleValues[t.key]));
       }
-      if (this.lowStockThreshold && Number(this.lowStockThreshold) > 0) {
-        await this.settingsService.set('low_stock_threshold', String(Number(this.lowStockThreshold)));
-      }
+      await this.settingsService.set('invoice_template', this.invoiceTemplate);
+
       await this.auth.reloadUserData();
       this.toast('Đã lưu cấu hình shop');
     } catch (e: any) {
@@ -239,7 +380,35 @@ export class ConfigPage implements OnInit {
     }
   }
 
-  /** Tải toàn bộ dữ liệu của shop về máy dưới dạng JSON */
+  resetTemplate() {
+    this.invoiceTemplate = this.defaultInvoiceTemplate;
+    this.toast('Đã khôi phục mẫu mặc định — nhấn ✓ để lưu');
+  }
+
+  exportTemplate() {
+    const blob = new Blob([this.invoiceTemplate], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'order-invoice-template.hbs';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  importTemplate(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.invoiceTemplate = String(reader.result ?? '');
+      this.toast('Đã nạp template — nhấn ✓ để lưu');
+    };
+    reader.readAsText(file, 'utf-8');
+  }
+
   async backupData() {
     const shopId = this.auth.shop()?.id;
     if (!this.sb.isConfigured || !shopId) {
