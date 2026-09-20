@@ -1,24 +1,26 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" />
+      <ion-menu-button menu="app-menu" auto-hide="false" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
     </ion-buttons>
-    <ion-title>Giao dịch</ion-title>
+    <ion-title>Quản lý Thu/Chi</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="exportCsv()">
-        <ion-icon slot="icon-only" name="download-outline" />
+      <ion-button (click)="openPath('/report')">
+        <ion-icon slot="icon-only" name="stats-chart-outline" />
+      </ion-button>
+      <ion-button (click)="openAdd()">
+        <ion-icon slot="icon-only" name="add-circle-outline" />
+      </ion-button>
+      <ion-button (click)="openSettings()">
+        <ion-icon slot="icon-only" name="ellipsis-vertical" />
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
   <ion-toolbar>
-    <ion-segment [value]="typeFilter()" (ionChange)="onFilter($any($event))">
-      <ion-segment-button value="all"><ion-label>Tất cả</ion-label></ion-segment-button>
-      <ion-segment-button value="income"><ion-label>Thu</ion-label></ion-segment-button>
-      <ion-segment-button value="expense"><ion-label>Chi</ion-label></ion-segment-button>
-    </ion-segment>
-  </ion-toolbar>
-  <ion-toolbar>
-    <ion-searchbar placeholder="Tìm theo ghi chú hoặc nhóm" [debounce]="300" (ionInput)="onSearch($any($event))" />
+    <ion-searchbar placeholder="Tìm kiếm giao dịch" [debounce]="300" (ionInput)="onSearch($any($event))" />
   </ion-toolbar>
 </ion-header>
 
@@ -28,39 +30,87 @@
   </ion-refresher>
 
   <div class="app-page-container">
+    <!-- Tab tháng -->
+    <div class="month-tabs">
+      @for (m of monthTabs; track m.label; let i = $index) {
+        <button class="month-tab" [class.active]="selectedMonth() === i" (click)="selectMonth(i)">
+          {{ m.label }}
+        </button>
+      }
+    </div>
+
+    <!-- Lọc loại giao dịch -->
+    <div class="filter-row">
+      <span class="filter-label">Loại giao dịch</span>
+      <button class="filter-btn" (click)="openTypeFilter()">{{ typeFilterLabel() }}</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="list-toolbar">
+      <div class="toolbar-left">
+        <ion-button fill="clear" size="small" (click)="toggleSearch()">
+          <ion-icon slot="icon-only" name="search-outline" />
+        </ion-button>
+        <span class="toolbar-total">Tổng: {{ items().length }} giao dịch</span>
+        <span class="toolbar-money">/ Tổng giao dịch: {{ formatMoney(totalAmount()) }}</span>
+      </div>
+      <div class="toolbar-actions">
+        <ion-button fill="clear" size="small" (click)="exportCsv()">
+          <ion-icon slot="icon-only" name="download-outline" />
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="openPath('/import')">
+          <ion-icon slot="icon-only" name="cloud-upload-outline" />
+        </ion-button>
+      </div>
+    </div>
+
     @if (loading()) {
       <div class="page-loading"><ion-spinner name="crescent" /></div>
     } @else if (items().length === 0) {
-      <div class="app-empty">
-        <div><ion-icon name="swap-horizontal-outline" /></div>
-        Chưa có giao dịch nào
+      <div class="app-empty trade-empty">
+        <div><ion-icon name="file-tray-outline" /></div>
+        <span>
+          Chưa có Giao dịch nào. Bấm biểu tượng + để thêm mới Giao dịch. Với mỗi giao dịch bạn có thể:
+          cập nhật thông tin (tiền, khách hàng, sản phẩm, ghi chú, ảnh..), chia sẻ/xuất ra Gmail, Facebook..,
+          xem dữ liệu ảnh hưởng lên báo cáo trong các menu Báo cáo.
+        </span>
       </div>
     } @else {
-      <div class="app-card">
-        <ion-list lines="full">
-          @for (item of items(); track item.id) {
-            <ion-item button (click)="openItemActions(item)" detail="false">
-              <div class="trade-icon" slot="start" [class.trade-income]="item.type === 'income'">
+      <div class="trade-list">
+        @for (item of pagedItems(); track item.id) {
+          <div class="trade-card" (click)="openItemActions(item)">
+            <div class="trade-head">
+              <div class="trade-icon" [class.income]="item.type === 'income'">
                 <ion-icon [name]="item.type === 'income' ? 'trending-up-outline' : 'trending-down-outline'" />
               </div>
-              <ion-label>
-                <h3>{{ item.note || item.category || (item.type === 'income' ? 'Thu' : 'Chi') }}</h3>
-                <p>{{ item.category ?? '—' }} · {{ item.occurred_at | date: 'dd/MM HH:mm' }}</p>
-              </ion-label>
-              <ion-badge slot="end" [color]="item.type === 'income' ? 'success' : 'danger'">
+              <div class="trade-main">
+                <h2>{{ item.note || item.category || (item.type === 'income' ? 'Thu' : 'Chi') }}</h2>
+                <span class="trade-category">{{ item.category ?? '—' }}</span>
+              </div>
+              <ion-badge [color]="item.type === 'income' ? 'success' : 'danger'">
                 {{ item.type === 'income' ? '+' : '-' }}{{ formatMoney(item.amount) }}
               </ion-badge>
-            </ion-item>
-          }
-        </ion-list>
+            </div>
+            <div class="trade-fields">
+              <div class="field">
+                <span class="field-label">Thời gian</span>
+                <span class="field-value">{{ item.occurred_at | date: 'HH:mm dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+          </div>
+        }
       </div>
-      <ion-note class="trades-hint">Nhấn vào giao dịch để sửa hoặc xóa</ion-note>
+
+      <!-- Phân trang -->
+      <div class="pagination">
+        <ion-button fill="clear" size="small" (click)="prevPage()" [disabled]="page() <= 1">
+          <ion-icon slot="icon-only" name="chevron-back-outline" />
+        </ion-button>
+        <span>Trang {{ page() }}/{{ totalPages() }}</span>
+        <ion-button fill="clear" size="small" (click)="nextPage()" [disabled]="page() >= totalPages()">
+          <ion-icon slot="icon-only" name="chevron-forward-outline" />
+        </ion-button>
+      </div>
     }
   </div>
-
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="openAdd()">
-      <ion-icon name="add-outline" />
-    </ion-fab-button>
-  </ion-fab>
 </ion-content>
