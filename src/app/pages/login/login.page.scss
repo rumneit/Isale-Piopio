@@ -6,27 +6,81 @@ ion-content {
   margin-bottom: 12px;
 }
 
+.login-remember {
+  --size: 18px;
+  font-size: 13px;
+  margin: 4px 0 12px;
+  color: var(--app-text);
+}
+
 .login-submit {
-  margin-top: 8px;
+  margin-top: 4px;
   --background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
   --box-shadow: var(--app-shadow-primary);
   height: 46px;
 }
 
-.login-switch {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  color: var(--app-text-muted);
-  font-size: 13px;
+.login-register {
+  margin-top: 10px;
+  --border-radius: 12px;
 }
 
-code {
-  font-size: 11px;
-  background: rgba(0, 0, 0, 0.15);
-  padding: 1px 4px;
-  border-radius: 4px;
+.login-forgot {
+  text-align: center;
+  color: var(--ion-color-primary);
+  font-size: 13.5px;
+  font-weight: 700;
+  margin: 14px 0 4px;
+  cursor: pointer;
+}
+
+.login-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--app-text-muted);
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+
+.login-note {
+  font-size: 11.5px;
+  color: var(--app-text-muted);
+  line-height: 1.5;
+  margin: 10px 0 0;
+  padding: 10px;
+  background: var(--app-surface-alt);
+  border-radius: 10px;
+}
+
+.login-version {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--app-text-muted);
+  margin-top: 22px;
+}
+
+.lang-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 6px;
+}
+
+.lang-tab {
+  background: none;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--app-text-muted);
+  cursor: pointer;
+
+  &.active {
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    border-color: var(--ion-color-primary);
+    color: var(--ion-color-primary);
+  }
 }
 
 .login-error {

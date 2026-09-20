@@ -8,12 +8,23 @@ import {
   IonToolbar,
   IonHeader,
   IonTitle,
+  IonCheckbox,
+  IonButtons,
+  IonMenuButton,
   AlertController,
+  ToastController,
 } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { storefrontOutline, lockClosedOutline, mailOutline, personOutline, arrowForwardOutline } from 'ionicons/icons';
+import {
+  storefrontOutline,
+  lockClosedOutline,
+  mailOutline,
+  personOutline,
+  logInOutline,
+  personAddOutline,
+} from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { SupabaseService } from '../../core/services/supabase.service';
 
@@ -21,28 +32,55 @@ import { SupabaseService } from '../../core/services/supabase.service';
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  imports: [IonContent, IonInput, IonButton, IonIcon, IonSpinner, IonToolbar, IonHeader, IonTitle, FormsModule],
+  imports: [
+    IonContent,
+    IonInput,
+    IonButton,
+    IonIcon,
+    IonSpinner,
+    IonToolbar,
+    IonHeader,
+    IonTitle,
+    IonCheckbox,
+    IonButtons,
+    IonMenuButton,
+    FormsModule,
+  ],
 })
 export class LoginPage {
   private auth = inject(AuthService);
   private sb = inject(SupabaseService);
   private router = inject(Router);
   private alertCtrl = inject(AlertController);
+  private toastCtrl = inject(ToastController);
 
   mode = signal<'login' | 'register'>('login');
+  lang = signal<'vn' | 'en'>('vn');
   email = '';
   password = '';
   fullName = '';
+  remember = true;
   busy = signal(false);
   error = signal('');
   info = signal('');
 
   constructor() {
-    addIcons({ storefrontOutline, lockClosedOutline, mailOutline, personOutline, arrowForwardOutline });
+    addIcons({
+      storefrontOutline,
+      lockClosedOutline,
+      mailOutline,
+      personOutline,
+      logInOutline,
+      personAddOutline,
+    });
   }
 
   get supabaseMissing(): boolean {
     return !this.sb.isConfigured;
+  }
+
+  setLang(lang: 'vn' | 'en') {
+    this.lang.set(lang);
   }
 
   switchMode(mode: 'login' | 'register') {
@@ -51,13 +89,50 @@ export class LoginPage {
     this.info.set('');
   }
 
+  async submit() {
+    this.error.set('');
+    this.info.set('');
+    const email = this.email.trim();
+    const password = this.password;
+
+    if (!email || !password) {
+      this.error.set('Vui lòng nhập Email/Phone và mật khẩu.');
+      return;
+    }
+
+    this.busy.set(true);
+    try {
+      if (this.mode() === 'login') {
+        await this.auth.login(email, password);
+        this.router.navigateByUrl('/home', { replaceUrl: true });
+      } else {
+        if (!this.fullName.trim()) {
+          this.error.set('Vui lòng nhập tên của bạn.');
+          return;
+        }
+        const result = await this.auth.register(email, password, this.fullName.trim());
+        if (result?.session) {
+          this.router.navigateByUrl('/home', { replaceUrl: true });
+        } else {
+          this.switchMode('login');
+          this.email = email;
+          this.info.set(
+            'Tài khoản đã được tạo! Kiểm tra hộp thư ' + email + ' để xác nhận email, sau đó đăng nhập bình thường.'
+          );
+        }
+      }
+    } catch (e: any) {
+      this.error.set(this.translateError(e?.message ?? 'Đăng nhập thất bại.'));
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
   async forgotPassword() {
     const alert = await this.alertCtrl.create({
       header: 'Quên mật khẩu',
       message: 'Nhập email đăng ký — chúng tôi sẽ gửi link đặt lại mật khẩu.',
-      inputs: [
-        { name: 'email', type: 'email', placeholder: 'ban@cuahang.vn', value: this.email },
-      ],
+      inputs: [{ name: 'email', type: 'email', placeholder: 'ban@cuahang.vn', value: this.email }],
       buttons: [
         { text: 'Hủy', role: 'cancel' },
         {
@@ -89,49 +164,6 @@ export class LoginPage {
       ],
     });
     await alert.present();
-  }
-
-  async submit() {
-    this.error.set('');
-    this.info.set('');
-    const email = this.email.trim();
-    const password = this.password;
-
-    if (!email || !password) {
-      this.error.set('Vui lòng nhập email và mật khẩu.');
-      return;
-    }
-
-    this.busy.set(true);
-    try {
-      if (this.mode() === 'login') {
-        await this.auth.login(email, password);
-        this.router.navigateByUrl('/home', { replaceUrl: true });
-      } else {
-        if (!this.fullName.trim()) {
-          this.error.set('Vui lòng nhập tên của bạn.');
-          return;
-        }
-        const result = await this.auth.register(email, password, this.fullName.trim());
-        if (result?.session) {
-          // Email confirmation đã tắt — đăng nhập luôn
-          this.router.navigateByUrl('/home', { replaceUrl: true });
-        } else {
-          // Supabase yêu cầu xác nhận email
-          this.switchMode('login');
-          this.email = email;
-          this.info.set(
-            'Tài khoản đã được tạo! Kiểm tra hộp thư ' +
-              email +
-              ' để xác nhận email, sau đó đăng nhập bình thường.'
-          );
-        }
-      }
-    } catch (e: any) {
-      this.error.set(this.translateError(e?.message ?? 'Đăng nhập thất bại.'));
-    } finally {
-      this.busy.set(false);
-    }
   }
 
   private translateError(msg: string): string {
