@@ -10,6 +10,14 @@ export interface Shop {
   id: string;
   name: string;
   owner_id: string | null;
+  description?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  website?: string | null;
+  logo_url?: string | null;
+  bank_name?: string | null;
+  bank_owner?: string | null;
+  bank_account?: string | null;
   created_at?: string;
 }
 

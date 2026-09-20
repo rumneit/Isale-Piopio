@@ -6,29 +6,37 @@ import {
   IonToolbar,
   IonTitle,
   IonButtons,
-  IonBackButton,
+  IonButton,
   IonIcon,
   IonContent,
+  IonInput,
+  IonTextarea,
+  IonSpinner,
+  IonNote,
   IonList,
   IonItem,
-  IonInput,
-  IonSpinner,
-  IonButton,
-  IonNote,
   IonLabel,
+  IonToggle,
+  IonSegment,
+  IonSegmentButton,
   ToastController,
-} from '@ionic/angular';import { FormsModule } from '@angular/forms';
+} from '@ionic/angular';
+import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import {
-  settingsOutline,
-  saveOutline,
+  homeOutline,
+  checkmarkOutline,
   storefrontOutline,
-  personOutline,
-  logOutOutline,
+  globeOutline,
+  settingsOutline,
+  documentTextOutline,
   informationCircleOutline,
-  cloudOutline,
-  cloudDownloadOutline,
+  cardOutline,
+  cloudUploadOutline,
+  saveOutline,
+  personOutline,
   lockClosedOutline,
+  cloudDownloadOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { SupabaseService } from '../../core/services/supabase.service';
@@ -45,16 +53,19 @@ import { SettingsService } from '../../core/services/settings.service';
     IonToolbar,
     IonTitle,
     IonButtons,
-    IonBackButton,
+    IonButton,
     IonIcon,
     IonContent,
+    IonInput,
+    IonTextarea,
+    IonSpinner,
+    IonNote,
     IonList,
     IonItem,
-    IonInput,
-    IonSpinner,
-    IonButton,
-    IonNote,
     IonLabel,
+    IonToggle,
+    IonSegment,
+    IonSegmentButton,
     FormsModule,
   ],
 })
@@ -67,34 +78,88 @@ export class ConfigPage implements OnInit {
   private settingsService = inject(SettingsService);
 
   readonly busy = signal(false);
+  readonly backingUp = signal(false);
+  readonly changingPw = signal(false);
+  readonly tab = signal<'shop' | 'website' | 'other' | 'template'>('shop');
 
+  // Thông tin shop
   shopName = '';
-  fullName = '';
-  error = '';
+  shopDescription = '';
+  shopPhone = '';
+  shopAddress = '';
+  shopWebsite = '';
+  shopLogoUrl = '';
 
+  // Ngân hàng
+  bankName = '';
+  bankOwner = '';
+  bankAccount = '';
+
+  // Tài khoản
+  fullName = '';
+  newPassword = '';
+  confirmPassword = '';
+
+  // Cấu hình khác
   pointRate: number | null = 10000;
   lowStockThreshold: number | null = 5;
 
-  newPassword = '';
-  confirmPassword = '';
-  changingPw = signal(false);
+  // Template hóa đơn
+  invoiceTemplate = signal<'80mm' | 'a5' | 'a4'>('80mm');
+
+  error = '';
 
   constructor() {
     addIcons({
-      settingsOutline,
-      saveOutline,
+      homeOutline,
+      checkmarkOutline,
       storefrontOutline,
-      personOutline,
-      logOutOutline,
+      globeOutline,
+      settingsOutline,
+      documentTextOutline,
       informationCircleOutline,
-      cloudOutline,
-      cloudDownloadOutline,
+      cardOutline,
+      cloudUploadOutline,
+      saveOutline,
+      personOutline,
       lockClosedOutline,
+      cloudDownloadOutline,
     });
   }
 
+  get email(): string {
+    return (this.auth.session() as any)?.user?.email ?? '';
+  }
+
+  get shopId(): string {
+    return this.auth.shop()?.id ?? '—';
+  }
+
+  get websiteUrl(): string {
+    return `https://piopio.app/${this.shopId.slice(0, 8)}/${this.toSlug(this.shopName)}`;
+  }
+
+  private toSlug(s: string): string {
+    return (s || 'cua-hang')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
   ngOnInit(): void {
-    this.shopName = this.auth.shop()?.name ?? '';
+    const shop = this.auth.shop();
+    this.shopName = shop?.name ?? '';
+    this.shopDescription = shop?.description ?? '';
+    this.shopPhone = shop?.phone ?? '';
+    this.shopAddress = shop?.address ?? '';
+    this.shopWebsite = shop?.website ?? '';
+    this.shopLogoUrl = shop?.logo_url ?? '';
+    this.bankName = shop?.bank_name ?? '';
+    this.bankOwner = shop?.bank_owner ?? '';
+    this.bankAccount = shop?.bank_account ?? '';
     this.fullName = this.auth.profile()?.full_name ?? '';
     this.settingsService.load().then(() => {
       this.pointRate = this.settingsService.pointRate();
@@ -102,8 +167,9 @@ export class ConfigPage implements OnInit {
     });
   }
 
-  get email(): string {
-    return (this.auth.session() as any)?.user?.email ?? '';
+  selectTab(tab: 'shop' | 'website' | 'other' | 'template') {
+    this.tab.set(tab);
+    this.error = '';
   }
 
   async save() {
@@ -116,7 +182,20 @@ export class ConfigPage implements OnInit {
     try {
       const shopId = this.auth.shop()?.id;
       if (shopId) {
-        await this.sb.from('shops').update({ name: this.shopName.trim() }).eq('id', shopId);
+        await this.sb
+          .from('shops')
+          .update({
+            name: this.shopName.trim(),
+            description: this.shopDescription.trim() || null,
+            phone: this.shopPhone.trim() || null,
+            address: this.shopAddress.trim() || null,
+            website: this.shopWebsite.trim() || null,
+            logo_url: this.shopLogoUrl.trim() || null,
+            bank_name: this.bankName.trim() || null,
+            bank_owner: this.bankOwner.trim() || null,
+            bank_account: this.bankAccount.trim() || null,
+          })
+          .eq('id', shopId);
       }
       const userId = (this.auth.session() as any)?.user?.id;
       if (userId) {
@@ -129,7 +208,7 @@ export class ConfigPage implements OnInit {
         await this.settingsService.set('low_stock_threshold', String(Number(this.lowStockThreshold)));
       }
       await this.auth.reloadUserData();
-      this.toast('Đã lưu cài đặt');
+      this.toast('Đã lưu cấu hình shop');
     } catch (e: any) {
       this.error = e?.message ?? 'Lưu thất bại.';
     } finally {
@@ -160,33 +239,18 @@ export class ConfigPage implements OnInit {
     }
   }
 
-  async logout() {
-    await this.auth.logout();
-    this.router.navigateByUrl('/login', { replaceUrl: true });
-  }
-
-  readonly backingUp = signal(false);
-
   /** Tải toàn bộ dữ liệu của shop về máy dưới dạng JSON */
   async backupData() {
     const shopId = this.auth.shop()?.id;
     if (!this.sb.isConfigured || !shopId) {
-      this.toastCtrl.create({ message: 'Chưa kết nối dữ liệu', duration: 1600, color: 'danger', position: 'bottom' }).then((t) => t.present());
+      this.toast('Chưa kết nối dữ liệu', 'danger');
       return;
     }
     this.backingUp.set(true);
     try {
       const tables = [
-        'products',
-        'customers',
-        'money_accounts',
-        'orders',
-        'transactions',
-        'crm_leads',
-        'received_notes',
-        'promotions',
-        'materials',
-        'point_transactions',
+        'products', 'customers', 'money_accounts', 'orders', 'transactions',
+        'crm_leads', 'received_notes', 'promotions', 'materials', 'point_transactions',
       ];
       const dump: Record<string, unknown> = {
         exported_at: new Date().toISOString(),
@@ -201,7 +265,6 @@ export class ConfigPage implements OnInit {
         }
         dump[table] = data;
       }
-
       const blob = new Blob([JSON.stringify(dump, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -215,16 +278,23 @@ export class ConfigPage implements OnInit {
       URL.revokeObjectURL(url);
       this.toast('Đã tải backup dữ liệu');
     } catch (e: any) {
-      this.toastCtrl
-        .create({ message: e?.message ?? 'Backup thất bại', duration: 1800, color: 'danger', position: 'bottom' })
-        .then((t) => t.present());
+      this.toast(e?.message ?? 'Backup thất bại', 'danger');
     } finally {
       this.backingUp.set(false);
     }
   }
 
-  private async toast(message: string) {
-    const t = await this.toastCtrl.create({ message, duration: 1600, color: 'success', position: 'bottom' });
+  async logout() {
+    await this.auth.logout();
+    this.router.navigateByUrl('/login', { replaceUrl: true });
+  }
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
+  private async toast(message: string, color: string = 'success') {
+    const t = await this.toastCtrl.create({ message, duration: 1800, color, position: 'bottom' });
     await t.present();
   }
 }

@@ -1,18 +1,40 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
     </ion-buttons>
-    <ion-title>Cấu hình</ion-title>
+    <ion-title>Cấu hình shop</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="save()" [disabled]="busy()">
         @if (busy()) {
           <ion-spinner name="crescent" />
         } @else {
-          <ion-icon slot="icon-only" name="save-outline" />
+          <ion-icon slot="icon-only" name="checkmark-outline" />
         }
       </ion-button>
     </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="tab()" (ionChange)="selectTab($any($event.detail.value))" [scrollable]="true">
+      <ion-segment-button value="shop">
+        <ion-icon name="storefront-outline" slot="start" />
+        <ion-label>Thông tin shop</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="website">
+        <ion-icon name="globe-outline" slot="start" />
+        <ion-label>Cấu hình Website</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="other">
+        <ion-icon name="settings-outline" slot="start" />
+        <ion-label>Cấu hình khác</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="template">
+        <ion-icon name="document-text-outline" slot="start" />
+        <ion-label>Template hóa đơn</ion-label>
+      </ion-segment-button>
+    </ion-segment>
   </ion-toolbar>
 </ion-header>
 
@@ -22,117 +44,200 @@
       <div class="form-error">{{ error }}</div>
     }
 
-    <div class="app-card">
-      <div class="app-card-title"><h4><ion-icon name="storefront-outline" /> Cửa hàng</h4></div>
-      <ion-list lines="full">
-        <ion-item>
-          <ion-input label="Tên cửa hàng" labelPlacement="stacked" [(ngModel)]="shopName" />
-        </ion-item>
-      </ion-list>
-    </div>
+    <!-- TAB: Thông tin shop -->
+    @if (tab() === 'shop') {
+      <div class="app-card">
+        <div class="app-card-title">
+          <h4><ion-icon name="information-circle-outline" /> Thông tin shop</h4>
+        </div>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-label>
+              <p>Mã shop</p>
+              <h3 class="readonly-value">{{ shopId }}</h3>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-input label="Tên shop" labelPlacement="stacked" [(ngModel)]="shopName" />
+          </ion-item>
+          <ion-item>
+            <ion-input label="Email" labelPlacement="stacked" [(ngModel)]="email" [readonly]="true" />
+          </ion-item>
+          <ion-item>
+            <ion-textarea
+              label="Mô tả"
+              labelPlacement="stacked"
+              [autoGrow]="true"
+              [(ngModel)]="shopDescription"
+              placeholder="Giới thiệu ngắn về cửa hàng..."
+            />
+          </ion-item>
+          <ion-item>
+            <ion-input label="Điện thoại" labelPlacement="stacked" type="tel" [(ngModel)]="shopPhone" />
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <p>Logo shop</p>
+              <h3 class="logo-hint"><ion-icon name="cloud-upload-outline" /> Dán URL ảnh logo bên dưới</h3>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-input label="URL logo" labelPlacement="stacked" [(ngModel)]="shopLogoUrl" placeholder="https://..." />
+          </ion-item>
+          <ion-item>
+            <ion-input label="Địa chỉ" labelPlacement="stacked" [(ngModel)]="shopAddress" />
+          </ion-item>
+          <ion-item>
+            <ion-input label="Website/Facebook" labelPlacement="stacked" [(ngModel)]="shopWebsite" placeholder="www.fb.com/..." />
+          </ion-item>
+        </ion-list>
+      </div>
 
-    <div class="app-card">
-      <div class="app-card-title"><h4><ion-icon name="person-outline" /> Tài khoản</h4></div>
-      <ion-list lines="full">
-        <ion-item>
-          <ion-input label="Tên hiển thị" labelPlacement="stacked" [(ngModel)]="fullName" />
-        </ion-item>
-        <ion-item>
-          <ion-label>
-            <p>Email đăng nhập</p>
-            <h3 class="config-email">{{ email }}</h3>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-    </div>
+      <div class="app-card">
+        <div class="app-card-title">
+          <h4><ion-icon name="card-outline" /> Thông tin ngân hàng</h4>
+        </div>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-input label="Ngân hàng" labelPlacement="stacked" [(ngModel)]="bankName" placeholder="VD: MB bank" />
+          </ion-item>
+          <ion-item>
+            <ion-input label="Chủ tài khoản" labelPlacement="stacked" [(ngModel)]="bankOwner" />
+          </ion-item>
+          <ion-item>
+            <ion-input label="Số tài khoản" labelPlacement="stacked" [(ngModel)]="bankAccount" />
+          </ion-item>
+        </ion-list>
+      </div>
+    }
 
-    <div class="app-card">
-      <div class="app-card-title"><h4><ion-icon name="settings-outline" /> Vận hành</h4></div>
-      <ion-list lines="full">
-        <ion-item>
-          <ion-input
-            label="Số tiền cho 1 điểm tích lũy (₫)"
-            labelPlacement="stacked"
-            type="number"
-            inputmode="decimal"
-            min="1000"
-            [(ngModel)]="pointRate"
-          />
-        </ion-item>
-        <ion-item>
-          <ion-input
-            label="Ngưỡng cảnh báo tồn kho thấp"
-            labelPlacement="stacked"
-            type="number"
-            inputmode="decimal"
-            min="1"
-            [(ngModel)]="lowStockThreshold"
-          />
-        </ion-item>
-      </ion-list>
-      <ion-note class="config-hint">Nhấn nút lưu ở góc trên bên phải để áp dụng</ion-note>
-    </div>
+    <!-- TAB: Cấu hình Website -->
+    @if (tab() === 'website') {
+      <div class="app-card">
+        <div class="app-card-title">
+          <h4><ion-icon name="globe-outline" /> Website của bạn</h4>
+        </div>
+        <p class="website-desc">
+          Bạn có một website miễn phí, dễ dàng quảng bá thương hiệu và sản phẩm tới khách hàng.
+          Web của bạn là:
+        </p>
+        <div class="website-url">
+          <ion-icon name="globe-outline" />
+          <a [href]="websiteUrl" target="_blank" rel="noopener">{{ websiteUrl }}</a>
+        </div>
+        <ion-note class="website-hint">
+          Website lấy dữ liệu sản phẩm từ cửa hàng của bạn. Địa chỉ web cập nhật khi bạn đổi tên shop.
+        </ion-note>
+      </div>
+    }
 
-    <div class="app-card">
-      <div class="app-card-title"><h4><ion-icon name="lock-closed-outline" /> Đổi mật khẩu</h4></div>
-      <ion-list lines="full">
-        <ion-item>
-          <ion-input
-            label="Mật khẩu mới"
-            labelPlacement="stacked"
-            type="password"
-            [(ngModel)]="newPassword"
-            placeholder="••••••••"
-          />
-        </ion-item>
-        <ion-item>
-          <ion-input
-            label="Xác nhận mật khẩu mới"
-            labelPlacement="stacked"
-            type="password"
-            [(ngModel)]="confirmPassword"
-            placeholder="••••••••"
-          />
-        </ion-item>
-      </ion-list>
-      <ion-button expand="block" fill="outline" class="pw-btn" (click)="changePassword()" [disabled]="changingPw()">
-        {{ changingPw() ? 'Đang cập nhật...' : 'Đổi mật khẩu' }}
-      </ion-button>
-    </div>
+    <!-- TAB: Cấu hình khác -->
+    @if (tab() === 'other') {
+      <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="person-outline" /> Tài khoản</h4></div>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-input label="Tên hiển thị" labelPlacement="stacked" [(ngModel)]="fullName" />
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <p>Email đăng nhập</p>
+              <h3 class="readonly-value">{{ email }}</h3>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </div>
 
-    <div class="app-card">
-      <div class="app-card-title"><h4><ion-icon name="information-circle-outline" /> Thông tin</h4></div>
-      <ion-list lines="full">
-        <ion-item>
-          <ion-icon slot="start" name="cloud-outline" />
-          <ion-label>
-            <h3>Supabase</h3>
-            <p>Đã kết nối · dữ liệu đồng bộ theo shop</p>
-          </ion-label>
-        </ion-item>
-        <ion-item button (click)="backupData()" detail="false">
-          <ion-icon slot="start" name="cloud-download-outline" />
-          <ion-label>
-            <h3>Backup dữ liệu</h3>
-            <p>Tải toàn bộ dữ liệu cửa hàng về máy (.json)</p>
-          </ion-label>
-          @if (backingUp()) {
-            <ion-spinner slot="end" name="crescent" />
-          }
-        </ion-item>
-        <ion-item>
-          <ion-icon slot="start" name="settings-outline" />
-          <ion-label>
-            <h3>Phiên bản</h3>
-            <p>PioPio v1.0 — bản web (Ionic Angular + Supabase)</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-    </div>
+      <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="settings-outline" /> Vận hành</h4></div>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-input
+              label="Số tiền cho 1 điểm tích lũy (₫)"
+              labelPlacement="stacked"
+              type="number"
+              inputmode="decimal"
+              min="1000"
+              [(ngModel)]="pointRate"
+            />
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Ngưỡng cảnh báo tồn kho thấp"
+              labelPlacement="stacked"
+              type="number"
+              inputmode="decimal"
+              min="1"
+              [(ngModel)]="lowStockThreshold"
+            />
+          </ion-item>
+        </ion-list>
+        <ion-note class="config-hint">Nhấn nút ✓ góc trên bên phải để lưu</ion-note>
+      </div>
 
-    <ion-button expand="block" color="danger" fill="outline" (click)="logout()">
-      <ion-icon slot="start" name="log-out-outline" />
-      Đăng xuất
-    </ion-button>
+      <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="lock-closed-outline" /> Đổi mật khẩu</h4></div>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-input label="Mật khẩu mới" labelPlacement="stacked" type="password" [(ngModel)]="newPassword" placeholder="••••••••" />
+          </ion-item>
+          <ion-item>
+            <ion-input label="Xác nhận mật khẩu mới" labelPlacement="stacked" type="password" [(ngModel)]="confirmPassword" placeholder="••••••••" />
+          </ion-item>
+        </ion-list>
+        <ion-button expand="block" fill="outline" class="pw-btn" (click)="changePassword()" [disabled]="changingPw()">
+          {{ changingPw() ? 'Đang cập nhật...' : 'Đổi mật khẩu' }}
+        </ion-button>
+      </div>
+
+      <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="cloud-download-outline" /> Dữ liệu</h4></div>
+        <ion-list lines="full">
+          <ion-item button (click)="backupData()" detail="false">
+            <ion-icon slot="start" name="cloud-download-outline" />
+            <ion-label>
+              <h3>Backup dữ liệu</h3>
+              <p>Tải toàn bộ dữ liệu cửa hàng về máy (.json)</p>
+            </ion-label>
+            @if (backingUp()) {
+              <ion-spinner slot="end" name="crescent" />
+            }
+          </ion-item>
+        </ion-list>
+      </div>
+
+      <ion-button expand="block" color="danger" fill="outline" (click)="logout()">Đăng xuất</ion-button>
+    }
+
+    <!-- TAB: Template hóa đơn -->
+    @if (tab() === 'template') {
+      <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="document-text-outline" /> Mẫu hóa đơn</h4></div>
+        <p class="website-desc">Chọn khổ hóa đơn dùng khi in đơn hàng.</p>
+        <div class="template-list">
+          <button class="template-item" [class.active]="invoiceTemplate() === '80mm'" (click)="invoiceTemplate.set('80mm')">
+            <ion-icon name="document-text-outline" />
+            <div>
+              <strong>Khổ 80mm</strong>
+              <span>Máy in nhiệt, hóa đơn bán lẻ</span>
+            </div>
+          </button>
+          <button class="template-item" [class.active]="invoiceTemplate() === 'a5'" (click)="invoiceTemplate.set('a5')">
+            <ion-icon name="document-text-outline" />
+            <div>
+              <strong>Khổ A5</strong>
+              <span>Hóa đơn gọn, in máy thường</span>
+            </div>
+          </button>
+          <button class="template-item" [class.active]="invoiceTemplate() === 'a4'" (click)="invoiceTemplate.set('a4')">
+            <ion-icon name="document-text-outline" />
+            <div>
+              <strong>Khổ A4</strong>
+              <span>Hóa đơn đầy đủ, có logo shop</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    }
   </div>
 </ion-content>
