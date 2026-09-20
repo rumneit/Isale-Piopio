@@ -1,0 +1,224 @@
+- generic [ref=f6e4]:
+  - banner [ref=f6e5]:
+    - generic [ref=f6e7]:
+      - button "menu" [ref=f6e10] [cursor=pointer]
+      - generic [ref=f6e13]: Trang chủ
+      - generic [ref=f6e16]:
+        - button "Tùy chỉnh shortcut trang chủ" [ref=f6e18] [cursor=pointer]:
+          - generic [ref=f6e19]:
+            - generic:
+              - img "settings outline":
+                - generic:
+                  - img "Settings"
+        - button [ref=f6e21] [cursor=pointer]:
+          - generic [ref=f6e22]:
+            - generic:
+              - img "text outline":
+                - generic:
+                  - img "Text"
+        - button [ref=f6e24] [cursor=pointer]:
+          - generic [ref=f6e25]:
+            - generic:
+              - img "notifications":
+                - generic:
+                  - img "Notifications"
+  - main [ref=f6e28]:
+    - generic [ref=f6e29]:
+      - paragraph [ref=f6e30]:
+        - generic [ref=f6e32]:
+          - generic [ref=f6e33]:
+            - img "bulb outline" [ref=f6e34]:
+              - img "Bulb" [ref=f6e36]
+            - generic [ref=f6e39]: "Mẹo: Phím tắt: Ấn nút 's' để lưu, 'p' để in và 'esc' để xóa nhanh mã vạch đang nhập trong đơn."
+          - button [ref=f6e41] [cursor=pointer]:
+            - generic [ref=f6e42]:
+              - generic:
+                - img "close":
+                  - generic:
+                    - img "Close"
+      - tablist [ref=f6e44]:
+        - generic:
+          - tab "Bán hàng" [ref=f6e45] [cursor=pointer]:
+            - button "Bán hàng"
+          - tab "Kho/Sản phẩm" [ref=f6e46] [cursor=pointer]:
+            - button "Kho/Sản phẩm"
+          - tab "Khách và Nhân viên" [active] [selected] [ref=f6e47] [cursor=pointer]:
+            - button "Khách và Nhân viên"
+          - tab "CRM" [ref=f6e48] [cursor=pointer]:
+            - button "CRM"
+      - generic [ref=f6e50]:
+        - generic:
+          - generic [ref=f6e470]: Khách hàng
+          - generic [ref=f6e478] [cursor=pointer]:
+            - img "flag" [ref=f6e479]:
+              - img "Flag" [ref=f6e481]
+            - generic [ref=f6e483]: Tuyến bán hàng
+          - generic [ref=f6e485]: Quản lý nhân viên
+          - generic [ref=f6e493] [cursor=pointer]:
+            - img "star" [ref=f6e494]:
+              - img "Star" [ref=f6e496]
+            - generic [ref=f6e498]: Tích điểm
+          - generic [ref=f6e501] [cursor=pointer]:
+            - img "document text" [ref=f6e502]:
+              - img "Document Text" [ref=f6e504]
+            - generic [ref=f6e507]: Ghi chú - Ảnh
+          - generic [ref=f6e510] [cursor=pointer]:
+            - img "document attach" [ref=f6e511]:
+              - img "Document Attach" [ref=f6e513]
+            - generic [ref=f6e516]: Nhập khách Excel
+          - generic [ref=f6e518]: Xuất khách Excel
+          - generic [ref=f6e526] [cursor=pointer]:
+            - img "cloud upload" [ref=f6e527]:
+              - img "Cloud Upload" [ref=f6e529]
+            - generic [ref=f6e531]: Nhập danh bạ
+          - generic [ref=f6e533]: Lọc khách trùng
+          - generic [ref=f6e541] [cursor=pointer]:
+            - img "time" [ref=f6e542]:
+              - img "Time" [ref=f6e544]
+            - generic [ref=f6e546]: Quản lý ca
+      - generic [ref=f6e153]: Cấu hình
+      - generic [ref=f6e158]:
+        - generic:
+          - generic [ref=f6e159]: Vận chuyển
+          - generic [ref=f6e167] [cursor=pointer]:
+            - img "volume high" [ref=f6e168]:
+              - img "Volume High" [ref=f6e170]
+            - generic [ref=f6e174]: Loa thông báo SePay
+          - generic [ref=f6e176]: Bảng dữ liệu tùy chỉnh
+          - generic [ref=f6e184] [cursor=pointer]:
+            - img "card" [ref=f6e185]:
+              - img "Card" [ref=f6e187]
+            - generic [ref=f6e189]: Ví/Tài khoản
+          - generic [ref=f6e192] [cursor=pointer]:
+            - img "settings" [ref=f6e193]:
+              - img "Settings" [ref=f6e195]
+            - generic [ref=f6e198]: Cấu hình shop
+          - generic [ref=f6e201] [cursor=pointer]:
+            - img "rocket outline" [ref=f6e202]:
+              - img "Rocket" [ref=f6e204]
+            - generic [ref=f6e207]: Nâng cấp gói
+          - generic [ref=f6e210] [cursor=pointer]:
+            - img "help" [ref=f6e211]:
+              - img "Help" [ref=f6e213]
+            - generic [ref=f6e216]: Trợ giúp
+      - generic [ref=f6e218]:
+        - generic [ref=f6e220] [cursor=pointer]:
+          - generic [ref=f6e221]:
+            - img "wallet outline" [ref=f6e222]:
+              - img "Wallet" [ref=f6e224]
+            - heading "Tài khoản/Ví mặc định" [level=4] [ref=f6e228]
+          - paragraph [ref=f6e229]: "Không có ví/tài khoản mặc định, click để tạo:"
+          - button "card outline Tạo ví/tài khoản mặc định" [ref=f6e230]:
+            - img "card outline" [ref=f6e231]:
+              - img "Card" [ref=f6e233]
+            - generic [ref=f6e236]: Tạo ví/tài khoản mặc định
+        - generic [ref=f6e238]:
+          - generic [ref=f6e239]:
+            - heading "Mã giới thiệu của bạn" [level=4] [ref=f6e240]
+            - button [ref=f6e242] [cursor=pointer]:
+              - generic [ref=f6e243]:
+                - generic:
+                  - img "close outline":
+                    - generic:
+                      - img "Close"
+          - paragraph [ref=f6e244]: Chia sẻ mã hoặc link này cho bạn bè để họ đăng ký ISale. Khi bạn bè dùng mã hợp lệ, họ được 1 tháng (30 ngày) dùng thử các quyền lợi gói PRO. Ngoài ra, bạn còn được tặng 1 tháng PRO khi bạn bè của bạn lần đầu mua gói PRO.
+          - generic [ref=f6e245]:
+            - generic [ref=f6e246]:
+              - text: "Mã referral:"
+              - strong [ref=f6e247]: 7X48YYN4
+            - button [ref=f6e249] [cursor=pointer]:
+              - generic [ref=f6e250]:
+                - generic:
+                  - img "copy outline":
+                    - generic:
+                      - img "Copy"
+          - generic [ref=f6e251]:
+            - generic [ref=f6e252]: https://isale.online/app/#/register?refCode=7X48YYN4
+            - button [ref=f6e254] [cursor=pointer]:
+              - generic [ref=f6e255]:
+                - generic:
+                  - img "copy outline":
+                    - generic:
+                      - img "Copy"
+        - generic [ref=f6e258]:
+          - generic [ref=f6e259]:
+            - heading [level=2] [ref=f6e260]:
+              - img "headset outline" [ref=f6e261]:
+                - img "Headset" [ref=f6e263]
+              - text: Liên hệ/Báo lỗi
+            - img "close outline" [ref=f6e266] [cursor=pointer]:
+              - img "Close" [ref=f6e268]
+          - generic [ref=f6e270]: Nếu bạn muốn báo lỗi/đặt câu hỏi/hoặc yêu cầu tính năng, hãy gửi chúng tôi yêu cầu của bạn bằng cách click nút bên dưới.
+          - button [ref=f6e271] [cursor=pointer]:
+            - img "mail outline" [ref=f6e272]:
+              - img "Mail" [ref=f6e274]
+            - text: Báo lỗi/Yêu cầu hỗ trợ
+          - generic [ref=f6e277]:
+            - generic [ref=f6e278] [cursor=pointer]:
+              - img "call outline" [ref=f6e280]:
+                - img "Call" [ref=f6e282]
+              - generic [ref=f6e284]: Hotline/Zalo/Telegram
+            - generic [ref=f6e286] [cursor=pointer]:
+              - img "mail outline" [ref=f6e288]:
+                - img "Mail" [ref=f6e290]
+              - generic [ref=f6e293]: Email
+      - generic [ref=f6e297]:
+        - generic [ref=f6e298]:
+          - generic [ref=f6e299]: Gói Miễn Phí
+          - img "rocket outline" [ref=f6e300]:
+            - img "Rocket" [ref=f6e302]
+        - generic [ref=f6e305]:
+          - generic [ref=f6e306]:
+            - paragraph [ref=f6e307]: "Bạn đang sử dụng gói Miễn Phí, với giới hạn:"
+            - list [ref=f6e308]:
+              - listitem [ref=f6e309]:
+                - img "checkmark circle" [ref=f6e310]:
+                  - img "Checkmark Circle" [ref=f6e312]
+                - generic [ref=f6e314]: Tạo dưới 10 đơn/ngày.
+              - listitem [ref=f6e315]:
+                - img "checkmark circle" [ref=f6e316]:
+                  - img "Checkmark Circle" [ref=f6e318]
+                - generic [ref=f6e320]: Không thể nhập thêm sản phẩm nếu đã có trên 30 sản phẩm.
+              - listitem [ref=f6e321]:
+                - img "checkmark circle" [ref=f6e322]:
+                  - img "Checkmark Circle" [ref=f6e324]
+                - generic [ref=f6e326]: Không thể quản lý nhiều shop/kho.
+              - listitem [ref=f6e327]:
+                - img "checkmark circle" [ref=f6e328]:
+                  - img "Checkmark Circle" [ref=f6e330]
+                - generic [ref=f6e332]: Không thể quản lý fanpage Facebook/Zalo và một số tính năng khác.
+              - listitem [ref=f6e333]:
+                - img "checkmark circle" [ref=f6e334]:
+                  - img "Checkmark Circle" [ref=f6e336]
+                - generic [ref=f6e338]: Quảng cáo (chỉ một banner nhỏ dưới app).
+          - button "diamond outline NÂNG CẤP LÊN BẢN PRO" [ref=f6e339] [cursor=pointer]:
+            - img "diamond outline" [ref=f6e340]:
+              - img "Diamond" [ref=f6e342]
+            - generic [ref=f6e345]: NÂNG CẤP LÊN BẢN PRO
+      - generic [ref=f6e347]:
+        - generic [ref=f6e348]:
+          - generic [ref=f6e349]:
+            - img "sync circle outline" [ref=f6e350]:
+              - img "Sync Circle" [ref=f6e352]
+            - heading "Các nền tảng khả dụng" [level=4] [ref=f6e356]
+          - paragraph [ref=f6e357]: Bạn có thể dùng ISALE trên nhiều thiết bị và nền tảng khác nhau, chung một nguồn dữ liệu đồng bộ với công nghệ đám mây
+        - generic [ref=f6e358]:
+          - generic [ref=f6e359] [cursor=pointer]:
+            - img "logo android" [ref=f6e361]:
+              - img "Logo Android" [ref=f6e363]
+            - generic [ref=f6e365]:
+              - generic [ref=f6e366]: ISALE Android
+              - generic [ref=f6e367]: CH Play
+            - img "open outline" [ref=f6e368]:
+              - img "Open" [ref=f6e370]
+          - generic [ref=f6e372] [cursor=pointer]:
+            - img "logo apple" [ref=f6e374]:
+              - img "Logo Apple" [ref=f6e376]
+            - generic [ref=f6e379]:
+              - generic [ref=f6e380]: ISALE iOS
+              - generic [ref=f6e381]: App Store
+            - img "open outline" [ref=f6e382]:
+              - img "Open" [ref=f6e384]
+      - generic:
+        - generic:
+          - insertion

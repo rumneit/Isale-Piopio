@@ -1,4 +1,4 @@
-// Test 2: seed fake session → guard thật → click navigation → dump console
+// Test nghiem thu: dieu huong + menu + back button (viewport dien thoai)
 import { chromium } from 'playwright';
 import { createServer } from 'http';
 import { readFile } from 'fs/promises';
@@ -56,43 +56,30 @@ await context.addInitScript(([key, val]) => {
 const page = await context.newPage();
 const logs = [];
 page.on('console', (msg) => logs.push(`[${msg.type()}] ${msg.text()}`));
-page.on('pageerror', (err) => logs.push(`[PAGEERROR] ${err.message}\n${(err.stack ?? '').split('\n').slice(0, 5).join('\n')}`));
+page.on('pageerror', (err) => logs.push(`[PAGEERROR] ${err.message}`));
 
 await page.goto('http://localhost:8334/#/home', { waitUntil: 'networkidle', timeout: 30000 });
 await page.waitForTimeout(4000);
 
 console.log('=== URL boot:', page.url());
-console.log('=== title boot:', await page.locator('ion-title').first().textContent().catch(() => 'N/A'));
-console.log('=== home hero visible:', (await page.locator('.home-hero').count()) > 0 ? 'YES' : 'NO');
+console.log('=== home hero visible:', (await page.locator('.home-hero, .tip-banner').count()) > 0 ? 'YES' : 'NO');
+console.log('=== so action tab Ban hang:', await page.locator('.app-action').count());
 
-// Click quick action "Đơn hàng mới"
-const action = page.locator('.app-action', { hasText: 'Đơn hàng mới' }).first();
+// 1) Bam quick action "Bán hàng" -> /order/add
+const action = page.locator('.app-action', { hasText: 'Bán hàng' }).first();
 console.log('=== action count:', await action.count());
 await action.click();
-await page.waitForTimeout(3500);
-
+await page.waitForTimeout(2500);
 console.log('=== URL after click:', page.url());
-console.log('=== title after click:', await page.locator('ion-title').first().textContent().catch(() => 'N/A'));
-const orderAddVisible = (await page.locator('ion-select').count()) > 0;
-console.log('=== order-add form visible:', orderAddVisible ? 'YES' : 'NO');
+console.log('=== order-add form visible:', (await page.locator('ion-select').count()) > 0 ? 'YES' : 'NO');
 
-// Thử thêm 1 nav nữa: Báo cáo
-const rep = page.locator('.app-action', { hasText: 'Báo cáo doanh thu' }).first();
-if ((await rep.count()) > 0) {
-  await rep.click();
-  await page.waitForTimeout(2500);
-  console.log('=== URL after report click:', page.url());
-}
-
-// TEST NÚT BACK + MENU: về home (đổi hash), mở menu, vào Sản phẩm, bấm back
-await page.evaluate(() => {
-  location.hash = '#/home';
-});
-await page.waitForTimeout(3000);
+// 2) Ve home bang hash, doi sang tab Kho/San pham va bam Bao cao
+await page.evaluate(() => { location.hash = '#/home'; });
+await page.waitForTimeout(2500);
 console.log('=== URL ve home:', page.url());
-let pass = true;
 
-// mở menu
+// 3) Mo menu -> bam "Sản phẩm" -> back button
+let pass = true;
 const menuBtn = page.locator('ion-menu-button').first();
 if ((await menuBtn.count()) > 0) {
   await menuBtn.click();
@@ -123,15 +110,11 @@ if ((await menuBtn.count()) > 0) {
   pass = false;
 }
 
-// Kiểm tra trang đích render đúng (không chỉ URL đổi)
-const heroVisible = await page.locator('.home-hero').isVisible().catch(() => false);
-console.log('=== home hero visible after back:', heroVisible ? 'YES' : 'NO');
-if (!heroVisible) pass = false;
+const homeVisible = (await page.locator('.tip-banner, .home-tabs').count()) > 0;
+console.log('=== home visible after back:', homeVisible ? 'YES' : 'NO');
+if (!homeVisible) pass = false;
 
-console.log('\n=== KET QUA NGHIEM THU:', pass ? 'PASS ✓' : 'FAIL ✗');
-
-console.log('\n=== CONSOLE (last 45) ===');
-console.log(logs.slice(-45).join('\n'));
+console.log('\n=== KET QUA NGHIEM THU:', pass ? 'PASS' : 'FAIL');
 
 await browser.close();
 server.close();

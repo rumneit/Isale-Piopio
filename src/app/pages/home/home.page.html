@@ -5,162 +5,202 @@
     </ion-buttons>
     <ion-title>Trang chủ</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="openPath('/config')">
+        <ion-icon slot="icon-only" name="settings-outline" />
+      </ion-button>
+      <ion-button (click)="openPath('/note')">
+        <ion-icon slot="icon-only" name="text-outline" />
+      </ion-button>
       <ion-button (click)="openPath('/notifications')">
         <ion-icon slot="icon-only" name="notifications-outline" />
-        @if (unreadCount() > 0) {
-          <ion-badge class="bell-badge" color="danger">{{ unreadCount() }}</ion-badge>
-        }
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="app-page">
-  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
-    <ion-refresher-content />
-  </ion-refresher>
-
   <div class="app-page-container">
-    <!-- Cảnh báo Supabase (nếu chưa cấu hình) -->
-    @if (!supabaseReady) {
-      <div class="app-banner-warning">
-        <ion-icon name="cloud-offline-outline" />
-        <span>
-          Chưa kết nối Supabase — đang chạy ở chế độ xem trước. Điền credentials vào
-          <code>environment.ts</code> để kích hoạt dữ liệu thật.
-        </span>
+    <!-- Tip banner theo tab -->
+    @if (!isTipDismissed(currentTab.id)) {
+      <div class="tip-banner">
+        <ion-icon name="bulb-outline" class="tip-icon" />
+        <span class="tip-text">{{ currentTab.tip }}</span>
+        <button class="tip-close" (click)="dismissTip(currentTab.id)">
+          <ion-icon name="close-outline" />
+        </button>
       </div>
     }
 
-    <!-- 2. Greeting hero -->
-    <div class="home-hero">
-      <div>
-        <div class="home-hero-hi">{{ greeting }}, {{ auth.displayName() }} 👋</div>
-        <div class="home-hero-shop">
-          <ion-icon name="storefront-outline" />
-          {{ shopName }}
-        </div>
-      </div>
-      <div class="home-hero-date">{{ now | date: 'EEEE, dd/MM' }}</div>
-    </div>
-
-    <!-- 3. Stats -->
-    @if (loading && !stats) {
-      <div class="app-stats-row">
-        @for (i of [1, 2, 3, 4]; track i) {
-          <div class="app-stat">
-            <ion-skeleton-text [animated]="true" style="width: 55%; height: 10px;" />
-            <ion-skeleton-text [animated]="true" style="width: 80%; height: 20px; margin-top: 8px;" />
-            <ion-skeleton-text [animated]="true" style="width: 40%; height: 9px; margin-top: 6px;" />
-          </div>
-        }
-      </div>
-    } @else {
-      <div class="app-stats-row">
-        <div class="app-stat">
-          <div class="app-stat-label">Doanh thu hôm nay</div>
-          <div class="app-stat-value">{{ formatMoney(stats?.revenueToday) }}</div>
-          <div class="app-stat-sub">{{ stats?.ordersToday ?? 0 }} đơn hàng</div>
-        </div>
-        <div class="app-stat">
-          <div class="app-stat-label">Doanh thu tháng này</div>
-          <div class="app-stat-value">{{ formatMoney(stats?.revenueMonth) }}</div>
-          <div class="app-stat-sub">Chi: {{ formatMoney(stats?.expenseMonth) }}</div>
-        </div>
-        <div class="app-stat">
-          <div class="app-stat-label">Tổng công nợ</div>
-          <div class="app-stat-value">{{ formatMoney(stats?.debtTotal) }}</div>
-        </div>
-        <div class="app-stat">
-          <div class="app-stat-label">Sản phẩm / Khách hàng</div>
-          <div class="app-stat-value">{{ stats?.productCount ?? 0 }} / {{ stats?.customerCount ?? 0 }}</div>
-        </div>
-      </div>
-    }
-
-    <!-- Spotlight khảo sát (viền gradient động như bản gốc) -->
-    @if (!surveyDismissed()) {
-      <div class="home-survey-spotlight">
-        <div class="home-survey-inner">
-          <div class="home-survey-layout">
-            <div class="home-survey-bubble">
-              <ion-icon name="star-half-outline" />
-            </div>
-            <div class="home-survey-main">
-              <h4>PioPio đang tốt hơn mỗi ngày</h4>
-              <p>Chỉ 30 giây đánh giá của bạn giúp chúng tôi hoàn thiện app cho hàng nghìn chủ shop.</p>
-            </div>
-            <div class="home-survey-actions">
-              <ion-button size="small" (click)="openPath('/support')">Đánh giá ngay</ion-button>
-              <ion-button size="small" fill="clear" (click)="dismissSurvey()">
-                <ion-icon slot="icon-only" name="close-outline" />
-              </ion-button>
-            </div>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- 4. Quick actions -->
-    <div class="app-card home-actions-card">
-      <div class="app-card-title">
-        <h4><ion-icon name="grid-outline" /> Thao tác nhanh</h4>
-      </div>
-
-      <ion-segment class="app-home-segment" [value]="selectedTab()" (ionChange)="selectTab($any($event))" [scrollable]="true">
-        @for (tab of tabs; track tab.id) {
-          <ion-segment-button [value]="tab.id">
-            <ion-label>{{ tab.label }}</ion-label>
-          </ion-segment-button>
-        }
-      </ion-segment>
-
+    <!-- 4 tab thao tác nhanh -->
+    <ion-segment class="app-home-segment home-tabs" [value]="selectedTab()" (ionChange)="selectTab($any($event))" [scrollable]="true">
       @for (tab of tabs; track tab.id) {
-        @if (selectedTab() === tab.id) {
-          <div class="app-actions-grid home-actions-grid">
-            @for (action of tab.actions; track action.id) {
-              <div class="app-action" (click)="openAction(action)">
-                <div class="app-action-icon" [style.background]="action.color + '1a'">
-                  <ion-icon [name]="action.icon" [style.color]="action.color" />
-                </div>
-                <span class="app-action-label">{{ action.label }}</span>
-              </div>
+        <ion-segment-button [value]="tab.id">
+          <ion-label>{{ tab.label }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+
+    <div class="app-actions-grid home-actions-grid">
+      @for (action of currentTab.actions; track action.id) {
+        <div class="app-action" (click)="openAction(action)">
+          <div class="app-action-icon" [style.background]="action.color + '1a'">
+            <ion-icon [name]="action.icon" [style.color]="action.color" />
+            @if (action.isNew) {
+              <span class="action-new-badge">Mới</span>
             }
           </div>
-        }
+          <span class="app-action-label">{{ action.label }}</span>
+        </div>
       }
     </div>
 
-    <!-- 5. Recent orders -->
-    <div class="app-card">
-      <div class="app-card-title">
-        <h4><ion-icon name="receipt-outline" /> Đơn hàng gần đây</h4>
-        <ion-button fill="clear" size="small" (click)="openPath('/order')">Xem tất cả</ion-button>
+    <!-- Cấu hình CRM (chỉ hiện ở tab CRM) -->
+    @if (selectedTab() === 'crm') {
+      <div class="section-title">Cấu hình CRM</div>
+      <div class="crm-config-list">
+        @for (item of crmConfigItems; track item.path) {
+          <div class="crm-config-item" (click)="openPath(item.path)">
+            <ion-icon [name]="item.icon" />
+            <span>{{ item.label }}</span>
+          </div>
+        }
       </div>
+    }
 
-      @if (loading) {
-        <div class="home-loading"><ion-spinner name="crescent" /></div>
-      } @else if (recentOrders.length === 0) {
-        <div class="app-empty">
-          <div><ion-icon name="checkmark-done-outline" /></div>
-          Chưa có đơn hàng nào trong tháng này
-        </div>
-      } @else {
-        <ion-list lines="full" class="home-orders-list">
-          @for (order of recentOrders; track order.id) {
-            <ion-item button (click)="openPath('/order')">
-              <ion-icon slot="start" name="cart-outline" color="primary" />
-              <ion-label>
-                <h3>{{ order.code }} — {{ order.customer_name ?? 'Khách lẻ' }}</h3>
-                <p>{{ order.created_at | date: 'dd/MM/yyyy HH:mm' }}</p>
-              </ion-label>
-              <ion-badge slot="end" [color]="order.paid ? 'success' : 'warning'">
-                {{ formatMoney(order.total) }}
-              </ion-badge>
-            </ion-item>
-          }
-        </ion-list>
+    <!-- Section Cấu hình -->
+    <div class="section-title">Cấu hình</div>
+    <div class="config-chips">
+      @for (item of configItems; track item.path + item.label) {
+        <button class="config-chip" (click)="openPath(item.path)">
+          <ion-icon [name]="item.icon" />
+          <span>{{ item.label }}</span>
+        </button>
       }
+    </div>
+
+    <!-- Ví/Tài khoản mặc định -->
+    @if (!walletLoading() && !hasDefaultWallet()) {
+      <div class="home-card wallet-card">
+        <div class="home-card-head">
+          <ion-icon name="wallet-outline" class="home-card-icon" />
+          <h4>Tài khoản/Ví mặc định</h4>
+        </div>
+        <p class="home-card-desc">Không có ví/tài khoản mặc định, bấm để tạo:</p>
+        <button class="wallet-create-btn" (click)="createDefaultWallet()" [disabled]="creatingWallet()">
+          <ion-icon name="card-outline" />
+          {{ creatingWallet() ? 'Đang tạo...' : 'Tạo ví/tài khoản mặc định' }}
+        </button>
+      </div>
+    }
+
+    <!-- Mã giới thiệu -->
+    <div class="home-card referral-card">
+      <div class="home-card-head">
+        <h4>Mã giới thiệu của bạn</h4>
+        @if (!referralHidden()) {
+          <button class="card-close" (click)="referralHidden.set(true)">
+            <ion-icon name="close-outline" />
+          </button>
+        }
+      </div>
+      @if (!referralHidden()) {
+        <p class="home-card-desc">
+          Chia sẻ mã hoặc link này cho bạn bè để họ đăng ký PioPio. Khi bạn bè dùng mã hợp lệ, họ được dùng thử
+          các quyền lợi gói PRO.
+        </p>
+        <div class="referral-row">
+          <span>Mã referral: <strong>{{ referralCode() }}</strong></span>
+          <button class="copy-btn" (click)="copyText(referralCode(), 'mã giới thiệu')">
+            <ion-icon name="copy-outline" />
+          </button>
+        </div>
+        <div class="referral-row">
+          <span class="referral-link">{{ referralLink }}</span>
+          <button class="copy-btn" (click)="copyText(referralLink, 'link giới thiệu')">
+            <ion-icon name="copy-outline" />
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Liên hệ / Báo lỗi -->
+    @if (!contactHidden()) {
+      <div class="home-card contact-card">
+        <div class="home-card-head">
+          <ion-icon name="headset-outline" class="home-card-icon" />
+          <h4>Liên hệ/Báo lỗi</h4>
+          <button class="card-close" (click)="contactHidden.set(true)">
+            <ion-icon name="close-outline" />
+          </button>
+        </div>
+        <p class="home-card-desc">
+          Nếu bạn muốn báo lỗi, đặt câu hỏi hoặc yêu cầu tính năng, hãy gửi yêu cầu cho chúng tôi.
+        </p>
+        <button class="contact-primary-btn" (click)="openPath('/support')">
+          <ion-icon name="mail-outline" />
+          Báo lỗi/Yêu cầu hỗ trợ
+        </button>
+        <div class="contact-methods">
+          <div class="contact-method">
+            <ion-icon name="call-outline" />
+            <span>Hotline/Zalo/Telegram</span>
+          </div>
+          <div class="contact-method">
+            <ion-icon name="mail-outline" />
+            <span>Email</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Gói Miễn Phí -->
+    <div class="home-card plan-card">
+      <div class="plan-head">
+        <span class="plan-badge">Gói Miễn Phí</span>
+        <ion-icon name="rocket-outline" />
+      </div>
+      <p class="home-card-desc">Bạn đang sử dụng gói Miễn Phí, với giới hạn:</p>
+      <ul class="plan-limits">
+        @for (limit of freePlanLimits; track limit) {
+          <li>
+            <ion-icon name="checkmark-circle-outline" />
+            <span>{{ limit }}</span>
+          </li>
+        }
+      </ul>
+      <button class="plan-upgrade-btn" (click)="openPath('/pricing')">
+        <ion-icon name="diamond-outline" />
+        NÂNG CẤP LÊN BẢN PRO
+      </button>
+    </div>
+
+    <!-- Nền tảng khả dụng -->
+    <div class="home-card platform-card">
+      <div class="home-card-head">
+        <ion-icon name="sync-circle-outline" class="home-card-icon" />
+        <h4>Các nền tảng khả dụng</h4>
+      </div>
+      <p class="home-card-desc">
+        Bạn có thể dùng PioPio trên nhiều thiết bị và nền tảng khác nhau, chung một nguồn dữ liệu đồng bộ đám mây.
+      </p>
+      <div class="platform-links">
+        <div class="platform-link">
+          <ion-icon name="logo-android" class="platform-icon" />
+          <div class="platform-info">
+            <span class="platform-name">PioPio Android</span>
+            <span class="platform-store">CH Play</span>
+          </div>
+          <ion-icon name="open-outline" class="platform-open" />
+        </div>
+        <div class="platform-link">
+          <ion-icon name="logo-apple" class="platform-icon" />
+          <div class="platform-info">
+            <span class="platform-name">PioPio iOS</span>
+            <span class="platform-store">App Store</span>
+          </div>
+          <ion-icon name="open-outline" class="platform-open" />
+        </div>
+      </div>
     </div>
   </div>
 </ion-content>

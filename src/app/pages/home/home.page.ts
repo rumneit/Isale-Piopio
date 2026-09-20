@@ -13,65 +13,67 @@ import {
   IonSegmentButton,
   IonLabel,
   IonBadge,
-  IonRefresher,
-  IonRefresherContent,
   IonSpinner,
   IonMenuButton,
-  IonList,
-  IonItem,
-  IonSkeletonText,
+  ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   menuOutline,
   notificationsOutline,
-  cartOutline,
-  swapHorizontalOutline,
-  listOutline,
-  barChartOutline,
-  documentTextOutline,
-  pricetagsOutline,
-  cubeOutline,
-  downloadOutline,
-  arrowRedoOutline,
-  boatOutline,
-  layersOutline,
-  walletOutline,
-  addCircleOutline,
-  trendingUpOutline,
-  trendingDownOutline,
-  peopleOutline,
-  personOutline,
-  analyticsOutline,
-  storefrontOutline,
-  helpCircleOutline,
   settingsOutline,
-  logOutOutline,
-  refreshOutline,
-  gridOutline,
-  receiptOutline,
-  cardOutline,
-  checkmarkDoneOutline,
-  scanOutline,
-  starHalfOutline,
-  diamondOutline,
-  timeOutline,
-  gitNetworkOutline,
-  copyOutline,
-  gitBranchOutline,
-  handLeftOutline,
-  pulseOutline,
-  chatbubbleEllipsesOutline,
-  megaphoneOutline,
-  lockClosedOutline,
-  codeSlashOutline,
-  cloudOfflineOutline,
+  textOutline,
+  bulbOutline,
   closeOutline,
+  basketOutline,
+  barcodeOutline,
+  cloudOutline,
+  cashOutline,
+  readerOutline,
+  trendingUpOutline,
+  logoFacebook,
+  sparklesOutline,
+  colorWandOutline,
+  cartOutline,
+  clipboardOutline,
+  folderOutline,
+  businessOutline,
+  documentAttachOutline,
+  personAddOutline,
+  checkboxOutline,
+  syncOutline,
+  albumsOutline,
+  cogOutline,
+  flashOutline,
+  peopleOutline,
+  helpCircleOutline,
+  volumeHighOutline,
+  gridOutline,
+  cardOutline,
+  rocketOutline,
+  diamondOutline,
+  syncCircleOutline,
+  logoAndroid,
+  logoApple,
+  openOutline,
+  headsetOutline,
+  callOutline,
+  mailOutline,
+  copyOutline,
+  walletOutline,
+  checkmarkCircleOutline,
+  starOutline,
+  timeOutline,
+  flagOutline,
+  documentTextOutline,
+  cloudUploadOutline,
+  listOutline,
+  boatOutline,
+  createOutline,
+  trashOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
-import { DataService } from '../../core/services/data.service';
-import { SupabaseService } from '../../core/services/supabase.service';
-import { NotificationsService } from '../../core/services/notifications.service';
+import { MoneyAccountsService } from '../../core/services/money-accounts.service';
 
 interface QuickAction {
   id: string;
@@ -79,12 +81,20 @@ interface QuickAction {
   icon: string;
   color: string;
   path: string;
+  isNew?: boolean;
 }
 
 interface HomeTab {
   id: string;
   label: string;
+  tip: string;
   actions: QuickAction[];
+}
+
+interface ConfigItem {
+  label: string;
+  icon: string;
+  path: string;
 }
 
 @Component({
@@ -104,217 +114,203 @@ interface HomeTab {
     IonSegmentButton,
     IonLabel,
     IonBadge,
-    IonRefresher,
-    IonRefresherContent,
     IonSpinner,
     IonMenuButton,
-    IonList,
-    IonItem,
-    IonSkeletonText,
   ],
 })
 export class HomePage implements OnInit {
   readonly auth = inject(AuthService);
-  private data = inject(DataService);
-  private sb = inject(SupabaseService);
+  private moneyAccountsService = inject(MoneyAccountsService);
   private router = inject(Router);
-  private notificationsService = inject(NotificationsService);
+  private toastCtrl = inject(ToastController);
 
-  readonly unreadCount = signal(0);
+  readonly selectedTab = signal('selling');
+  readonly tipDismissed = signal<Record<string, boolean>>({});
+  readonly walletLoading = signal(true);
+  readonly hasDefaultWallet = signal(true);
+  readonly referralCode = signal('');
+  readonly creatingWallet = signal(false);
+  readonly referralHidden = signal(false);
+  readonly contactHidden = signal(false);
 
+  /** 4 tab thao tác nhanh — cấu trúc khớp ISale */
   readonly tabs: HomeTab[] = [
     {
       id: 'selling',
       label: 'Bán hàng',
+      tip: 'Mẹo: Tạo đơn nhanh bằng cách quét mã vạch sản phẩm ngay trên thanh thao tác.',
       actions: [
-        { id: 'make-order', label: 'Đơn hàng mới', icon: 'cart-outline', color: '#6030ff', path: '/order/add' },
-        { id: 'make-trade', label: 'Giao dịch lẻ', icon: 'swap-horizontal-outline', color: '#47bdb5', path: '/trade/add' },
-        { id: 'orders', label: 'Đơn hàng', icon: 'list-outline', color: '#e6bf00', path: '/order' },
-        { id: 'reports', label: 'Báo cáo doanh thu', icon: 'bar-chart-outline', color: '#2dd55b', path: '/report' },
-        { id: 'debts', label: 'Công nợ', icon: 'document-text-outline', color: '#ff7043', path: '/debt' },
-        { id: 'quotes', label: 'Báo giá', icon: 'receipt-outline', color: '#5c6bc0', path: '/quote' },
-        { id: 'promotions', label: 'Khuyến mãi', icon: 'card-outline', color: '#ec407a', path: '/promotion' },
-        { id: 'scan', label: 'Quét mã', icon: 'scan-outline', color: '#26c6da', path: '/scan' },
+        { id: 'sell', label: 'Bán hàng', icon: 'basket-outline', color: '#6030ff', path: '/order/add' },
+        { id: 'scan-order', label: 'Tạo đơn: quét mã', icon: 'barcode-outline', color: '#47bdb5', path: '/scan' },
+        { id: 'orders', label: 'QL đơn hàng', icon: 'list-outline', color: '#e6bf00', path: '/order' },
+        { id: 'online-orders', label: 'Đơn từ Website', icon: 'cloud-outline', color: '#2dd55b', path: '/module/online-order' },
+        { id: 'debt', label: 'Quản lý công nợ', icon: 'document-text-outline', color: '#ff7043', path: '/debt' },
+        { id: 'trade', label: 'Quản lý Thu/Chi', icon: 'cash-outline', color: '#5c6bc0', path: '/trade' },
+        { id: 'quote', label: 'Quản lý Báo giá', icon: 'reader-outline', color: '#ec407a', path: '/quote' },
+        { id: 'delivery', label: 'Đơn vận chuyển', icon: 'boat-outline', color: '#26c6da', path: '/delivery' },
+        { id: 'report', label: 'Báo cáo, biểu đồ', icon: 'trending-up-outline', color: '#2dd55b', path: '/report' },
+        { id: 'fanpage', label: 'Quản lý Fanpage', icon: 'logo-facebook', color: '#1877f2', path: '/module/fbpage' },
+        { id: 'ai-services', label: 'Dịch vụ AI', icon: 'sparkles-outline', color: '#a855f7', path: '/module/ai-services', isNew: true },
+        { id: 'ai-page', label: 'Tạo trang với AI', icon: 'color-wand-outline', color: '#ff6b9d', path: '/module/ai-dynamic-page', isNew: true },
       ],
     },
     {
       id: 'inventory',
       label: 'Kho/Sản phẩm',
+      tip: "Mẹo: Để đổi trả hàng, hãy dùng tính năng 'Trả hàng' trong chi tiết đơn hàng.",
       actions: [
-        { id: 'products', label: 'Sản phẩm', icon: 'pricetags-outline', color: '#6030ff', path: '/product' },
-        { id: 'materials', label: 'Nguyên liệu', icon: 'cube-outline', color: '#47bdb5', path: '/material' },
-        { id: 'received', label: 'Nhập hàng', icon: 'download-outline', color: '#e6bf00', path: '/received-note' },
-        { id: 'transfer', label: 'Chuyển hàng', icon: 'arrow-redo-outline', color: '#2dd55b', path: '/transfer' },
-        { id: 'delivery', label: 'Giao hàng', icon: 'boat-outline', color: '#ff7043', path: '/delivery' },
-        { id: 'stock-check', label: 'Kiểm kho', icon: 'layers-outline', color: '#5c6bc0', path: '/stock-check' },
-        { id: 'serial', label: 'Serial/IMEI', icon: 'grid-outline', color: '#ec407a', path: '/module/serial' },
-        { id: 'import', label: 'Nhập Excel', icon: 'download-outline', color: '#26c6da', path: '/import' },
-      ],
-    },
-    {
-      id: 'money',
-      label: 'Thu chi',
-      actions: [
-        { id: 'new-transaction', label: 'Giao dịch mới', icon: 'add-circle-outline', color: '#6030ff', path: '/trade/add' },
-        { id: 'accounts', label: 'Sổ tiền', icon: 'wallet-outline', color: '#47bdb5', path: '/money-account' },
-        { id: 'trades', label: 'Giao dịch', icon: 'swap-horizontal-outline', color: '#e6bf00', path: '/trade' },
-        { id: 'income', label: 'Báo cáo thu', icon: 'trending-up-outline', color: '#2dd55b', path: '/report' },
-        { id: 'expense', label: 'Báo cáo chi', icon: 'trending-down-outline', color: '#ff7043', path: '/report' },
-        { id: 'categories', label: 'Danh mục', icon: 'list-outline', color: '#5c6bc0', path: '/module/trade-category' },
-        { id: 'categories-report', label: 'BC theo nhóm', icon: 'bar-chart-outline', color: '#ec407a', path: '/report' },
-        { id: 'timely', label: 'BC theo thời gian', icon: 'analytics-outline', color: '#26c6da', path: '/report' },
+        { id: 'products', label: 'Sản phẩm', icon: 'cart-outline', color: '#6030ff', path: '/product' },
+        { id: 'received', label: 'Phiếu nhập kho', icon: 'clipboard-outline', color: '#47bdb5', path: '/received-note' },
+        { id: 'transfer', label: 'Phiếu chuyển kho', icon: 'arrow-redo-outline', color: '#e6bf00', path: '/transfer' },
+        { id: 'stock-check', label: 'Kiểm kê kho', icon: 'checkbox-outline', color: '#2dd55b', path: '/stock-check' },
+        { id: 'category', label: 'Danh mục SP', icon: 'folder-outline', color: '#ff7043', path: '/module/category' },
+        { id: 'multi-shop', label: 'Q/l nhiều shop/kho', icon: 'business-outline', color: '#5c6bc0', path: '/module/store' },
+        { id: 'import-products', label: 'Nhập SP từ Excel', icon: 'document-attach-outline', color: '#ec407a', path: '/import' },
+        { id: 'export-products', label: 'Xuất SP ra Excel', icon: 'reader-outline', color: '#26c6da', path: '/product' },
+        { id: 'import-received', label: 'Nhập Phiếu Nhập từ file Excel', icon: 'reader-outline', color: '#8d6e63', path: '/module/received-note-import' },
       ],
     },
     {
       id: 'contacts',
-      label: 'Khách & NV',
+      label: 'Khách và Nhân viên',
+      tip: 'Mẹo: Chia sẻ mã giới thiệu cho bạn bè để cả hai cùng nhận ưu đãi PRO.',
       actions: [
         { id: 'customers', label: 'Khách hàng', icon: 'people-outline', color: '#6030ff', path: '/contact' },
-        { id: 'staff', label: 'Nhân viên', icon: 'person-outline', color: '#47bdb5', path: '/staff' },
-        { id: 'point', label: 'Tích điểm', icon: 'star-half-outline', color: '#e6bf00', path: '/point' },
-        { id: 'levels', label: 'Hạng thành viên', icon: 'diamond-outline', color: '#2dd55b', path: '/module/level-config' },
-        { id: 'shift', label: 'Ca làm việc', icon: 'time-outline', color: '#ff7043', path: '/module/shift' },
-        { id: 'org-chart', label: 'Sơ đồ tổ chức', icon: 'git-network-outline', color: '#5c6bc0', path: '/org-chart' },
-        { id: 'import-contact', label: 'Nhập khách hàng', icon: 'download-outline', color: '#ec407a', path: '/module/contact-import' },
-        { id: 'filter-dup', label: 'Trùng lặp', icon: 'copy-outline', color: '#26c6da', path: '/module/filter-duplicate' },
+        { id: 'sales-route', label: 'Tuyến bán hàng', icon: 'flag-outline', color: '#47bdb5', path: '/module/sales-route' },
+        { id: 'staff', label: 'Quản lý nhân viên', icon: 'person-outline', color: '#e6bf00', path: '/staff' },
+        { id: 'points', label: 'Tích điểm', icon: 'star-outline', color: '#2dd55b', path: '/point' },
+        { id: 'notes', label: 'Ghi chú - Ảnh', icon: 'document-text-outline', color: '#ff7043', path: '/note' },
+        { id: 'import-customers', label: 'Nhập khách Excel', icon: 'document-attach-outline', color: '#5c6bc0', path: '/import' },
+        { id: 'export-customers', label: 'Xuất khách Excel', icon: 'reader-outline', color: '#ec407a', path: '/contact' },
+        { id: 'import-contacts', label: 'Nhập danh bạ', icon: 'cloud-upload-outline', color: '#26c6da', path: '/module/contact-import' },
+        { id: 'filter-dup', label: 'Lọc khách trùng', icon: 'copy-outline', color: '#8d6e63', path: '/module/filter-duplicate' },
+        { id: 'shifts', label: 'Quản lý ca', icon: 'time-outline', color: '#607d8b', path: '/shift' },
       ],
     },
     {
       id: 'crm',
       label: 'CRM',
+      tip: 'Mẹo: Kéo-thả khách giữa các cột trong Pipeline để cập nhật tiến độ chăm sóc.',
       actions: [
-        { id: 'crm-leads', label: 'Leads', icon: 'people-outline', color: '#6030ff', path: '/crm' },
-        { id: 'crm-pipeline', label: 'Pipeline', icon: 'git-branch-outline', color: '#47bdb5', path: '/crm/pipeline' },
-        { id: 'crm-deals', label: 'Deals', icon: 'hand-left-outline', color: '#e6bf00', path: '/crm' },
-        { id: 'crm-forecast', label: 'Dự báo', icon: 'trending-up-outline', color: '#2dd55b', path: '/module/crm-forecast' },
-        { id: 'crm-activities', label: 'Hoạt động', icon: 'pulse-outline', color: '#ff7043', path: '/crm-activities' },
-        { id: 'crm-settings', label: 'Cài đặt CRM', icon: 'settings-outline', color: '#5c6bc0', path: '/module/crm-settings' },
-        { id: 'sms', label: 'SMS Marketing', icon: 'chatbubble-ellipses-outline', color: '#ec407a', path: '/integrations' },
-        { id: 'zalo', label: 'Zalo Marketing', icon: 'megaphone-outline', color: '#26c6da', path: '/integrations' },
-      ],
-    },
-    {
-      id: 'config',
-      label: 'Cấu hình',
-      actions: [
-        { id: 'store', label: 'Cửa hàng', icon: 'storefront-outline', color: '#6030ff', path: '/config' },
-        { id: 'staff-permission', label: 'Phân quyền', icon: 'lock-closed-outline', color: '#47bdb5', path: '/permission' },
-        { id: 'external-api', label: 'External API', icon: 'code-slash-outline', color: '#e6bf00', path: '/integrations' },
-        { id: 'sales-channels', label: 'Kênh bán', icon: 'storefront-outline', color: '#2dd55b', path: '/module/sales-channels' },
-        { id: 'shipping', label: 'Vận chuyển', icon: 'boat-outline', color: '#ff7043', path: '/module/shipping' },
-        { id: 'help', label: 'Trợ giúp', icon: 'help-circle-outline', color: '#5c6bc0', path: '/help' },
-        { id: 'settings', label: 'Cài đặt', icon: 'settings-outline', color: '#ec407a', path: '/config' },
-        { id: 'logout', label: 'Đăng xuất', icon: 'log-out-outline', color: '#c5000f', path: '__logout__' },
+        { id: 'crm-help', label: 'CRM Help', icon: 'help-circle-outline', color: '#6030ff', path: '/help' },
+        { id: 'crm-leads', label: 'Khách tiềm năng', icon: 'person-add-outline', color: '#47bdb5', path: '/crm' },
+        { id: 'crm-activities', label: 'Hoạt động', icon: 'checkbox-outline', color: '#e6bf00', path: '/crm-activities' },
+        { id: 'crm-sync', label: 'Đồng bộ điện thoại', icon: 'sync-outline', color: '#2dd55b', path: '/module/crm-device-sync' },
+        { id: 'crm-pipeline', label: 'Pipeline tiềm năng', icon: 'albums-outline', color: '#ff7043', path: '/crm/pipeline' },
       ],
     },
   ];
 
-  readonly selectedTab = signal('selling');
-  readonly now = new Date();
-  readonly surveyDismissed = signal(localStorage.getItem('piopio-survey-dismissed') === '1');
+  /** Nhóm cấu hình CRM hiển thị riêng dưới tab CRM */
+  readonly crmConfigItems: ConfigItem[] = [
+    { label: 'Cài đặt CRM', icon: 'cog-outline', path: '/module/crm-settings' },
+    { label: 'Quy trình tự động', icon: 'flash-outline', path: '/module/crm-flow-settings' },
+    { label: 'Sơ đồ tổ chức', icon: 'people-outline', path: '/org-chart' },
+  ];
 
-  dismissSurvey() {
-    this.surveyDismissed.set(true);
-    localStorage.setItem('piopio-survey-dismissed', '1');
-  }
+  /** Section Cấu hình — danh sách chip ngang */
+  readonly configItems: ConfigItem[] = [
+    { label: 'Vận chuyển', icon: 'boat-outline', path: '/module/shipping' },
+    { label: 'Loa thông báo SePay', icon: 'volume-high-outline', path: '/integrations' },
+    { label: 'Bảng dữ liệu tùy chỉnh', icon: 'grid-outline', path: '/module/custom-table' },
+    { label: 'Ví/Tài khoản', icon: 'card-outline', path: '/money-account' },
+    { label: 'Cấu hình shop', icon: 'settings-outline', path: '/config' },
+    { label: 'Nâng cấp gói', icon: 'rocket-outline', path: '/pricing' },
+    { label: 'Trợ giúp', icon: 'help-circle-outline', path: '/help' },
+  ];
+
+  readonly freePlanLimits = [
+    'Tạo dưới 10 đơn/ngày.',
+    'Không thể nhập thêm sản phẩm nếu đã có trên 30 sản phẩm.',
+    'Không thể quản lý nhiều shop/kho.',
+    'Không thể quản lý fanpage Facebook/Zalo và một số tính năng khác.',
+    'Quảng cáo (chỉ một banner nhỏ dưới app).',
+  ];
 
   constructor() {
     addIcons({
       menuOutline,
       notificationsOutline,
-      cartOutline,
-      swapHorizontalOutline,
-      listOutline,
-      barChartOutline,
-      documentTextOutline,
-      pricetagsOutline,
-      cubeOutline,
-      downloadOutline,
-      arrowRedoOutline,
-      boatOutline,
-      layersOutline,
-      walletOutline,
-      addCircleOutline,
-      trendingUpOutline,
-      trendingDownOutline,
-      peopleOutline,
-      personOutline,
-      analyticsOutline,
-      storefrontOutline,
-      helpCircleOutline,
       settingsOutline,
-      logOutOutline,
-      refreshOutline,
-      gridOutline,
-      receiptOutline,
-      cardOutline,
-      checkmarkDoneOutline,
-      scanOutline,
-      starHalfOutline,
-      diamondOutline,
-      timeOutline,
-      gitNetworkOutline,
-      copyOutline,
-      gitBranchOutline,
-      handLeftOutline,
-      pulseOutline,
-      chatbubbleEllipsesOutline,
-      megaphoneOutline,
-      lockClosedOutline,
-      codeSlashOutline,
-      cloudOfflineOutline,
+      textOutline,
+      bulbOutline,
       closeOutline,
+      basketOutline,
+      barcodeOutline,
+      cloudOutline,
+      cashOutline,
+      readerOutline,
+      trendingUpOutline,
+      logoFacebook,
+      sparklesOutline,
+      colorWandOutline,
+      cartOutline,
+      clipboardOutline,
+      folderOutline,
+      businessOutline,
+      documentAttachOutline,
+      personAddOutline,
+      checkboxOutline,
+      syncOutline,
+      albumsOutline,
+      cogOutline,
+      flashOutline,
+      peopleOutline,
+      helpCircleOutline,
+      volumeHighOutline,
+      gridOutline,
+      cardOutline,
+      rocketOutline,
+      diamondOutline,
+      syncCircleOutline,
+      logoAndroid,
+      logoApple,
+      openOutline,
+      headsetOutline,
+      callOutline,
+      mailOutline,
+      copyOutline,
+      walletOutline,
+      checkmarkCircleOutline,
+      starOutline,
+      timeOutline,
+      flagOutline,
+      documentTextOutline,
+      cloudUploadOutline,
+      listOutline,
+      boatOutline,
+      createOutline,
+      trashOutline,
     });
   }
 
-  get stats() {
-    return this.data.stats();
+  ngOnInit(): void {
+    this.referralCode.set(this.buildReferralCode());
+    this.checkDefaultWallet();
   }
 
-  get recentOrders() {
-    return this.data.recentOrders();
-  }
-
-  get loading() {
-    return this.data.loading();
-  }
-
-  get supabaseReady() {
-    return this.sb.isConfigured;
+  get currentTab(): HomeTab {
+    return this.tabs.find((t) => t.id === this.selectedTab()) ?? this.tabs[0];
   }
 
   get shopName(): string {
-    return this.auth.shop()?.name ?? 'Cửa hàng của tôi';
-  }
-
-  get greeting(): string {
-    const h = new Date().getHours();
-    if (h < 11) return 'Chào buổi sáng';
-    if (h < 14) return 'Chào buổi trưa';
-    if (h < 18) return 'Chào buổi chiều';
-    return 'Chào buổi tối';
-  }
-
-  ngOnInit(): void {
-    this.data.refreshHome();
-    this.refreshUnread();
-  }
-
-  async refreshUnread() {
-    try {
-      const list = await this.notificationsService.build();
-      this.unreadCount.set(this.notificationsService.countUnread(list));
-    } catch (e) {
-      console.error('load unread failed', e);
-    }
-  }
-
-  doRefresh(event: CustomEvent) {
-    this.data.refreshHome().finally(() => (event.target as HTMLIonRefresherElement).complete());
+    return this.auth.shop()?.name ?? 'PioPio';
   }
 
   selectTab(ev: CustomEvent) {
     this.selectedTab.set(ev.detail.value as string);
+  }
+
+  isTipDismissed(tabId: string): boolean {
+    return !!this.tipDismissed()[tabId];
+  }
+
+  dismissTip(tabId: string) {
+    this.tipDismissed.update((m) => ({ ...m, [tabId]: true }));
+  }
+
+  openPath(path: string) {
+    this.router.navigateByUrl(path);
   }
 
   openAction(action: QuickAction) {
@@ -325,11 +321,64 @@ export class HomePage implements OnInit {
     this.router.navigateByUrl(action.path);
   }
 
-  openPath(path: string) {
-    this.router.navigateByUrl(path);
+  /** Mã giới thiệu sinh từ ID shop (ổn định, 8 ký tự) */
+  private buildReferralCode(): string {
+    const shopId = this.auth.shop()?.id ?? 'piopio';
+    let hash = 0;
+    for (let i = 0; i < shopId.length; i++) {
+      hash = (hash * 31 + shopId.charCodeAt(i)) >>> 0;
+    }
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    let h = hash;
+    for (let i = 0; i < 8; i++) {
+      code += chars[h % chars.length];
+      h = Math.floor(h / chars.length) + 7 * (i + 1);
+    }
+    return code;
   }
 
-  formatMoney(v: number | null | undefined): string {
-    return new Intl.NumberFormat('vi-VN').format(v ?? 0) + ' ₫';
+  get referralLink(): string {
+    return `https://quanlykhopiopio.vercel.app/#/login?refCode=${this.referralCode()}`;
+  }
+
+  async copyText(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.toast(`Đã copy ${label}`);
+    } catch {
+      this.toast('Không copy được — hãy copy thủ công', 'warning');
+    }
+  }
+
+  private async checkDefaultWallet() {
+    this.walletLoading.set(true);
+    try {
+      const accounts = await this.moneyAccountsService.list();
+      this.hasDefaultWallet.set(accounts.length > 0);
+    } catch (e) {
+      console.error('check wallet failed', e);
+      this.hasDefaultWallet.set(true);
+    } finally {
+      this.walletLoading.set(false);
+    }
+  }
+
+  async createDefaultWallet() {
+    this.creatingWallet.set(true);
+    try {
+      await this.moneyAccountsService.create('Tiền mặt', 'cash', 0);
+      this.hasDefaultWallet.set(true);
+      this.toast('Đã tạo ví/tài khoản mặc định');
+    } catch (e: any) {
+      this.toast(e?.message ?? 'Tạo ví thất bại', 'danger');
+    } finally {
+      this.creatingWallet.set(false);
+    }
+  }
+
+  private async toast(message: string, color: string = 'success') {
+    const t = await this.toastCtrl.create({ message, duration: 1800, color, position: 'bottom' });
+    await t.present();
   }
 }
