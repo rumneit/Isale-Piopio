@@ -70,7 +70,6 @@ export const routes: Routes = [
   { path: 'report/product', loadComponent: () => import('./pages/reports/report-product.page').then((m) => m.ReportProductPage), canActivate: [authGuard] },
   { path: 'report/debt', loadComponent: () => import('./pages/reports/report-debt.page').then((m) => m.ReportDebtPage), canActivate: [authGuard] },
   { path: 'integrations', loadComponent: () => import('./pages/integrations/integrations.page').then((m) => m.IntegrationsPage), canActivate: [authGuard] },
-  { path: 'pricing', loadComponent: () => import('./pages/pricing/pricing.page').then((m) => m.PricingPage), canActivate: [authGuard] },
   { path: 'support', loadComponent: () => import('./pages/support/support.page').then((m) => m.SupportPage), canActivate: [authGuard] },
   { path: 'org-chart', loadComponent: () => import('./pages/org-chart/org-chart.page').then((m) => m.OrgChartPage), canActivate: [authGuard] },
   // Notifications

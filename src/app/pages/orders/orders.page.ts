@@ -33,7 +33,6 @@ import {
   sparklesOutline,
   addOutline,
   fileTrayOutline,
-  giftOutline,
   checkmarkCircleOutline,
 } from 'ionicons/icons';
 import { OrdersService } from '../../core/services/orders.service';
@@ -97,14 +96,6 @@ export class OrdersPage implements OnInit {
 
   readonly totalAmount = computed(() => this.items().reduce((s, o) => s + Number(o.total ?? 0), 0));
 
-  readonly freePlanLimits = [
-    'Tạo dưới 10 đơn/ngày.',
-    'Không thể nhập thêm sản phẩm nếu đã có trên 30 sản phẩm.',
-    'Không thể quản lý nhiều shop/kho.',
-    'Không thể quản lý fanpage Facebook/Zalo và một số tính năng khác.',
-    'Quảng cáo (chỉ một banner nhỏ dưới app).',
-  ];
-
   constructor() {
     addIcons({
       homeOutline,
@@ -121,7 +112,6 @@ export class OrdersPage implements OnInit {
       sparklesOutline,
       addOutline,
       fileTrayOutline,
-      giftOutline,
       checkmarkCircleOutline,
     });
   }

@@ -136,12 +136,6 @@ export class HelpPage {
       path: '/support',
     },
     {
-      icon: 'card-outline',
-      title: 'Bảng giá',
-      desc: 'So sánh gói Miễn phí / Pro / Enterprise và nâng cấp khi cần.',
-      path: '/pricing',
-    },
-    {
       icon: 'documentTextOutline',
       title: 'Cấu hình cửa hàng',
       desc: 'Đổi tên cửa hàng, tên hiển thị của bạn, đăng xuất tài khoản.',

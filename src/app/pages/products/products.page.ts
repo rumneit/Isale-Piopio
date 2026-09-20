@@ -37,7 +37,6 @@ import {
   sparklesOutline,
   addOutline,
   checkmarkCircleOutline,
-  giftOutline,
 } from 'ionicons/icons';
 import { ProductsService } from '../../core/services/products.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
@@ -85,14 +84,6 @@ export class ProductsPage implements OnInit {
     return this.items().slice(start, start + this.pageSize);
   });
 
-  readonly freePlanLimits = [
-    'Tạo dưới 10 đơn/ngày.',
-    'Không thể nhập thêm sản phẩm nếu đã có trên 30 sản phẩm.',
-    'Không thể quản lý nhiều shop/kho.',
-    'Không thể quản lý fanpage Facebook/Zalo và một số tính năng khác.',
-    'Quảng cáo (chỉ một banner nhỏ dưới app).',
-  ];
-
   constructor() {
     addIcons({
       homeOutline,
@@ -112,7 +103,6 @@ export class ProductsPage implements OnInit {
       sparklesOutline,
       addOutline,
       checkmarkCircleOutline,
-      giftOutline,
     });
   }
 

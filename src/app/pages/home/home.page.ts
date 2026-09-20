@@ -50,18 +50,6 @@ import {
   volumeHighOutline,
   gridOutline,
   cardOutline,
-  rocketOutline,
-  diamondOutline,
-  syncCircleOutline,
-  logoAndroid,
-  logoApple,
-  openOutline,
-  headsetOutline,
-  callOutline,
-  mailOutline,
-  copyOutline,
-  walletOutline,
-  checkmarkCircleOutline,
   starOutline,
   timeOutline,
   flagOutline,
@@ -128,10 +116,7 @@ export class HomePage implements OnInit {
   readonly tipDismissed = signal<Record<string, boolean>>({});
   readonly walletLoading = signal(true);
   readonly hasDefaultWallet = signal(true);
-  readonly referralCode = signal('');
   readonly creatingWallet = signal(false);
-  readonly referralHidden = signal(false);
-  readonly contactHidden = signal(false);
 
   /** 4 tab thao tác nhanh — cấu trúc khớp ISale */
   readonly tabs: HomeTab[] = [
@@ -215,16 +200,7 @@ export class HomePage implements OnInit {
     { label: 'Bảng dữ liệu tùy chỉnh', icon: 'grid-outline', path: '/module/custom-table' },
     { label: 'Ví/Tài khoản', icon: 'card-outline', path: '/money-account' },
     { label: 'Cấu hình shop', icon: 'settings-outline', path: '/config' },
-    { label: 'Nâng cấp gói', icon: 'rocket-outline', path: '/pricing' },
     { label: 'Trợ giúp', icon: 'help-circle-outline', path: '/help' },
-  ];
-
-  readonly freePlanLimits = [
-    'Tạo dưới 10 đơn/ngày.',
-    'Không thể nhập thêm sản phẩm nếu đã có trên 30 sản phẩm.',
-    'Không thể quản lý nhiều shop/kho.',
-    'Không thể quản lý fanpage Facebook/Zalo và một số tính năng khác.',
-    'Quảng cáo (chỉ một banner nhỏ dưới app).',
   ];
 
   constructor() {
@@ -260,18 +236,6 @@ export class HomePage implements OnInit {
       volumeHighOutline,
       gridOutline,
       cardOutline,
-      rocketOutline,
-      diamondOutline,
-      syncCircleOutline,
-      logoAndroid,
-      logoApple,
-      openOutline,
-      headsetOutline,
-      callOutline,
-      mailOutline,
-      copyOutline,
-      walletOutline,
-      checkmarkCircleOutline,
       starOutline,
       timeOutline,
       flagOutline,
@@ -285,7 +249,6 @@ export class HomePage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.referralCode.set(this.buildReferralCode());
     this.checkDefaultWallet();
   }
 
@@ -319,36 +282,6 @@ export class HomePage implements OnInit {
       return;
     }
     this.router.navigateByUrl(action.path);
-  }
-
-  /** Mã giới thiệu sinh từ ID shop (ổn định, 8 ký tự) */
-  private buildReferralCode(): string {
-    const shopId = this.auth.shop()?.id ?? 'piopio';
-    let hash = 0;
-    for (let i = 0; i < shopId.length; i++) {
-      hash = (hash * 31 + shopId.charCodeAt(i)) >>> 0;
-    }
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
-    let h = hash;
-    for (let i = 0; i < 8; i++) {
-      code += chars[h % chars.length];
-      h = Math.floor(h / chars.length) + 7 * (i + 1);
-    }
-    return code;
-  }
-
-  get referralLink(): string {
-    return `https://quanlykhopiopio.vercel.app/#/login?refCode=${this.referralCode()}`;
-  }
-
-  async copyText(text: string, label: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      this.toast(`Đã copy ${label}`);
-    } catch {
-      this.toast('Không copy được — hãy copy thủ công', 'warning');
-    }
   }
 
   private async checkDefaultWallet() {

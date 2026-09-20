@@ -112,19 +112,5 @@
         }
       </div>
     }
-
-    <!-- Gói Miễn Phí -->
-    <div class="home-card plan-card">
-      <p class="plan-desc">Bạn đang sử dụng gói Miễn Phí, với giới hạn:</p>
-      <ul class="plan-limits">
-        @for (limit of freePlanLimits; track limit) {
-          <li>{{ limit }}</li>
-        }
-      </ul>
-      <button class="plan-upgrade-btn" (click)="openPath('/pricing')">
-        <ion-icon name="gift-outline" />
-        Nâng cấp lên bản PRO
-      </button>
-    </div>
   </div>
 </ion-content>

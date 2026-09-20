@@ -178,7 +178,6 @@ export class AppComponent implements OnInit {
     { title: 'Lịch sử thay đổi', icon: 'pulse-outline', path: '/activity-log' },
     { title: 'Phân quyền', icon: 'lock-closed-outline', path: '/permission' },
     { title: 'Tích hợp', icon: 'link-outline', path: '/integrations' },
-    { title: 'Bảng giá', icon: 'card-outline', path: '/pricing' },
     { title: 'Hỗ trợ', icon: 'mail-outline', path: '/support' },
     { title: 'CRM', icon: 'analytics-outline', path: '/crm' },
     { title: 'Nhân viên', icon: 'person-outline', path: '/staff' },
