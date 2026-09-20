@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import {
   IonApp,
   IonMenu,
@@ -17,9 +17,6 @@ import {
   Router,
   NavigationEnd,
   NavigationError,
-  NavigationStart,
-  NavigationCancel,
-  NavigationSkipped,
   RouterLink,
   RouterLinkActive,
   RouterOutlet,
@@ -105,48 +102,18 @@ export class AppComponent implements OnInit {
   private actionSheetCtrl = inject(ActionSheetController);
   private alertCtrl = inject(AlertController);
 
-  /** Bảng debug điều hướng — hiển thị tạm thời để chẩn đoán lỗi chuyển trang */
-  readonly navDebug = signal<Array<{ t: string; info: string; time: string }>>([]);
-
-  private debugPush(t: string, info: string) {
-    const time = new Date().toLocaleTimeString('vi-VN', { hour12: false }) + '.' + String(Date.now() % 1000).padStart(3, '0');
-    this.navDebug.update((list) => [{ t, info, time }, ...list].slice(0, 10));
-  }
-
   /**
    * Tự phục hồi khi tab đang mở dùng bản JS cũ (sau deploy mới):
    * chunk cũ bị xóa trên server → điều hướng lỗi → reload 1 lần để lấy bản mới.
    */
   ngOnInit(): void {
-    console.info('[PioPio] build 2026-09-19-16:35 — pipeline-fix-2 (NoReuse + zone.js)');
-
-    // ===== DEBUG PANEL: theo dõi toàn bộ sự kiện điều hướng =====
-    this.debugPush('BOOT', location.hash || '#/');
-
     this.router.events.subscribe((e: any) => {
-      if (e instanceof NavigationStart) {
-        this.debugPush('START', e.url);
-      } else if (e instanceof NavigationEnd) {
+      if (e instanceof NavigationEnd) {
         sessionStorage.removeItem('piopio-chunk-reload');
-        this.debugPush('END ✓', e.urlAfterRedirects);
-      } else if (e instanceof NavigationCancel) {
-        this.debugPush('CANCEL ✗', `${e.url} — reason: ${e.reason}`);
-      } else if (e instanceof NavigationSkipped) {
-        this.debugPush('SKIPPED ⤼', `${e.url} — ${(e as any).reason ?? ''}`);
       } else if (e instanceof NavigationError) {
-        this.debugPush('ERROR ✗', `${e.url} — ${String((e as any).error?.message ?? (e as any).error)}`);
         this.reportNavError(e);
       }
     });
-
-    document.addEventListener('click', (ev) => {
-      const target = (ev.target as HTMLElement)?.closest?.('ion-item, .app-action, ion-fab-button, ion-button, a, button');
-      if (target) {
-        const text = (target.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 26);
-        if (text) this.debugPush('CLICK', text);
-      }
-    }, true);
-    // ============================================================
 
     window.addEventListener('unhandledrejection', (ev) => {
       const msg = String((ev as PromiseRejectionEvent)?.reason?.message ?? ev);

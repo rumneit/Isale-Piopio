@@ -21,6 +21,14 @@
         </div>
       </div>
 
+      @if (auth.shopsOwned().length > 1) {
+        <button class="shop-switcher" (click)="openShopSwitcher()">
+          <ion-icon name="storefront-outline" />
+          <span class="shop-switcher-name">{{ shopName }}</span>
+          <ion-icon name="swap-horizontal-outline" class="shop-switcher-icon" />
+        </button>
+      }
+
       <ion-list>
         @for (item of menuItems; track item.path) {
           <ion-menu-toggle auto-hide="false">
@@ -43,16 +51,4 @@
       </ion-list>
     </ion-footer>
   </ion-menu>
-
-  <!-- DEBUG PANEL (tạm thời) -->
-  <div class="nav-debug-panel">
-    <div class="nav-debug-title">NAV DEBUG</div>
-    @for (row of navDebug(); track row.time + row.t) {
-      <div class="nav-debug-row">
-        <span class="nav-debug-time">{{ row.time }}</span>
-        <span class="nav-debug-type" [class.err]="row.t.includes('ERROR') || row.t.includes('CANCEL')">{{ row.t }}</span>
-        <span class="nav-debug-info">{{ row.info }}</span>
-      </div>
-    }
-  </div>
 </ion-app>
