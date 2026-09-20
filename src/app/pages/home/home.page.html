@@ -69,13 +69,12 @@
 
     <!-- Section Cấu hình -->
     <div class="section-title">Cấu hình</div>
-    <div class="config-list">
+    <div class="config-grid">
       @for (item of configItems; track item.path + item.label) {
-        <div class="config-row" (click)="openPath(item.path)">
-          <ion-icon [name]="item.icon" class="config-row-icon" />
-          <span class="config-row-label">{{ item.label }}</span>
-          <ion-icon name="chevron-forward-outline" class="config-row-chevron" />
-        </div>
+        <button class="config-box" (click)="openPath(item.path)">
+          <ion-icon [name]="item.icon" class="config-box-icon" />
+          <span class="config-box-label">{{ item.label }}</span>
+        </button>
       }
     </div>
 
