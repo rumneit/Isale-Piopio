@@ -184,7 +184,7 @@ ion-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0;
   padding: 16px 6px 10px;
   border: 1px solid #bbbbbb;
@@ -202,6 +202,10 @@ ion-content {
     font-size: 28px;
     color: #008080;
     margin-bottom: 8px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .config-box-label {
@@ -209,6 +213,10 @@ ion-content {
     font-weight: 600;
     color: var(--ion-color-dark);
     line-height: 1.35;
+    min-height: 34px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
   }
 }
 
