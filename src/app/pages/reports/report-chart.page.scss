@@ -1,0 +1,103 @@
+.page-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.report-hero {
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
+  border-radius: 16px;
+  padding: 18px;
+  color: #fff;
+  margin-bottom: 12px;
+
+  .report-hero-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    opacity: 0.9;
+  }
+
+  .report-hero-value {
+    font-size: 26px;
+    font-weight: 800;
+    margin-top: 6px;
+    letter-spacing: -0.02em;
+  }
+
+  .report-hero-sub {
+    font-size: 12.5px;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+}
+
+.report-income {
+  color: var(--ion-color-success) !important;
+}
+
+.report-expense {
+  color: var(--ion-color-danger) !important;
+}
+
+ion-list {
+  background: transparent;
+
+  ion-item {
+    --background: transparent;
+
+    h3 {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--app-text);
+    }
+
+    p {
+      color: var(--app-text-muted);
+      font-size: 12.5px;
+    }
+  }
+}
+
+.daily-list {
+  .daily-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+
+    .daily-date {
+      width: 44px;
+      flex-shrink: 0;
+      font-size: 12.5px;
+      color: var(--app-text-muted);
+      font-weight: 600;
+    }
+
+    .daily-bar-wrap {
+      flex: 1;
+      height: 10px;
+      border-radius: 5px;
+      background: var(--app-surface-alt);
+      overflow: hidden;
+    }
+
+    .daily-bar {
+      height: 100%;
+      border-radius: 5px;
+      background: linear-gradient(90deg, var(--ion-color-primary), var(--ion-color-secondary));
+      min-width: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .daily-value {
+      width: 110px;
+      flex-shrink: 0;
+      text-align: right;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--app-text);
+    }
+  }
+}

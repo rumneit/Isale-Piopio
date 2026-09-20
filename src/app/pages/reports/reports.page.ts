@@ -1,35 +1,36 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
   IonTitle,
   IonButtons,
-  IonBackButton,
+  IonButton,
   IonIcon,
   IonContent,
-  IonSegment,
-  IonSegmentButton,
-  IonLabel,
-  IonSpinner,
-  IonBadge,
-  IonNote,
-  IonRefresher,
-  IonRefresherContent,
-  IonList,
-  IonItem,
+  IonMenuButton,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
+  homeOutline,
+  receiptOutline,
+  documentOutline,
+  personOutline,
   barChartOutline,
-  trendingUpOutline,
-  trendingDownOutline,
-  cartOutline,
-  analyticsOutline,
-  podiumOutline,
-  calendarOutline,
+  readerOutline,
+  newspaperOutline,
+  downloadOutline,
 } from 'ionicons/icons';
-import { ReportsService, ReportRange, ReportResult } from '../../core/services/reports.service';
+
+interface ReportItem {
+  id: string;
+  label: string;
+  icon: string;
+  color: string;
+  path: string;
+  section?: string;
+}
 
 @Component({
   selector: 'app-reports',
@@ -41,83 +42,48 @@ import { ReportsService, ReportRange, ReportResult } from '../../core/services/r
     IonToolbar,
     IonTitle,
     IonButtons,
-    IonBackButton,
+    IonButton,
     IonIcon,
     IonContent,
-    IonSegment,
-    IonSegmentButton,
-    IonLabel,
-    IonSpinner,
-    IonBadge,
-    IonNote,
-    IonRefresher,
-    IonRefresherContent,
-    IonList,
-    IonItem,
+    IonMenuButton,
   ],
 })
-export class ReportsPage implements OnInit {
-  readonly reportsService = inject(ReportsService);
+export class ReportsPage {
+  private router = inject(Router);
 
-  readonly ranges: { value: ReportRange; label: string }[] = [
-    { value: 'today', label: 'Hôm nay' },
-    { value: 'week', label: 'Tuần' },
-    { value: 'month', label: 'Tháng' },
-    { value: 'year', label: 'Năm' },
+  readonly mainReports: ReportItem[] = [
+    { id: 'orders', label: 'Tổng hợp theo đơn hàng', icon: 'receipt-outline', color: '#6030ff', path: '/report/orders' },
+    { id: 'products', label: 'Tổng hợp theo sản phẩm', icon: 'document-outline', color: '#47bdb5', path: '/report/product' },
+    { id: 'customers', label: 'Tổng hợp theo khách hàng', icon: 'person-outline', color: '#e6bf00', path: '/report/customer' },
+    { id: 'staff', label: 'Tổng hợp theo nhân viên', icon: 'person-outline', color: '#2dd55b', path: '/staff' },
+    { id: 'chart', label: 'Biểu đồ doanh thu', icon: 'bar-chart-outline', color: '#ff7043', path: '/report/chart' },
+    { id: 'debt', label: 'Báo cáo vay/nợ', icon: 'bar-chart-outline', color: '#5c6bc0', path: '/report/debt' },
   ];
 
-  readonly range = signal<ReportRange>('month');
-  readonly report = signal<ReportResult | null>(null);
-  readonly loading = signal(true);
+  readonly exportReports: ReportItem[] = [
+    { id: 'excel-products', label: 'Xuất SP ra Excel', icon: 'reader-outline', color: '#ec407a', path: '/product' },
+    { id: 'stock', label: 'Báo cáo tồn kho tổng hợp', icon: 'document-outline', color: '#26c6da', path: '/report/stock' },
+    { id: 'inout', label: 'Báo cáo xuất nhập', icon: 'newspaper-outline', color: '#8d6e63', path: '/report/inout' },
+  ];
 
   constructor() {
     addIcons({
+      homeOutline,
+      receiptOutline,
+      documentOutline,
+      personOutline,
       barChartOutline,
-      trendingUpOutline,
-      trendingDownOutline,
-      cartOutline,
-      analyticsOutline,
-      podiumOutline,
-      calendarOutline,
+      readerOutline,
+      newspaperOutline,
+      downloadOutline,
     });
   }
 
-  ngOnInit(): void {
-    this.load();
+  openHome() {
+    this.router.navigateByUrl('/home');
   }
 
-  async load() {
-    this.loading.set(true);
-    try {
-      this.report.set(await this.reportsService.getReport(this.range()));
-    } catch (e: any) {
-      console.error('load report failed', e);
-      this.report.set(null);
-    } finally {
-      this.loading.set(false);
-    }
-  }
-
-  async onRange(ev: CustomEvent) {
-    this.range.set(ev.detail.value as ReportRange);
-    await this.load();
-  }
-
-  doRefresh(event: CustomEvent) {
-    this.load().finally(() => (event.target as HTMLIonRefresherElement).complete());
-  }
-
-  maxDailyRevenue(): number {
-    const rows = this.report()?.daily ?? [];
-    return Math.max(1, ...rows.map((r) => r.revenue));
-  }
-
-  formatMoney(v: number | null | undefined): string {
-    return new Intl.NumberFormat('vi-VN').format(v ?? 0) + ' ₫';
-  }
-
-  formatDay(date: string): string {
-    const [y, m, d] = date.split('-');
-    return `${d}/${m}`;
+  open(item: ReportItem) {
+    this.router.navigateByUrl(item.path);
   }
 }

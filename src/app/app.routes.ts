@@ -77,6 +77,11 @@ export const routes: Routes = [
   { path: 'notifications', loadComponent: () => import('./pages/notifications/notifications.page').then((m) => m.NotificationsPage), canActivate: [authGuard] },
   // Reports
   { path: 'report', loadComponent: () => import('./pages/reports/reports.page').then((m) => m.ReportsPage), canActivate: [authGuard] },
+  { path: 'report/chart', loadComponent: () => import('./pages/reports/report-chart.page').then((m) => m.ReportChartPage), canActivate: [authGuard] },
+  { path: 'report/orders', loadComponent: () => import('./pages/reports/report-orders.page').then((m) => m.ReportOrdersPage), canActivate: [authGuard] },
+  { path: 'report/customer', loadComponent: () => import('./pages/reports/report-customer.page').then((m) => m.ReportCustomerPage), canActivate: [authGuard] },
+  { path: 'report/stock', loadComponent: () => import('./pages/reports/report-stock.page').then((m) => m.ReportStockPage), canActivate: [authGuard] },
+  { path: 'report/inout', loadComponent: () => import('./pages/reports/report-inout.page').then((m) => m.ReportInOutPage), canActivate: [authGuard] },
   // Money accounts
   { path: 'money-account', loadComponent: () => import('./pages/money-accounts/money-accounts.page').then((m) => m.MoneyAccountsPage), canActivate: [authGuard] },
   // Config
