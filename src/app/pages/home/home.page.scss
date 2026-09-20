@@ -166,26 +166,19 @@ ion-content {
 
 /* ---------- Config grid (ô vuông như bản gốc) ---------- */
 .config-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 10px;
-  overflow-x: auto;
   padding: 2px 2px 8px;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 .config-box {
-  flex: 0 0 auto;
-  width: 162px;
-  min-height: 110px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   gap: 0;
+  min-height: 110px;
   padding: 16px 6px 10px;
   border: 1px solid #bbbbbb;
   border-radius: 10px;
