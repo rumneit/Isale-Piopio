@@ -1,47 +1,242 @@
-.products-loading {
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+/* ---------- Hàng lọc ---------- */
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 4px 2px 10px;
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .filter-label {
+    font-size: 12.5px;
+    color: var(--app-text-muted);
+    font-weight: 600;
+  }
+
+  .filter-btn {
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    cursor: pointer;
+
+    &.muted {
+      color: var(--app-text-muted);
+      font-weight: 600;
+    }
+
+    &:active {
+      background: var(--app-surface-alt);
+    }
+  }
+}
+
+/* ---------- Toolbar ---------- */
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-left,
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.toolbar-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--app-text);
+  margin-left: 4px;
+}
+
+/* ---------- Danh sách sản phẩm ---------- */
+.page-loading {
   display: flex;
   justify-content: center;
   padding: 40px 0;
 }
 
-.products-card {
-  padding: 4px 0;
+.product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  ion-list {
-    background: transparent;
+.product-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  box-shadow: var(--app-shadow-sm);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+
+  &:hover {
+    box-shadow: var(--app-shadow-md);
   }
 
-  ion-item {
-    --background: transparent;
+  &:active {
+    transform: scale(0.99);
+  }
 
-    h3 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--app-text);
-    }
+  .product-name {
+    margin: 0 0 10px;
+    font-size: 15.5px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--app-text);
+  }
+}
 
-    p {
-      color: var(--app-text-muted);
-      font-size: 12.5px;
+.product-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+
+  .field-label {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+    font-weight: 600;
+  }
+
+  .field-value {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--app-text);
+
+    &.negative {
+      color: var(--ion-color-danger);
     }
   }
 }
 
-.product-thumb {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: rgba(var(--ion-color-primary-rgb), 0.1);
-  color: var(--ion-color-primary);
+.serial-row {
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid var(--app-border);
+  padding-top: 8px;
+  margin-top: 2px;
+
+  .field-label {
+    font-size: 12.5px;
+    color: var(--app-text-muted);
+    font-weight: 600;
+  }
+
+  ion-toggle {
+    --track-background-checked: rgba(var(--ion-color-primary-rgb), 0.4);
+  }
+}
+
+/* ---------- Phân trang ---------- */
+.pagination {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  padding: 14px 0 4px;
 
-  ion-icon {
-    font-size: 22px;
+  span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--app-text);
   }
 }
 
-.product-sku {
-  font-weight: 600;
+/* ---------- Gói Miễn Phí ---------- */
+.home-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  box-shadow: var(--app-shadow-sm);
+  padding: 16px;
+  margin-top: 14px;
+}
+
+.plan-card {
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.35);
+}
+
+.plan-desc {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--app-text-muted);
+}
+
+.plan-limits {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+
+  li {
+    position: relative;
+    padding: 4px 0 4px 22px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--app-text);
+
+    &::before {
+      content: '✓';
+      position: absolute;
+      left: 2px;
+      color: var(--ion-color-primary);
+      font-weight: 800;
+    }
+  }
+}
+
+.plan-upgrade-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }

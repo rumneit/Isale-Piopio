@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import {
@@ -12,23 +12,39 @@ import {
   IonSearchbar,
   IonRefresher,
   IonRefresherContent,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonBadge,
-  IonFab,
-  IonFabButton,
   IonSpinner,
-  IonBackButton,
-  IonSegment,
-  IonSegmentButton,
-  IonNote,
+  IonMenuButton,
+  IonBadge,
+  ActionSheetController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, cartOutline, checkmarkCircleOutline, alertCircleOutline, downloadOutline } from 'ionicons/icons';
+import {
+  homeOutline,
+  addCircleOutline,
+  ellipsisVertical,
+  ellipsisHorizontal,
+  funnelOutline,
+  searchOutline,
+  downloadOutline,
+  cloudUploadOutline,
+  gridOutline,
+  settingsOutline,
+  chevronForwardOutline,
+  sparklesOutline,
+  addOutline,
+  fileTrayOutline,
+  giftOutline,
+  checkmarkCircleOutline,
+} from 'ionicons/icons';
 import { OrdersService } from '../../core/services/orders.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { Order } from '../../core/models/models';
+
+interface MonthTab {
+  label: string;
+  year: number;
+  month: number;
+}
 
 @Component({
   selector: 'app-orders',
@@ -46,44 +62,95 @@ import { Order } from '../../core/models/models';
     IonSearchbar,
     IonRefresher,
     IonRefresherContent,
-    IonList,
-    IonItem,
-    IonLabel,
-    IonBadge,
-    IonFab,
-    IonFabButton,
     IonSpinner,
-    IonBackButton,
-    IonSegment,
-    IonSegmentButton,
-    IonNote,
+    IonMenuButton,
+    IonBadge,
   ],
 })
 export class OrdersPage implements OnInit {
   private ordersService = inject(OrdersService);
   private csvExport = inject(CsvExportService);
   private router = inject(Router);
+  private actionSheetCtrl = inject(ActionSheetController);
 
-  readonly items = signal<Order[]>([]);
   readonly loading = signal(true);
-  readonly statusFilter = signal<'all' | 'paid' | 'unpaid'>('all');
+  readonly allOrders = signal<Order[]>([]);
+  readonly searchVisible = signal(false);
   search = '';
 
+  readonly monthTabs: MonthTab[] = this.buildMonthTabs();
+  readonly selectedMonth = signal(0); // index vào monthTabs
+  readonly statusFilter = signal<'all' | 'shipping' | 'completed' | 'cancelled'>('all');
+
+  readonly items = computed(() => {
+    const tab = this.monthTabs[this.selectedMonth()];
+    let list = this.allOrders().filter((o) => {
+      const d = new Date(o.created_at);
+      return d.getFullYear() === tab.year && d.getMonth() + 1 === tab.month;
+    });
+    const sf = this.statusFilter();
+    if (sf === 'shipping') list = list.filter((o) => o.status === 'shipping');
+    if (sf === 'completed') list = list.filter((o) => o.status === 'completed' || o.status === 'delivered');
+    if (sf === 'cancelled') list = list.filter((o) => o.status === 'cancelled');
+    return list;
+  });
+
+  readonly totalAmount = computed(() => this.items().reduce((s, o) => s + Number(o.total ?? 0), 0));
+
+  readonly freePlanLimits = [
+    'Tạo dưới 10 đơn/ngày.',
+    'Không thể nhập thêm sản phẩm nếu đã có trên 30 sản phẩm.',
+    'Không thể quản lý nhiều shop/kho.',
+    'Không thể quản lý fanpage Facebook/Zalo và một số tính năng khác.',
+    'Quảng cáo (chỉ một banner nhỏ dưới app).',
+  ];
+
   constructor() {
-    addIcons({ addOutline, cartOutline, checkmarkCircleOutline, alertCircleOutline, downloadOutline });
+    addIcons({
+      homeOutline,
+      addCircleOutline,
+      ellipsisVertical,
+      ellipsisHorizontal,
+      funnelOutline,
+      searchOutline,
+      downloadOutline,
+      cloudUploadOutline,
+      gridOutline,
+      settingsOutline,
+      chevronForwardOutline,
+      sparklesOutline,
+      addOutline,
+      fileTrayOutline,
+      giftOutline,
+      checkmarkCircleOutline,
+    });
   }
 
   ngOnInit(): void {
     this.load();
   }
 
+  private buildMonthTabs(): MonthTab[] {
+    const tabs: MonthTab[] = [];
+    const now = new Date();
+    for (let i = -1; i <= 1; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      tabs.push({
+        label: `Tháng ${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`,
+        year: d.getFullYear(),
+        month: d.getMonth() + 1,
+      });
+    }
+    return tabs;
+  }
+
   async load() {
     this.loading.set(true);
     try {
-      this.items.set(await this.ordersService.list(this.search, this.statusFilter()));
+      this.allOrders.set(await this.ordersService.list(this.search));
     } catch (e: any) {
       console.error('load orders failed', e);
-      this.items.set([]);
+      this.allOrders.set([]);
     } finally {
       this.loading.set(false);
     }
@@ -94,21 +161,44 @@ export class OrdersPage implements OnInit {
     await this.load();
   }
 
-  async onFilter(ev: CustomEvent) {
-    this.statusFilter.set(ev.detail.value as any);
-    await this.load();
+  toggleSearch() {
+    this.searchVisible.update((v) => !v);
+    if (!this.searchVisible()) {
+      this.search = '';
+      this.load();
+    }
   }
 
   doRefresh(event: CustomEvent) {
     this.load().finally(() => (event.target as HTMLIonRefresherElement).complete());
   }
 
-  openDetail(item: Order) {
-    this.router.navigateByUrl(`/order/${item.id}`);
+  selectMonth(index: number) {
+    this.selectedMonth.set(index);
+  }
+
+  selectStatus(status: 'all' | 'shipping' | 'completed' | 'cancelled') {
+    this.statusFilter.set(status);
+  }
+
+  openDetail(order: Order) {
+    this.router.navigateByUrl(`/order/${order.id}`);
   }
 
   openAdd() {
     this.router.navigateByUrl('/order/add');
+  }
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
+  openSettings() {
+    this.router.navigateByUrl('/config');
+  }
+
+  openPath(path: string) {
+    this.router.navigateByUrl(path);
   }
 
   exportCsv() {
@@ -124,7 +214,23 @@ export class OrdersPage implements OnInit {
     this.csvExport.export('don-hang', ['Mã đơn', 'Khách hàng', 'Trạng thái', 'Thanh toán', 'Tổng tiền', 'Giảm giá', 'Ngày tạo'], rows);
   }
 
+  async openMoreMenu() {
+    const sheet = await this.actionSheetCtrl.create({
+      header: 'Thao tác khác',
+      buttons: [
+        { text: 'Nhập đơn từ Excel', icon: 'cloud-upload-outline', handler: () => this.openPath('/import') },
+        { text: 'Cài đặt đơn hàng', icon: 'settings-outline', handler: () => this.openSettings() },
+        { text: 'Hủy', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
   formatMoney(v: number | null | undefined): string {
     return new Intl.NumberFormat('vi-VN').format(v ?? 0) + ' ₫';
+  }
+
+  statusLabel(status: string | null | undefined): string {
+    return OrdersService.statusLabel(status);
   }
 }

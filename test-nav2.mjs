@@ -91,14 +91,15 @@ if ((await menuBtn.count()) > 0) {
     console.log('=== URL after menu->product:', page.url());
     if (!page.url().includes('/product')) pass = false;
 
-    const backBtn = page.locator('ion-back-button').first();
-    if ((await backBtn.count()) > 0) {
-      await backBtn.click();
+    // Trang Sản phẩm mới dùng nút Home (không phải back-button)
+    const homeBtn = page.locator('ion-header ion-buttons[slot="start"] ion-button').first();
+    if ((await homeBtn.count()) > 0) {
+      await homeBtn.click();
       await page.waitForTimeout(2000);
-      console.log('=== URL after BACK click:', page.url());
+      console.log('=== URL after HOME click:', page.url());
       if (!page.url().includes('/home')) pass = false;
     } else {
-      console.log('!!! no back button found on product page');
+      console.log('!!! no home button found on product page');
       pass = false;
     }
   } else {

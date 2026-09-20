@@ -1,42 +1,183 @@
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+/* ---------- Tab phân loại ---------- */
+.customer-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 2px 0 10px;
+  border-bottom: 1px solid var(--app-border);
+  margin-bottom: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.customer-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--app-text-muted);
+  cursor: pointer;
+  border-radius: 10px;
+
+  ion-icon {
+    font-size: 16px;
+  }
+
+  &.active {
+    color: var(--ion-color-primary);
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
+  }
+}
+
+/* ---------- Toolbar ---------- */
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-left,
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--app-text);
+  margin-left: 4px;
+}
+
+/* ---------- Danh sách ---------- */
 .page-loading {
   display: flex;
   justify-content: center;
   padding: 40px 0;
 }
 
-.customer-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: rgba(var(--ion-color-primary-rgb), 0.12);
+.customer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.customer-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  box-shadow: var(--app-shadow-sm);
+  padding: 14px 16px;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  .customer-name {
+    margin: 0 0 10px;
+    font-size: 15.5px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--app-text);
+  }
+}
+
+.customer-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+
+  &.grow {
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .field-label {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+    font-weight: 600;
+  }
+
+  .field-value {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--app-text);
+    line-height: 1.4;
+  }
+}
+
+.phone-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon-action {
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  border: none;
+  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   color: var(--ion-color-primary);
+  padding: 0;
+
+  ion-icon {
+    font-size: 15px;
+  }
+
+  &:active {
+    background: rgba(var(--ion-color-primary-rgb), 0.2);
+  }
+}
+
+ion-toggle {
+  --track-background-checked: rgba(var(--ion-color-primary-rgb), 0.4);
+}
+
+/* ---------- Phân trang ---------- */
+.pagination {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 17px;
-}
+  gap: 6px;
+  padding: 14px 0 4px;
 
-.app-card ion-list {
-  background: transparent;
-
-  ion-item {
-    --background: transparent;
-
-    h3 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--app-text);
-    }
-
-    p {
-      color: var(--app-text-muted);
-      font-size: 12.5px;
-
-      ion-icon {
-        vertical-align: -2px;
-        margin-right: 2px;
-      }
-    }
+  span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--app-text);
   }
 }

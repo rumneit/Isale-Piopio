@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import {
@@ -6,23 +6,39 @@ import {
   IonToolbar,
   IonTitle,
   IonButtons,
-  IonBackButton,
+  IonButton,
   IonIcon,
   IonContent,
   IonSearchbar,
   IonRefresher,
   IonRefresherContent,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonBadge,
-  IonFab,
-  IonFabButton,
   IonSpinner,
-  IonButton,
+  IonMenuButton,
+  IonToggle,
+  ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, peopleOutline, callOutline, downloadOutline } from 'ionicons/icons';
+import {
+  homeOutline,
+  personAddOutline,
+  appsOutline,
+  peopleOutline,
+  starOutline,
+  timeOutline,
+  funnelOutline,
+  searchOutline,
+  callOutline,
+  chatboxOutline,
+  downloadOutline,
+  cloudUploadOutline,
+  gridOutline,
+  settingsOutline,
+  chevronForwardOutline,
+  chevronBackOutline,
+  sparklesOutline,
+  addOutline,
+  giftOutline,
+} from 'ionicons/icons';
 import { CustomersService } from '../../core/services/customers.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { Customer } from '../../core/models/models';
@@ -37,33 +53,70 @@ import { Customer } from '../../core/models/models';
     IonToolbar,
     IonTitle,
     IonButtons,
-    IonBackButton,
+    IonButton,
     IonIcon,
     IonContent,
     IonSearchbar,
     IonRefresher,
     IonRefresherContent,
-    IonList,
-    IonItem,
-    IonLabel,
-    IonBadge,
-    IonFab,
-    IonFabButton,
     IonSpinner,
-    IonButton,
+    IonMenuButton,
+    IonToggle,
   ],
 })
 export class CustomersPage implements OnInit {
   private customersService = inject(CustomersService);
   private csvExport = inject(CsvExportService);
   private router = inject(Router);
+  private toastCtrl = inject(ToastController);
 
   readonly items = signal<Customer[]>([]);
   readonly loading = signal(true);
+  readonly searchVisible = signal(false);
+  readonly tab = signal<'all' | 'important' | 'recent'>('recent');
+  readonly page = signal(1);
+  readonly pageSize = 20;
   search = '';
 
+  readonly filtered = computed(() => {
+    let list = this.items();
+    if (this.tab() === 'important') list = list.filter((c) => !!c.important);
+    if (this.tab() === 'recent') {
+      list = [...list].sort((a, b) =>
+        String(b.last_activity ?? b.created_at ?? '').localeCompare(String(a.last_activity ?? a.created_at ?? ''))
+      );
+    }
+    return list;
+  });
+
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize)));
+  readonly pagedItems = computed(() => {
+    const start = (this.page() - 1) * this.pageSize;
+    return this.filtered().slice(start, start + this.pageSize);
+  });
+
   constructor() {
-    addIcons({ addOutline, peopleOutline, callOutline, downloadOutline });
+    addIcons({
+      homeOutline,
+      personAddOutline,
+      appsOutline,
+      peopleOutline,
+      starOutline,
+      timeOutline,
+      funnelOutline,
+      searchOutline,
+      callOutline,
+      chatboxOutline,
+      downloadOutline,
+      cloudUploadOutline,
+      gridOutline,
+      settingsOutline,
+      chevronForwardOutline,
+      chevronBackOutline,
+      sparklesOutline,
+      addOutline,
+      giftOutline,
+    });
   }
 
   ngOnInit(): void {
@@ -84,11 +137,33 @@ export class CustomersPage implements OnInit {
 
   async onSearch(ev: CustomEvent) {
     this.search = (ev.detail as any).value ?? '';
+    this.page.set(1);
     await this.load();
+  }
+
+  toggleSearch() {
+    this.searchVisible.update((v) => !v);
+    if (!this.searchVisible()) {
+      this.search = '';
+      this.load();
+    }
   }
 
   doRefresh(event: CustomEvent) {
     this.load().finally(() => (event.target as HTMLIonRefresherElement).complete());
+  }
+
+  selectTab(tab: 'all' | 'important' | 'recent') {
+    this.tab.set(tab);
+    this.page.set(1);
+  }
+
+  nextPage() {
+    if (this.page() < this.totalPages()) this.page.update((p) => p + 1);
+  }
+
+  prevPage() {
+    if (this.page() > 1) this.page.update((p) => p - 1);
   }
 
   openDetail(item: Customer) {
@@ -99,23 +174,64 @@ export class CustomersPage implements OnInit {
     this.router.navigateByUrl('/contact/add');
   }
 
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
+  openImport() {
+    this.router.navigateByUrl('/import');
+  }
+
+  openSettings() {
+    this.router.navigateByUrl('/config');
+  }
+
+  callCustomer(ev: Event, item: Customer) {
+    ev.stopPropagation();
+    if (item.phone) {
+      window.open(`tel:${item.phone}`, '_self');
+    }
+  }
+
+  chatCustomer(ev: Event, item: Customer) {
+    ev.stopPropagation();
+    if (item.phone) {
+      window.open(`https://zalo.me/${item.phone.replace(/\D/g, '')}`, '_blank');
+    }
+  }
+
+  async toggleImportant(item: Customer, ev: any) {
+    const value = !!ev?.detail?.checked;
+    try {
+      await this.customersService.update(item.id, { important: value });
+      this.items.update((list) => list.map((c) => (c.id === item.id ? { ...c, important: value } : c)));
+      this.toast(value ? 'Đã đánh dấu quan trọng' : 'Đã bỏ đánh dấu quan trọng');
+    } catch (e: any) {
+      this.toast(e?.message ?? 'Cập nhật thất bại', 'danger');
+    }
+  }
+
   exportCsv() {
-    const rows = this.items().map((c) => [
+    const rows = this.filtered().map((c) => [
       c.name,
       c.phone ?? '',
-      c.email ?? '',
+      c.gender ?? '',
       c.address ?? '',
       this.csvExport.formatMoney(c.debt),
-      this.csvExport.formatDateTime(c.created_at),
+      this.csvExport.formatDateTime(c.last_activity ?? c.created_at),
     ]);
-    this.csvExport.export('khach-hang', ['Tên', 'SĐT', 'Email', 'Địa chỉ', 'Công nợ', 'Ngày tạo'], rows);
+    this.csvExport.export('khach-hang', ['Tên', 'SĐT', 'Giới tính', 'Địa chỉ', 'Công nợ', 'Hoạt động cuối'], rows);
   }
 
-  initial(name: string): string {
-    return (name || '?').trim().charAt(0).toUpperCase();
+  formatDateTime(iso: string | null | undefined): string {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${p(d.getHours())}:${p(d.getMinutes())} ${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
   }
 
-  formatMoney(v: number | null | undefined): string {
-    return new Intl.NumberFormat('vi-VN').format(v ?? 0) + ' ₫';
+  private async toast(message: string, color: string = 'success') {
+    const t = await this.toastCtrl.create({ message, duration: 1800, color, position: 'bottom' });
+    await t.present();
   }
 }

@@ -1,24 +1,244 @@
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+/* ---------- Tab tháng ---------- */
+.month-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 10px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.month-tab {
+  flex-shrink: 0;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--app-text-muted);
+  cursor: pointer;
+
+  &.active {
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    border-color: var(--ion-color-primary);
+    color: var(--ion-color-primary);
+  }
+}
+
+/* ---------- Tab trạng thái ---------- */
+.status-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--app-border);
+  margin-bottom: 10px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.status-tab {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--app-text-muted);
+  cursor: pointer;
+  border-radius: 8px;
+
+  &.active {
+    color: var(--ion-color-primary);
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
+  }
+}
+
+/* ---------- Toolbar ---------- */
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-left,
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--app-text);
+  margin-left: 4px;
+}
+
+.toolbar-money {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--app-text-muted);
+  margin-left: 6px;
+}
+
+/* ---------- Danh sách ---------- */
 .page-loading {
   display: flex;
   justify-content: center;
   padding: 40px 0;
 }
 
-.app-card ion-list {
-  background: transparent;
+.order-empty span {
+  display: block;
+  line-height: 1.55;
+  max-width: 520px;
+  margin: 0 auto;
+}
 
-  ion-item {
-    --background: transparent;
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-    h3 {
-      font-size: 15px;
-      font-weight: 600;
+.order-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  box-shadow: var(--app-shadow-sm);
+  padding: 14px 16px;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  .order-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    h2 {
+      margin: 0;
+      font-size: 15.5px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
       color: var(--app-text);
     }
+  }
+}
 
-    p {
-      color: var(--app-text-muted);
-      font-size: 12.5px;
+.order-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+
+  .field-label {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+    font-weight: 600;
+  }
+
+  .field-value {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--app-text);
+  }
+}
+
+/* ---------- Gói Miễn Phí ---------- */
+.home-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  box-shadow: var(--app-shadow-sm);
+  padding: 16px;
+  margin-top: 14px;
+}
+
+.plan-card {
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.35);
+}
+
+.plan-desc {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--app-text-muted);
+}
+
+.plan-limits {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+
+  li {
+    position: relative;
+    padding: 4px 0 4px 22px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--app-text);
+
+    &::before {
+      content: '✓';
+      position: absolute;
+      left: 2px;
+      color: var(--ion-color-primary);
+      font-weight: 800;
     }
+  }
+}
+
+.plan-upgrade-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }

@@ -1,17 +1,20 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" />
-    </ion-buttons>
-    <ion-title>Khách hàng</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="exportCsv()">
-        <ion-icon slot="icon-only" name="download-outline" />
+      <ion-menu-button menu="app-menu" auto-hide="false" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
       </ion-button>
     </ion-buttons>
-  </ion-toolbar>
-  <ion-toolbar>
-    <ion-searchbar placeholder="Tìm theo tên hoặc SĐT" [debounce]="300" (ionInput)="onSearch($any($event))" />
+    <ion-title>Quản lý khách hàng</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAdd()">
+        <ion-icon slot="icon-only" name="person-add-outline" />
+      </ion-button>
+      <ion-button (click)="openSettings()">
+        <ion-icon slot="icon-only" name="apps-outline" />
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -21,47 +24,112 @@
   </ion-refresher>
 
   <div class="app-page-container">
+    <!-- Tab phân loại -->
+    <div class="customer-tabs">
+      <button class="customer-tab" [class.active]="tab() === 'all'" (click)="selectTab('all')">
+        <ion-icon name="people-outline" />
+        Tất cả
+      </button>
+      <button class="customer-tab" [class.active]="tab() === 'important'" (click)="selectTab('important')">
+        <ion-icon name="star-outline" />
+        Quan trọng
+      </button>
+      <button class="customer-tab" [class.active]="tab() === 'recent'" (click)="selectTab('recent')">
+        <ion-icon name="time-outline" />
+        Gần đây
+      </button>
+    </div>
+
+    @if (searchVisible()) {
+      <ion-searchbar placeholder="Tìm theo tên hoặc SĐT" [debounce]="300" (ionInput)="onSearch($any($event))" />
+    }
+
+    <!-- Toolbar -->
+    <div class="list-toolbar">
+      <div class="toolbar-left">
+        <ion-button fill="clear" size="small" (click)="toggleSearch()">
+          <ion-icon slot="icon-only" name="search-outline" />
+        </ion-button>
+        <span class="toolbar-total">Tổng: {{ filtered().length }} khách/đối tác</span>
+      </div>
+      <div class="toolbar-actions">
+        <ion-button fill="clear" size="small" (click)="exportCsv()">
+          <ion-icon slot="icon-only" name="download-outline" />
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="openImport()">
+          <ion-icon slot="icon-only" name="cloud-upload-outline" />
+        </ion-button>
+      </div>
+    </div>
+
     @if (loading()) {
       <div class="page-loading"><ion-spinner name="crescent" /></div>
-    } @else if (items().length === 0) {
+    } @else if (filtered().length === 0) {
       <div class="app-empty">
         <div><ion-icon name="people-outline" /></div>
-        @if (search) {
-          <span>Không tìm thấy khách hàng nào</span>
-        } @else {
-          <span>Chưa có khách hàng nào. Nhấn + để thêm.</span>
-        }
+        Chưa có khách hàng nào. Bấm nút + để thêm khách hàng đầu tiên.
       </div>
     } @else {
-      <div class="app-card">
-        <ion-list lines="full">
-          @for (item of items(); track item.id) {
-            <ion-item button (click)="openDetail(item)" detail="true">
-              <div class="customer-avatar" slot="start">{{ initial(item.name) }}</div>
-              <ion-label>
-                <h3>{{ item.name }}</h3>
-                <p>
-                  @if (item.phone) {
-                    <ion-icon name="call-outline" />
-                    {{ item.phone }}
-                  } @else {
-                    Khách hàng
-                  }
-                </p>
-              </ion-label>
-              @if ((item.debt ?? 0) > 0) {
-                <ion-badge slot="end" color="warning">{{ formatMoney(item.debt) }}</ion-badge>
-              }
-            </ion-item>
-          }
-        </ion-list>
+      <div class="customer-list">
+        @for (item of pagedItems(); track item.id) {
+          <div class="customer-card" (click)="openDetail(item)">
+            <h2 class="customer-name">{{ item.name }}</h2>
+            <div class="customer-fields">
+              <div class="field-row">
+                <div class="field">
+                  <span class="field-label">Điện thoại</span>
+                  <span class="field-value phone-value">
+                    {{ item.phone ?? '—' }}
+                    @if (item.phone) {
+                      <button class="icon-action" (click)="callCustomer($event, item)">
+                        <ion-icon name="call-outline" />
+                      </button>
+                      <button class="icon-action" (click)="chatCustomer($event, item)">
+                        <ion-icon name="chatbox-outline" />
+                      </button>
+                    }
+                  </span>
+                </div>
+                <div class="field">
+                  <span class="field-label">Giới tính</span>
+                  <span class="field-value">{{ item.gender ?? '—' }}</span>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field grow">
+                  <span class="field-label">Địa chỉ</span>
+                  <span class="field-value">{{ item.address ?? '—' }}</span>
+                </div>
+                <div class="field">
+                  <span class="field-label">Quan trọng</span>
+                  <ion-toggle
+                    [checked]="!!item.important"
+                    (ionChange)="toggleImportant(item, $any($event))"
+                    (click)="$event.stopPropagation()"
+                  />
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <span class="field-label">Hoạt động cuối</span>
+                  <span class="field-value">{{ formatDateTime(item.last_activity ?? item.created_at) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Phân trang -->
+      <div class="pagination">
+        <ion-button fill="clear" size="small" (click)="prevPage()" [disabled]="page() <= 1">
+          <ion-icon slot="icon-only" name="chevron-back-outline" />
+        </ion-button>
+        <span>Trang {{ page() }}/{{ totalPages() }}</span>
+        <ion-button fill="clear" size="small" (click)="nextPage()" [disabled]="page() >= totalPages()">
+          <ion-icon slot="icon-only" name="chevron-forward-outline" />
+        </ion-button>
       </div>
     }
   </div>
-
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="openAdd()">
-      <ion-icon name="add-outline" />
-    </ion-fab-button>
-  </ion-fab>
 </ion-content>

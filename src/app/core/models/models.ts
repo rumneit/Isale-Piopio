@@ -24,6 +24,7 @@ export interface Product {
   stock: number;
   category_id: string | null;
   active: boolean;
+  serial_managed?: boolean;
   created_at?: string;
 }
 
@@ -36,6 +37,9 @@ export interface Customer {
   address: string | null;
   debt: number;
   points?: number;
+  gender?: string | null;
+  important?: boolean;
+  last_activity?: string | null;
   created_at?: string;
 }
 
