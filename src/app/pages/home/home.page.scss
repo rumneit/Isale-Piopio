@@ -164,44 +164,49 @@ ion-content {
   }
 }
 
-/* ---------- Config chips (cuộn ngang) ---------- */
-.config-chips {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  margin-bottom: 4px;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.config-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  flex-shrink: 0;
-  padding: 9px 14px;
+/* ---------- Config list (danh sách dọc như bản gốc) ---------- */
+.config-list {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 999px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--app-text);
-  cursor: pointer;
-  white-space: nowrap;
+  border-radius: var(--app-radius);
   box-shadow: var(--app-shadow-sm);
-  transition: transform 0.15s ease;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
 
-  &:active {
-    transform: scale(0.96);
+.config-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--app-border);
+
+  &:last-child {
+    border-bottom: none;
   }
 
-  ion-icon {
-    font-size: 16px;
+  &:active {
+    background: var(--app-surface-alt);
+  }
+
+  .config-row-icon {
+    font-size: 20px;
     color: var(--ion-color-primary);
+    flex-shrink: 0;
+  }
+
+  .config-row-label {
+    flex: 1;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--app-text);
+  }
+
+  .config-row-chevron {
+    font-size: 17px;
+    color: var(--app-text-muted);
+    flex-shrink: 0;
   }
 }
 
