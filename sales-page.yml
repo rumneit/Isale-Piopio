@@ -1,0 +1,987 @@
+- generic [ref=f5e458]:
+  - banner [ref=f5e459]:
+    - generic [ref=f5e461]:
+      - button "back" [ref=f5e712] [cursor=pointer]
+      - generic [ref=f5e466]: Bán hàng
+      - button [ref=f5e713] [cursor=pointer]:
+        - generic [ref=f5e472]:
+          - generic:
+            - img "checkmark":
+              - generic:
+                - img "Checkmark"
+            - text: Lưu
+  - main [ref=f5e475]:
+    - generic:
+      - generic [ref=f5e477]:
+        - generic [ref=f5e478] [cursor=pointer]: Đơn hàng 1
+        - button [ref=f5e714] [cursor=pointer]:
+          - generic [ref=f5e482]:
+            - generic:
+              - img "add outline":
+                - generic:
+                  - img "Add"
+      - generic [ref=f5e486]:
+        - generic:
+          - generic [ref=f5e487]:
+            - generic:
+              - tablist [ref=f5e488]:
+                - generic:
+                  - tab "Thanh toán" [selected] [ref=f5e715] [cursor=pointer]:
+                    - button "Thanh toán"
+                  - tab "Khách hàng" [ref=f5e716] [cursor=pointer]:
+                    - button "Khách hàng"
+                  - tab "Ghi chú" [ref=f5e717] [cursor=pointer]:
+                    - button "Ghi chú"
+                  - tab "Vận chuyển" [ref=f5e718] [cursor=pointer]:
+                    - button "Vận chuyển"
+              - generic [ref=f5e493]:
+                - generic:
+                  - generic [ref=f5e494]:
+                    - generic [ref=f5e495]:
+                      - generic [ref=f5e496]: Mã đơn
+                      - generic [ref=f5e497]:
+                        - textbox [ref=f5e498]: DH1472AB9CDF
+                        - button "reset" [ref=f5e719] [cursor=pointer]
+                    - generic [ref=f5e500]:
+                      - generic [ref=f5e501]: Ngày
+                      - textbox [ref=f5e504]
+                  - generic [ref=f5e506]:
+                    - generic:
+                      - text: Nhân viên/CTV
+                      - button "Chọn NV/CTV" [ref=f5e720] [cursor=pointer]
+              - list [ref=f5e510]:
+                - generic [ref=f5e514]:
+                  - text: Sản phẩm
+                  - paragraph [ref=f5e515]: Dùng mã vạch hoặc ấn nút bên dưới để thêm
+                - listitem [ref=f5e516]:
+                  - generic [ref=f5e520]:
+                    - button [ref=f5e721] [cursor=pointer]:
+                      - generic [ref=f5e523]:
+                        - generic:
+                          - img "barcode":
+                            - generic:
+                              - img "Barcode"
+                          - text: Quét mã
+                    - button [ref=f5e722] [cursor=pointer]:
+                      - generic [ref=f5e526]:
+                        - generic:
+                          - img "add":
+                            - generic:
+                              - img "Add"
+                          - text: Từ báo giá
+                - listitem [ref=f5e527]:
+                  - 'textbox "Mã vạch: Chọn ô này, sử dụng đầu đọc hoặc nhập tay" [ref=f5e723]'
+                - listitem [ref=f5e533]:
+                  - generic [ref=f5e535]:
+                    - generic [ref=f5e536]: Chưa có sản phẩm nào. Thêm sản phẩm bằng cách, chọn ô 'Nhập mã vạch', sử dụng thiết bị đọc Mã vạch, hoặc click vào biểu tượng +, hoặc quét mã vạch bằng mobile khi click vào [|||].
+                    - button [ref=f5e724] [cursor=pointer]:
+                      - generic [ref=f5e540]:
+                        - generic:
+                          - img "close":
+                            - generic:
+                              - img "Close"
+              - list [ref=f5e541]:
+                - generic [ref=f5e543]:
+                  - generic:
+                    - generic [ref=f5e544]:
+                      - generic:
+                        - generic [ref=f5e545]: Tài khoản
+                        - button "Chọn ví/tài khoản" [ref=f5e725] [cursor=pointer]
+                    - generic [ref=f5e550]:
+                      - generic:
+                        - generic [ref=f5e551]: Trạng thái
+                        - button "Hoàn thành" [ref=f5e726]:
+                          - generic [aria-hidden] [ref=f5e553]: Hoàn thành
+                          - button "Hoàn thành" [ref=f5e727]
+                    - generic [ref=f5e556]:
+                      - generic:
+                        - generic [ref=f5e557]: Thanh toán
+                        - button "Tiền mặt" [ref=f5e728]:
+                          - generic [aria-hidden] [ref=f5e559]: Tiền mặt
+                          - button "Tiền mặt" [ref=f5e729]
+                - generic [ref=f5e562]:
+                  - generic:
+                    - generic [ref=f5e563]:
+                      - generic:
+                        - generic [ref=f5e564]:
+                          - generic:
+                            - generic [ref=f5e565]: Tổng tiền hàng
+                            - textbox [disabled] [ref=f5e567]: "0"
+                        - generic [ref=f5e568]:
+                          - generic:
+                            - generic [ref=f5e569]: Phí ship
+                            - textbox "Nhập phí" [ref=f5e730]: "0"
+                        - generic [ref=f5e572]:
+                          - generic:
+                            - generic [ref=f5e573]: Khách trả ship?
+                            - switch [checked] [ref=f5e575] [cursor=pointer]:
+                              - switch [ref=f5e576]
+                    - generic [ref=f5e577]:
+                      - generic:
+                        - generic [ref=f5e578]:
+                          - generic:
+                            - generic [ref=f5e579]: Chiết khấu
+                            - generic [ref=f5e580]:
+                              - textbox "Nhập ck tổng đơn" [ref=f5e731]: "0"
+                              - generic [ref=f5e583] [cursor=pointer]: "%"
+                        - generic [ref=f5e584]:
+                          - generic:
+                            - generic [ref=f5e585]: Tổng tạm tính
+                            - textbox "Tổng tạm tính" [ref=f5e732]: "0"
+                        - generic [ref=f5e588]:
+                          - generic:
+                            - generic [ref=f5e589]: Thuế
+                            - generic [ref=f5e590]:
+                              - textbox "Nhập thuế" [ref=f5e733]: "0"
+                              - generic [ref=f5e593] [cursor=pointer]: 0%
+                    - generic [ref=f5e594]:
+                      - generic:
+                        - generic [ref=f5e595]:
+                          - generic:
+                            - generic [ref=f5e596]: Tổng phải trả
+                            - textbox "Nhập tổng" [ref=f5e734]: "0"
+                        - generic [ref=f5e599]:
+                          - generic:
+                            - generic [ref=f5e600]: Khách đưa
+                            - textbox "Đã trả" [ref=f5e735]: "0"
+                        - generic [ref=f5e603]:
+                          - generic:
+                            - generic [ref=f5e604]: Tiền thừa
+                            - textbox "Tiền thừa" [ref=f5e736]: "0"
+                    - generic [ref=f5e607]: "* Đơn vị tiền: VND"
+                    - generic [ref=f5e610]:
+                      - generic:
+                        - button "qr code Hiện QR Code thanh toán" [ref=f5e737] [cursor=pointer]:
+                          - generic [ref=f5e614]:
+                            - generic:
+                              - img "qr code":
+                                - generic:
+                                  - img "Qr Code"
+                              - generic [ref=f5e615]: Hiện QR Code thanh toán
+                        - list
+          - generic [ref=f5e618]:
+            - generic [ref=f5e619]:
+              - search [ref=f5e620]:
+                - searchbox "search text" [ref=f5e738]
+              - button [ref=f5e739] [cursor=pointer]:
+                - generic [ref=f5e626]:
+                  - generic:
+                    - img "list outline":
+                      - generic:
+                        - img "List"
+            - list [ref=f5e627]:
+              - generic [ref=f5e628]:
+                - generic [ref=f5e629]:
+                  - generic [ref=f5e630]:
+                    - text: Lọc theo
+                    - listitem [ref=f5e631]:
+                      - button "Gần đây" [ref=f5e740]:
+                        - generic [aria-hidden] [ref=f5e636]: Gần đây
+                        - button "Gần đây" [ref=f5e741]
+                  - generic [ref=f5e639]:
+                    - text: Danh mục
+                    - listitem [ref=f5e640]:
+                      - button "Chọn Nhóm hàng" [ref=f5e742] [cursor=pointer]
+                - generic [ref=f5e744]:
+                  - generic [ref=f5e745]: Trang 1
+                  - generic [ref=f5e746]:
+                    - button [ref=f5e748] [cursor=pointer]:
+                      - generic [ref=f5e749]:
+                        - generic:
+                          - img "arrow back circle":
+                            - generic:
+                              - img "Arrow Back Circle"
+                    - button [ref=f5e751] [cursor=pointer]:
+                      - generic [ref=f5e752]:
+                        - generic:
+                          - img "arrow forward circle":
+                            - generic:
+                              - img "Arrow Forward Circle"
+              - generic [ref=f5e753]:
+                - generic:
+                  - generic [ref=f5e755]:
+                    - generic:
+                      - generic [ref=f5e756]:
+                        - generic [ref=f5e757]: "[TAS.1] Đũa tách OPP kèm Tăm (Thùng (4000 đôi))"
+                        - generic [ref=f5e759]:
+                          - generic "Phân loại" [ref=f5e760]:
+                            - button [ref=f5e761] [cursor=pointer]:
+                              - generic [ref=f5e762]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e765] [cursor=pointer]:
+                            - generic [ref=f5e766]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e769]:
+                        - generic [ref=f5e772]:
+                          - paragraph [ref=f5e773]:
+                            - generic [ref=f5e774]: "Giá nhập: 430.000 ₫"
+                          - text: "Giá bán: 540.000 ₫ Còn lại: 0 Thùng (4000 đôi)"
+                  - generic [ref=f5e776]:
+                    - generic:
+                      - generic [ref=f5e777]:
+                        - generic [ref=f5e778]: "[TAS.1] Đũa tách OPP kèm Tăm (Bao (100 đôi))"
+                        - generic [ref=f5e780]:
+                          - generic "Phân loại" [ref=f5e781]:
+                            - button [ref=f5e782] [cursor=pointer]:
+                              - generic [ref=f5e783]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e786] [cursor=pointer]:
+                            - generic [ref=f5e787]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e790]
+                  - generic [ref=f5e795]:
+                    - generic:
+                      - generic [ref=f5e796]:
+                        - generic [ref=f5e797]: "[TCL] Muỗng Nhựa Trắng 16cm (Thùng (5000 cái))"
+                        - generic [ref=f5e799]:
+                          - generic "Phân loại" [ref=f5e800]:
+                            - button [ref=f5e801] [cursor=pointer]:
+                              - generic [ref=f5e802]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e805] [cursor=pointer]:
+                            - generic [ref=f5e806]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e809]:
+                        - generic [ref=f5e812]:
+                          - paragraph [ref=f5e813]:
+                            - generic [ref=f5e814]: "Giá nhập: 430.000 ₫"
+                          - text: "Giá bán: 520.000 ₫ Còn lại: 0 Thùng (5000 cái)"
+                  - generic [ref=f5e816]:
+                    - generic:
+                      - generic [ref=f5e817]:
+                        - generic [ref=f5e818]: "[TCL] Muỗng Nhựa Trắng 16cm (Bao (100 cái))"
+                        - generic [ref=f5e820]:
+                          - generic "Phân loại" [ref=f5e821]:
+                            - button [ref=f5e822] [cursor=pointer]:
+                              - generic [ref=f5e823]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e826] [cursor=pointer]:
+                            - generic [ref=f5e827]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e830]
+                  - generic [ref=f5e835]:
+                    - generic:
+                      - generic [ref=f5e836]:
+                        - generic [ref=f5e837]: "[TCL] Ly nhựa PP 500ml - Trường Thành (Thùng)"
+                        - generic [ref=f5e839]:
+                          - generic "Phân loại" [ref=f5e840]:
+                            - button [ref=f5e841] [cursor=pointer]:
+                              - generic [ref=f5e842]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e845] [cursor=pointer]:
+                            - generic [ref=f5e846]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e849]:
+                        - generic [ref=f5e852]:
+                          - paragraph [ref=f5e853]:
+                            - generic [ref=f5e854]: "Giá nhập: 365.000 ₫"
+                          - text: "Giá bán: 425.000 ₫ Còn lại: 0 Thùng"
+                  - generic [ref=f5e856]:
+                    - generic:
+                      - generic [ref=f5e857]:
+                        - generic [ref=f5e858]: "[TCL] Ly nhựa PP 500ml - Trường Thành (Cái)"
+                        - generic [ref=f5e860]:
+                          - generic "Phân loại" [ref=f5e861]:
+                            - button [ref=f5e862] [cursor=pointer]:
+                              - generic [ref=f5e863]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e866] [cursor=pointer]:
+                            - generic [ref=f5e867]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e870]
+                  - generic [ref=f5e875]:
+                    - generic:
+                      - generic [ref=f5e876]:
+                        - generic [ref=f5e877]: "[UKP] Nắp PET Φ95 _ BẰNG (2 lốc (100 nắp))"
+                        - generic [ref=f5e879]:
+                          - generic "Phân loại" [ref=f5e880]:
+                            - button [ref=f5e881] [cursor=pointer]:
+                              - generic [ref=f5e882]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e885] [cursor=pointer]:
+                            - generic [ref=f5e886]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e889]:
+                        - generic [ref=f5e892]:
+                          - paragraph [ref=f5e893]:
+                            - generic [ref=f5e894]: "Giá nhập: 12.200 ₫"
+                          - text: "Giá bán: 15.000 ₫ Còn lại: 0 2 lốc (100 nắp)"
+                  - generic [ref=f5e896]:
+                    - generic:
+                      - generic [ref=f5e897]:
+                        - generic [ref=f5e898]: "[UKP] Nắp PET Φ95 _ BẰNG (Nắp)"
+                        - generic [ref=f5e900]:
+                          - generic "Phân loại" [ref=f5e901]:
+                            - button [ref=f5e902] [cursor=pointer]:
+                              - generic [ref=f5e903]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e906] [cursor=pointer]:
+                            - generic [ref=f5e907]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e910]
+                  - generic [ref=f5e915]:
+                    - generic:
+                      - generic [ref=f5e916]:
+                        - generic [ref=f5e917]: "[UKP] Nắp PET Φ95 _ BẰNG (Thùng (2000 nắp))"
+                        - generic [ref=f5e919]:
+                          - generic "Phân loại" [ref=f5e920]:
+                            - button [ref=f5e921] [cursor=pointer]:
+                              - generic [ref=f5e922]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e925] [cursor=pointer]:
+                            - generic [ref=f5e926]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e929]
+                  - generic [ref=f5e934]:
+                    - generic:
+                      - generic [ref=f5e935]:
+                        - generic [ref=f5e936]: "[CB2] Combo Đũa OPP kèm tăm, khăn giấy, muỗng nhựa trắng (Thùng (1000 set))"
+                        - generic [ref=f5e938]:
+                          - generic "Phân loại" [ref=f5e939]:
+                            - button [ref=f5e940] [cursor=pointer]:
+                              - generic [ref=f5e941]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e944] [cursor=pointer]:
+                            - generic [ref=f5e945]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e948]:
+                        - generic [ref=f5e951]:
+                          - paragraph [ref=f5e952]:
+                            - generic [ref=f5e953]: "Giá nhập: 480.000 ₫"
+                          - text: "Giá bán: 600.000 ₫ Còn lại: 0 Thùng (1000 set)"
+                  - generic [ref=f5e955]:
+                    - generic:
+                      - generic [ref=f5e956]:
+                        - generic [ref=f5e957]: "[CB2] Combo Đũa OPP kèm tăm, khăn giấy, muỗng nhựa trắng (Gói (100 set))"
+                        - generic [ref=f5e959]:
+                          - generic "Phân loại" [ref=f5e960]:
+                            - button [ref=f5e961] [cursor=pointer]:
+                              - generic [ref=f5e962]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e965] [cursor=pointer]:
+                            - generic [ref=f5e966]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e969]
+                  - generic [ref=f5e974]:
+                    - generic:
+                      - generic [ref=f5e975]:
+                        - generic [ref=f5e976]: Thun trung
+                        - generic [ref=f5e978]:
+                          - generic "Phân loại" [ref=f5e979]:
+                            - button [ref=f5e980] [cursor=pointer]:
+                              - generic [ref=f5e981]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e984] [cursor=pointer]:
+                            - generic [ref=f5e985]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e988]
+                  - generic [ref=f5e993]:
+                    - generic:
+                      - generic [ref=f5e994]:
+                        - generic [ref=f5e995]: "[TTK] Ống hút nhọn Phi 6 - TRẮNG (Bịch (Nữa ký))"
+                        - generic [ref=f5e997]:
+                          - generic "Phân loại" [ref=f5e998]:
+                            - button [ref=f5e999] [cursor=pointer]:
+                              - generic [ref=f5e1000]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1003] [cursor=pointer]:
+                            - generic [ref=f5e1004]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1007]:
+                        - generic [ref=f5e1010]:
+                          - paragraph [ref=f5e1011]:
+                            - generic [ref=f5e1012]: "Giá nhập: 18.400 ₫"
+                          - text: "Giá bán: 25.000 ₫ Còn lại: 0 Bịch (Nữa ký)"
+                  - generic [ref=f5e1014]:
+                    - generic:
+                      - generic [ref=f5e1015]:
+                        - generic [ref=f5e1016]: "[TTK] Ống hút nhọn Phi 6 - TRẮNG (Kiện (5 kí))"
+                        - generic [ref=f5e1018]:
+                          - generic "Phân loại" [ref=f5e1019]:
+                            - button [ref=f5e1020] [cursor=pointer]:
+                              - generic [ref=f5e1021]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1024] [cursor=pointer]:
+                            - generic [ref=f5e1025]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1028]
+                  - generic [ref=f5e1033]:
+                    - generic:
+                      - generic [ref=f5e1034]:
+                        - generic [ref=f5e1035]: "[JB] Hộp HT17 2 ngăn 3/7"
+                        - generic [ref=f5e1037]:
+                          - generic "Phân loại" [ref=f5e1038]:
+                            - button [ref=f5e1039] [cursor=pointer]:
+                              - generic [ref=f5e1040]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1043] [cursor=pointer]:
+                            - generic [ref=f5e1044]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1047]
+                  - generic [ref=f5e1052]:
+                    - generic:
+                      - generic [ref=f5e1053]:
+                        - generic [ref=f5e1054]: Bao PE dẻo ....................
+                        - generic [ref=f5e1056]:
+                          - generic "Phân loại" [ref=f5e1057]:
+                            - button [ref=f5e1058] [cursor=pointer]:
+                              - generic [ref=f5e1059]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1062] [cursor=pointer]:
+                            - generic [ref=f5e1063]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1066]
+                  - generic [ref=f5e1071]:
+                    - generic:
+                      - generic [ref=f5e1072]:
+                        - generic [ref=f5e1073]: "[TGP] Bao tay nilong thực phẩm"
+                        - generic [ref=f5e1075]:
+                          - generic "Phân loại" [ref=f5e1076]:
+                            - button [ref=f5e1077] [cursor=pointer]:
+                              - generic [ref=f5e1078]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1081] [cursor=pointer]:
+                            - generic [ref=f5e1082]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1085]
+                  - generic [ref=f5e1090]:
+                    - generic:
+                      - generic [ref=f5e1091]:
+                        - generic [ref=f5e1092]: "[TGP] Bao Rác Cuộn (Màu) _ Size Đại (Gói (1kí))"
+                        - generic [ref=f5e1094]:
+                          - generic "Phân loại" [ref=f5e1095]:
+                            - button [ref=f5e1096] [cursor=pointer]:
+                              - generic [ref=f5e1097]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1100] [cursor=pointer]:
+                            - generic [ref=f5e1101]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1104]:
+                        - generic [ref=f5e1107]:
+                          - paragraph [ref=f5e1108]:
+                            - generic [ref=f5e1109]: "Giá nhập: 20.500 ₫"
+                          - text: "Giá bán: 26.000 ₫ Còn lại: 0 Gói (1kí)"
+                  - generic [ref=f5e1111]:
+                    - generic:
+                      - generic [ref=f5e1112]:
+                        - generic [ref=f5e1113]: "[TGP] Bao Rác Cuộn (Màu) _ Size Đại (Bao (25 kí))"
+                        - generic [ref=f5e1115]:
+                          - generic "Phân loại" [ref=f5e1116]:
+                            - button [ref=f5e1117] [cursor=pointer]:
+                              - generic [ref=f5e1118]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1121] [cursor=pointer]:
+                            - generic [ref=f5e1122]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1125]
+                  - generic [ref=f5e1130]:
+                    - generic:
+                      - generic [ref=f5e1131]:
+                        - generic [ref=f5e1132]: "[TGP3.2] Bọc 1 ly _ Xốp gai (Ký)"
+                        - generic [ref=f5e1134]:
+                          - generic "Phân loại" [ref=f5e1135]:
+                            - button [ref=f5e1136] [cursor=pointer]:
+                              - generic [ref=f5e1137]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1140] [cursor=pointer]:
+                            - generic [ref=f5e1141]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1144]:
+                        - generic [ref=f5e1147]:
+                          - paragraph [ref=f5e1148]:
+                            - generic [ref=f5e1149]: "Giá nhập: 32.500 ₫"
+                          - text: "Giá bán: 39.000 ₫ Còn lại: 0 Ký"
+                  - generic [ref=f5e1151]:
+                    - generic:
+                      - generic [ref=f5e1152]:
+                        - generic [ref=f5e1153]: "[TGP3.2] Bọc 1 ly _ Xốp gai (Bao (25 kí))"
+                        - generic [ref=f5e1155]:
+                          - generic "Phân loại" [ref=f5e1156]:
+                            - button [ref=f5e1157] [cursor=pointer]:
+                              - generic [ref=f5e1158]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1161] [cursor=pointer]:
+                            - generic [ref=f5e1162]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1165]
+                  - generic [ref=f5e1170]:
+                    - generic:
+                      - generic [ref=f5e1171]:
+                        - generic [ref=f5e1172]: Thun lớn
+                        - generic [ref=f5e1174]:
+                          - generic "Phân loại" [ref=f5e1175]:
+                            - button [ref=f5e1176] [cursor=pointer]:
+                              - generic [ref=f5e1177]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1180] [cursor=pointer]:
+                            - generic [ref=f5e1181]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1184]
+                  - generic [ref=f5e1189]:
+                    - generic:
+                      - generic [ref=f5e1190]:
+                        - generic [ref=f5e1191]: "[TGP1.1] Bọc 2 quai _ XỐP GAI _ Loại 10 kí (35T) (Ký)"
+                        - generic [ref=f5e1193]:
+                          - generic "Phân loại" [ref=f5e1194]:
+                            - button [ref=f5e1195] [cursor=pointer]:
+                              - generic [ref=f5e1196]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1199] [cursor=pointer]:
+                            - generic [ref=f5e1200]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1203]:
+                        - generic [ref=f5e1206]:
+                          - paragraph [ref=f5e1207]:
+                            - generic [ref=f5e1208]: "Giá nhập: 32.500 ₫"
+                          - text: "Giá bán: 39.000 ₫ Còn lại: 0 Ký"
+                  - generic [ref=f5e1210]:
+                    - generic:
+                      - generic [ref=f5e1211]:
+                        - generic [ref=f5e1212]: "[TGP1.1] Bọc 2 quai _ XỐP GAI _ Loại 10 kí (35T) (Bao 25 kí)"
+                        - generic [ref=f5e1214]:
+                          - generic "Phân loại" [ref=f5e1215]:
+                            - button [ref=f5e1216] [cursor=pointer]:
+                              - generic [ref=f5e1217]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1220] [cursor=pointer]:
+                            - generic [ref=f5e1221]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1224]
+                  - generic [ref=f5e1229]:
+                    - generic:
+                      - generic [ref=f5e1230]:
+                        - generic [ref=f5e1231]: "[TCL] Hộp HT17 1 ngăn kèm nắp (Lốc (100 hộp))"
+                        - generic [ref=f5e1233]:
+                          - generic "Phân loại" [ref=f5e1234]:
+                            - button [ref=f5e1235] [cursor=pointer]:
+                              - generic [ref=f5e1236]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1239] [cursor=pointer]:
+                            - generic [ref=f5e1240]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1243]:
+                        - generic [ref=f5e1246]:
+                          - paragraph [ref=f5e1247]:
+                            - generic [ref=f5e1248]: "Giá nhập: 485.000 ₫"
+                          - text: "Giá bán: 60.000 ₫ Còn lại: 0 Lốc (100 hộp)"
+                  - generic [ref=f5e1250]:
+                    - generic:
+                      - generic [ref=f5e1251]:
+                        - generic [ref=f5e1252]: "[TCL] Hộp HT17 1 ngăn kèm nắp (Thùng (500 hộp))"
+                        - generic [ref=f5e1254]:
+                          - generic "Phân loại" [ref=f5e1255]:
+                            - button [ref=f5e1256] [cursor=pointer]:
+                              - generic [ref=f5e1257]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1260] [cursor=pointer]:
+                            - generic [ref=f5e1261]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1264]
+                  - generic [ref=f5e1269]:
+                    - generic:
+                      - generic [ref=f5e1270]:
+                        - generic [ref=f5e1271]: "[TCL.L1] Hộp HT25 đế đen 4 ngăn (Thùng (300 hộp) )"
+                        - generic [ref=f5e1273]:
+                          - generic "Phân loại" [ref=f5e1274]:
+                            - button [ref=f5e1275] [cursor=pointer]:
+                              - generic [ref=f5e1276]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1279] [cursor=pointer]:
+                            - generic [ref=f5e1280]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1283]:
+                        - generic [ref=f5e1286]:
+                          - paragraph [ref=f5e1287]:
+                            - generic [ref=f5e1288]: "Giá nhập: 522.000 ₫"
+                          - text: "Giá bán: 600.000 ₫ Còn lại: 0 Thùng (300 hộp)"
+                  - generic [ref=f5e1290]:
+                    - generic:
+                      - generic [ref=f5e1291]:
+                        - generic [ref=f5e1292]: "[TCL.L1] Hộp HT25 đế đen 4 ngăn ( Hộp)"
+                        - generic [ref=f5e1294]:
+                          - generic "Phân loại" [ref=f5e1295]:
+                            - button [ref=f5e1296] [cursor=pointer]:
+                              - generic [ref=f5e1297]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1300] [cursor=pointer]:
+                            - generic [ref=f5e1301]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1304]
+                  - generic [ref=f5e1309]:
+                    - generic:
+                      - generic [ref=f5e1310]:
+                        - generic [ref=f5e1311]: "[TMT] Túi zip đỏ"
+                        - generic [ref=f5e1313]:
+                          - generic "Phân loại" [ref=f5e1314]:
+                            - button [ref=f5e1315] [cursor=pointer]:
+                              - generic [ref=f5e1316]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1319] [cursor=pointer]:
+                            - generic [ref=f5e1320]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1323]
+                  - generic [ref=f5e1328]:
+                    - generic:
+                      - generic [ref=f5e1329]:
+                        - generic [ref=f5e1330]: "[TTK] Ống hút nhọn BOPP phi 6 - ĐEN (Kiện (5 kí))"
+                        - generic [ref=f5e1332]:
+                          - generic "Phân loại" [ref=f5e1333]:
+                            - button [ref=f5e1334] [cursor=pointer]:
+                              - generic [ref=f5e1335]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1338] [cursor=pointer]:
+                            - generic [ref=f5e1339]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1342]:
+                        - generic [ref=f5e1345]:
+                          - paragraph [ref=f5e1346]:
+                            - generic [ref=f5e1347]: "Giá nhập: 237.000 ₫"
+                          - text: "Giá bán: 290.000 ₫ Còn lại: 0 Kiện (5 kí)"
+                  - generic [ref=f5e1349]:
+                    - generic:
+                      - generic [ref=f5e1350]:
+                        - generic [ref=f5e1351]: "[TTK] Ống hút nhọn BOPP phi 6 - ĐEN (Gói (Nữa ký))"
+                        - generic [ref=f5e1353]:
+                          - generic "Phân loại" [ref=f5e1354]:
+                            - button [ref=f5e1355] [cursor=pointer]:
+                              - generic [ref=f5e1356]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1359] [cursor=pointer]:
+                            - generic [ref=f5e1360]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1363]
+                  - generic [ref=f5e1368]:
+                    - generic:
+                      - generic [ref=f5e1369]:
+                        - generic [ref=f5e1370]: "[TGP1.1] Bọc 2 quai _ XỐP GAI _ Loại 5 kí (30T) (Ký)"
+                        - generic [ref=f5e1372]:
+                          - generic "Phân loại" [ref=f5e1373]:
+                            - button [ref=f5e1374] [cursor=pointer]:
+                              - generic [ref=f5e1375]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1378] [cursor=pointer]:
+                            - generic [ref=f5e1379]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1382]:
+                        - generic [ref=f5e1385]:
+                          - paragraph [ref=f5e1386]:
+                            - generic [ref=f5e1387]: "Giá nhập: 32.500 ₫"
+                          - text: "Giá bán: 39.000 ₫ Còn lại: 0 Ký"
+                  - generic [ref=f5e1389]:
+                    - generic:
+                      - generic [ref=f5e1390]:
+                        - generic [ref=f5e1391]: "[TGP1.1] Bọc 2 quai _ XỐP GAI _ Loại 5 kí (30T) (Bao 25 kí)"
+                        - generic [ref=f5e1393]:
+                          - generic "Phân loại" [ref=f5e1394]:
+                            - button [ref=f5e1395] [cursor=pointer]:
+                              - generic [ref=f5e1396]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1399] [cursor=pointer]:
+                            - generic [ref=f5e1400]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1403]
+                  - generic [ref=f5e1408]:
+                    - generic:
+                      - generic [ref=f5e1409]:
+                        - generic [ref=f5e1410]: "[TGP] Băng Keo _ 200Y 2kí (Cây)"
+                        - generic [ref=f5e1412]:
+                          - generic "Phân loại" [ref=f5e1413]:
+                            - button [ref=f5e1414] [cursor=pointer]:
+                              - generic [ref=f5e1415]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1418] [cursor=pointer]:
+                            - generic [ref=f5e1419]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1422]:
+                        - generic [ref=f5e1425]:
+                          - paragraph [ref=f5e1426]:
+                            - generic [ref=f5e1427]: "Giá nhập: 78.000 ₫"
+                          - text: "Giá bán: 93.000 ₫ Còn lại: 0 Cây"
+                  - generic [ref=f5e1429]:
+                    - generic:
+                      - generic [ref=f5e1430]:
+                        - generic [ref=f5e1431]: "[TGP] Băng Keo _ 200Y 2kí (Cuộn)"
+                        - generic [ref=f5e1433]:
+                          - generic "Phân loại" [ref=f5e1434]:
+                            - button [ref=f5e1435] [cursor=pointer]:
+                              - generic [ref=f5e1436]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1439] [cursor=pointer]:
+                            - generic [ref=f5e1440]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1443]
+                  - generic [ref=f5e1448]:
+                    - generic:
+                      - generic [ref=f5e1449]:
+                        - generic [ref=f5e1450]: "[TGP] Băng Keo _ 200Y 2kí (Bao)"
+                        - generic [ref=f5e1452]:
+                          - generic "Phân loại" [ref=f5e1453]:
+                            - button [ref=f5e1454] [cursor=pointer]:
+                              - generic [ref=f5e1455]:
+                                - generic:
+                                  - img "options":
+                                    - generic:
+                                      - img "Options"
+                          - button [ref=f5e1458] [cursor=pointer]:
+                            - generic [ref=f5e1459]:
+                              - generic:
+                                - img "add":
+                                  - generic:
+                                    - img "Add"
+                      - heading [level=3] [ref=f5e1462]
+              - listitem [ref=f5e1466]:
+                - generic [ref=f5e1468]:
+                  - generic [ref=f5e1469]: Trang 1
+                  - generic [ref=f5e1471]:
+                    - button [ref=f5e1473] [cursor=pointer]:
+                      - generic [ref=f5e1474]:
+                        - generic:
+                          - img "arrow back circle":
+                            - generic:
+                              - img "Arrow Back Circle"
+                    - button [ref=f5e1476] [cursor=pointer]:
+                      - generic [ref=f5e1477]:
+                        - generic:
+                          - img "arrow forward circle":
+                            - generic:
+                              - img "Arrow Forward Circle"
+      - list [ref=f5e653]:
+        - listitem [ref=f5e654]:
+          - 'button "help circle outline Trợ giúp: Bán hàng (tạo mới đơn)" [ref=f5e1478] [cursor=pointer]':
+            - generic [ref=f5e657]:
+              - generic:
+                - img "help circle outline" [ref=f5e1479]:
+                  - img "Help Circle" [ref=f5e1480]
+                - generic [ref=f5e664]: "Trợ giúp: Bán hàng (tạo mới đơn)"
+      - generic [ref=f5e667]:
+        - generic [ref=f5e668]:
+          - heading [level=2] [ref=f5e1481]:
+            - img "headset outline" [ref=f5e1482]:
+              - img "Headset" [ref=f5e1483]
+            - text: Liên hệ/Báo lỗi
+          - img "close outline" [ref=f5e1484] [cursor=pointer]:
+            - img "Close" [ref=f5e1485]
+        - generic [ref=f5e679]: Nếu bạn muốn báo lỗi/đặt câu hỏi/hoặc yêu cầu tính năng, hãy gửi chúng tôi yêu cầu của bạn bằng cách click nút bên dưới.
+        - button [ref=f5e1486] [cursor=pointer]:
+          - img "mail outline" [ref=f5e1487]:
+            - img "Mail" [ref=f5e1488]
+          - text: Báo lỗi/Yêu cầu hỗ trợ
+        - generic [ref=f5e686]:
+          - generic [ref=f5e687] [cursor=pointer]:
+            - img "call outline" [ref=f5e1489]:
+              - img "Call" [ref=f5e1490]
+            - generic [ref=f5e693]: Hotline/Zalo/Telegram
+          - generic [ref=f5e695] [cursor=pointer]:
+            - img "mail outline" [ref=f5e1491]:
+              - img "Mail" [ref=f5e1492]
+            - generic [ref=f5e702]: Email

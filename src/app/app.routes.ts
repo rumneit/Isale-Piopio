@@ -18,6 +18,7 @@ export const routes: Routes = [
   { path: 'product/:id', loadComponent: () => import('./pages/products/product-edit.page').then((m) => m.ProductEditPage), canActivate: [authGuard] },
   // Orders
   { path: 'order', loadComponent: () => import('./pages/orders/orders.page').then((m) => m.OrdersPage), canActivate: [authGuard] },
+  { path: 'sale', loadComponent: () => import('./pages/sale/sale.page').then((m) => m.SalePage), canActivate: [authGuard] },
   { path: 'order/add', loadComponent: () => import('./pages/orders/order-add.page').then((m) => m.OrderAddPage), canActivate: [authGuard] },
   { path: 'order/:id/return', loadComponent: () => import('./pages/returns/order-return.page').then((m) => m.OrderReturnPage), canActivate: [authGuard] },
   { path: 'order/:id', loadComponent: () => import('./pages/orders/order-detail.page').then((m) => m.OrderDetailPage), canActivate: [authGuard] },

@@ -125,8 +125,8 @@ export class HomePage implements OnInit {
       label: 'Bán hàng',
       tip: 'Mẹo: Tạo đơn nhanh bằng cách quét mã vạch sản phẩm ngay trên thanh thao tác.',
       actions: [
-        { id: 'sell', label: 'Bán hàng', icon: 'basket-outline', color: '#6030ff', path: '/order/add' },
-        { id: 'scan-order', label: 'Tạo đơn: quét mã', icon: 'barcode-outline', color: '#47bdb5', path: '/scan' },
+        { id: 'sell', label: 'Bán hàng', icon: 'basket-outline', color: '#6030ff', path: '/sale' },
+        { id: 'scan-order', label: 'Tạo đơn: quét mã', icon: 'barcode-outline', color: '#47bdb5', path: '/sale' },
         { id: 'orders', label: 'QL đơn hàng', icon: 'list-outline', color: '#e6bf00', path: '/order' },
         { id: 'online-orders', label: 'Đơn từ Website', icon: 'cloud-outline', color: '#2dd55b', path: '/module/online-order' },
         { id: 'debt', label: 'Quản lý công nợ', icon: 'document-text-outline', color: '#ff7043', path: '/debt' },
