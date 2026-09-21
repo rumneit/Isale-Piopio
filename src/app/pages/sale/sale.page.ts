@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
@@ -87,6 +87,7 @@ export class SalePage implements OnInit {
   private moneyAccountsService = inject(MoneyAccountsService);
   private sb = inject(SupabaseService);
   private auth = inject(AuthService);
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private actionSheetCtrl = inject(ActionSheetController);
   private toastCtrl = inject(ToastController);
@@ -182,6 +183,19 @@ export class SalePage implements OnInit {
       if (shopId && this.sb.isConfigured) {
         const { data } = await this.sb.from('profiles').select('*').eq('shop_id', shopId);
         this.staff.set((data ?? []) as Profile[]);
+      }
+
+      // Nếu mở từ nút "Tạo đơn: quét mã" → tự thêm sản phẩm theo mã vạch
+      const barcode = this.route.snapshot.queryParamMap.get('barcode');
+      if (barcode) {
+        const found = this.products().find((p) => (p.sku ?? '').toLowerCase() === barcode.toLowerCase());
+        if (found) {
+          this.addProduct(found);
+          this.toast(`Đã thêm: ${found.name}`);
+        } else {
+          this.barcodeInput = barcode;
+          this.toast(`Không tìm thấy sản phẩm mã "${barcode}"`, 'danger');
+        }
       }
     } catch (e) {
       console.error('load sale data failed', e);

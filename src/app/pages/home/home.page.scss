@@ -296,3 +296,72 @@ html.ion-palette-dark .config-box {
   }
 }
 
+
+/* ---------- Modal quét mã vạch ---------- */
+.barcode-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1100;
+}
+
+.barcode-modal {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  background: var(--app-surface);
+  border-radius: 16px;
+  z-index: 1101;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+}
+
+.barcode-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--app-border);
+
+  span {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--app-text);
+  }
+}
+
+.barcode-close {
+  background: none;
+  border: none;
+  color: var(--app-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
+.barcode-modal-body {
+  padding: 14px 16px 16px;
+}
+
+.barcode-modal-input {
+  --padding-start: 10px;
+  --padding-end: 10px;
+  --background: var(--app-surface-alt);
+  --color: var(--app-text);
+  border-radius: 10px;
+  font-size: 13.5px;
+  margin-bottom: 12px;
+}
+
+.barcode-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

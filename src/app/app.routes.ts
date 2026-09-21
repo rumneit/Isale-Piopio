@@ -33,6 +33,7 @@ export const routes: Routes = [
   { path: 'contact/:id', loadComponent: () => import('./pages/customers/customer-edit.page').then((m) => m.CustomerEditPage), canActivate: [authGuard] },
   // Debt
   { path: 'debt', loadComponent: () => import('./pages/debt/debt.page').then((m) => m.DebtPage), canActivate: [authGuard] },
+  { path: 'online-order', loadComponent: () => import('./pages/online-order/online-order.page').then((m) => m.OnlineOrderPage), canActivate: [authGuard] },
   // CRM
   { path: 'crm', loadComponent: () => import('./pages/crm/crm-list.page').then((m) => m.CrmListPage), canActivate: [authGuard] },
   { path: 'crm/pipeline', loadComponent: () => import('./pages/crm/crm-pipeline.page').then((m) => m.CrmPipelinePage), canActivate: [authGuard] },

@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   IonHeader,
@@ -15,6 +16,7 @@ import {
   IonBadge,
   IonSpinner,
   IonMenuButton,
+  IonInput,
   ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
@@ -104,6 +106,8 @@ interface ConfigItem {
     IonBadge,
     IonSpinner,
     IonMenuButton,
+    IonInput,
+    FormsModule,
   ],
 })
 export class HomePage implements OnInit {
@@ -126,9 +130,9 @@ export class HomePage implements OnInit {
       tip: 'Mẹo: Tạo đơn nhanh bằng cách quét mã vạch sản phẩm ngay trên thanh thao tác.',
       actions: [
         { id: 'sell', label: 'Bán hàng', icon: 'basket-outline', color: '#6030ff', path: '/sale' },
-        { id: 'scan-order', label: 'Tạo đơn: quét mã', icon: 'barcode-outline', color: '#47bdb5', path: '/sale' },
+        { id: 'scan-order', label: 'Tạo đơn: quét mã', icon: 'barcode-outline', color: '#47bdb5', path: '__scan__' },
         { id: 'orders', label: 'QL đơn hàng', icon: 'list-outline', color: '#e6bf00', path: '/order' },
-        { id: 'online-orders', label: 'Đơn từ Website', icon: 'cloud-outline', color: '#2dd55b', path: '/module/online-order' },
+        { id: 'online-orders', label: 'Đơn từ Website', icon: 'cloud-outline', color: '#2dd55b', path: '/online-order' },
         { id: 'debt', label: 'Quản lý công nợ', icon: 'document-text-outline', color: '#ff7043', path: '/debt' },
         { id: 'trade', label: 'Quản lý Thu/Chi', icon: 'cash-outline', color: '#5c6bc0', path: '/trade' },
         { id: 'quote', label: 'Quản lý Báo giá', icon: 'reader-outline', color: '#ec407a', path: '/quote' },
@@ -281,7 +285,30 @@ export class HomePage implements OnInit {
       this.auth.logout().then(() => this.router.navigateByUrl('/login', { replaceUrl: true }));
       return;
     }
+    if (action.path === '__scan__') {
+      this.openBarcodeModal();
+      return;
+    }
     this.router.navigateByUrl(action.path);
+  }
+
+  // ===== Modal quét mã vạch (giống bản gốc) =====
+  readonly barcodeModalOpen = signal(false);
+  barcodeValue = '';
+
+  openBarcodeModal() {
+    this.barcodeValue = '';
+    this.barcodeModalOpen.set(true);
+  }
+
+  closeBarcodeModal() {
+    this.barcodeModalOpen.set(false);
+  }
+
+  confirmBarcode() {
+    const code = this.barcodeValue.trim();
+    this.barcodeModalOpen.set(false);
+    this.router.navigate(['/sale'], { queryParams: code ? { barcode: code } : {} });
   }
 
   private async checkDefaultWallet() {
