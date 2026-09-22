@@ -72,3 +72,6 @@ Thumbs.db
 # Playwright MCP artifacts
 .playwright-mcp/
 
+# Ket qua audit Playwright (chi chay local, khong push)
+/audit-output/
+
