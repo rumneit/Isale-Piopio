@@ -223,4 +223,8 @@ export class OrderDetailPage implements OnInit {
   formatMoney(v: number | null | undefined): string {
     return new Intl.NumberFormat('vi-VN').format(v ?? 0) + ' ₫';
   }
+
+  totalQty(): number {
+    return this.items().reduce((s, i) => s + (i.qty ?? 0), 0);
+  }
 }

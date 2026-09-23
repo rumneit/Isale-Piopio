@@ -27,17 +27,20 @@
   </ion-refresher>
 
   <div class="app-page-container products-container">
-    <!-- Hàng lọc -->
+    <!-- Hàng lọc kiểu ISale: chips -->
     <div class="filter-row">
-      <div class="filter-item">
-        <span class="filter-label">Lọc theo</span>
-        <button class="filter-btn" (click)="openSortMenu()">
-          {{ sortBy() === 'recent' ? 'Gần đây' : sortBy() === 'name' ? 'Tên A → Z' : 'Giá cao → thấp' }}
-        </button>
+      <span class="filter-label">Lọc theo</span>
+      <div class="filter-chips">
+        <button class="filter-chip" [class.active]="chip() === 'all'" (click)="selectChip('all')">Tất cả</button>
+        <button class="filter-chip" [class.active]="chip() === 'instock'" (click)="selectChip('instock')">Còn số lượng</button>
+        <button class="filter-chip" [class.active]="chip() === 'name'" (click)="selectChip('name')">Tên A→Z</button>
+        <button class="filter-chip" [class.active]="chip() === 'price'" (click)="selectChip('price')">Giá cao→thấp</button>
       </div>
       <div class="filter-item">
         <span class="filter-label">Danh mục</span>
-        <button class="filter-btn muted" (click)="openSortMenu()">Chọn Nhóm hàng</button>
+        <button class="filter-btn muted" (click)="openCategoryMenu()">
+          {{ categoryId() ? 'Đã chọn nhóm' : 'Chọn Nhóm hàng' }}
+        </button>
       </div>
     </div>
 
@@ -48,7 +51,7 @@
     <!-- Toolbar -->
     <div class="list-toolbar">
       <div class="toolbar-left">
-        <ion-button fill="clear" size="small" (click)="openSortMenu()">
+        <ion-button fill="clear" size="small" (click)="openCategoryMenu()">
           <ion-icon slot="icon-only" name="funnel-outline" />
         </ion-button>
         <ion-button fill="clear" size="small" (click)="toggleSearch()">

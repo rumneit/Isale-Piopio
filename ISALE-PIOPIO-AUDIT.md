@@ -197,11 +197,11 @@ Phương pháp: mở **tab mới** mỗi route (history sạch) → render đún
 - section-title bỏ uppercase.
 
 ## 12. Còn lại (TODO đợt sau — không chặn deploy)
-- Bulk toolbar icons (checkbox/pen/grid/gear) trên product/contact — cần backend bulk-action thật, tránh nút chết.
-- Isale filter chips "Còn Hạn SD / Còn số lượng" (product) — cần field expiry trong schema.
-- Detail pages (product/:id, contact/:id, order/:id), modals/drawers, config tabs — audit sâu chưa xong.
+- ~~Bulk toolbar icons~~ → **Pass 2 xử lý một phần**: funnel = chọn Nhóm hàng thật (categories), search, download (export CSV), cloud-upload (import) — đều có hành động thật.
+- ~~Isale filter chips~~ → **Pass 2 làm**: chips "Tất cả | Còn số lượng | Tên A→Z | Giá cao→thấp" (đều filter/sort thật). Chip "Còn Hạn SD" **bỏ** vì schema chưa có cột expiry (cần migration additive — ghi nhận, không làm nút chết).
+- ~~Detail pages~~ → **Pass 2 làm**: `product/detail/:id` mới (info + Sửa/Nhân bản/Xóa), form product (Tồn kho read-only khi sửa + "Lưu và tiếp tục" khi thêm), form contact (+ Mã KH, Giới tính), order-detail (+Tổng số lượng, +Tổng tiền hàng). Contact detail view + modals lớn — pass 3.
 - Responsive verify 4 breakpoint + dark mode regression (warning #ff0ade trong dark palette đang sẵn — kiểm tra không break).
-- Page size phân trang PioPio = 30/trang, Isale = 20/trang — cân nhắc chỉnh.
+- ~~Page size 30→20~~ → **Pass 2 làm**: products 20/trang (customers vốn đã 20).
 
 ---
 
@@ -234,3 +234,33 @@ Phương pháp: mở **tab mới** mỗi route (history sạch) → render đún
 - Critical functionality (list + data hiển thị): 100% ✅ — mọi trang list hoạt động, data nguyên vẹn.
 - Critical defects: 0 ✅ | Data loss: 0 ✅ | Broken routes: 0 ✅ (product, contact, home + 5 trang được thêm FAB đều nav bình thường).
 - Điểm similarity ước tính pass này: Home ~93 (thiếu Mã giới thiệu/Gói MP cards — cố ý bỏ, SaaS của Isale), Product ~92 (thiếu bulk toolbar + filter Còn Hạn SD), Contact ~93 (thiếu icon chat/call inline đã có sẵn ✅ — điểm trừ là pagination page-size + màu label nhỏ). Overall dự kiến **~92-93** → mục tiêu ≥95 cần pass 2 (detail pages, modals, bulk actions, responsive).
+
+---
+
+# PHASE 6 — PASS 2 IMPLEMENTATION (deep audit + fixes)
+
+## 16. Discovery Pass 2 (bundle + i18n forensics)
+- Isale free account bị **reset dữ liệu** (Tổng: 0 sản phẩm) → không click-card được; chuyển sang trích xuất từ bundle.
+- Child routes tìm thấy trong lazy chunks: `product/detail/:id`, `product/update/:id`, `contact/detail/:id`, `order/detail/:id`, `received-note/detail/:id`, + CRM suite (leads/deals/tasks/pipeline/forecast/quota/approvals).
+- **i18n dictionary** tải từ `https://isale.online/app/assets/i18n/vn.json?v=v1.0.49` (214 sections) — nguồn truth cho mọi label UI Isale: `product-detail`, `product-add`, `contact-add`, `order-detail`…
+- Icon toolbar Isale = **outline style** (funnel-outline, search-outline, create-outline, download-outline, cloud-upload-outline, grid-outline, settings-outline — load từ `/app/svg/*.svg`) → xác nhận PioPio dùng outline là đúng.
+- Đặc tả form Isale: **Số lượng KHÔNG sửa trực tiếp khi sửa SP** — note chuẩn: "Để cập nhật số lượng, hãy tạo Phiếu nhập hàng."; có "Lưu và tiếp tục" khi thêm; contact form có Mã khách hàng + Giới tính (Không phân biệt/Nam/Nữ).
+
+## 17. Thay đổi Pass 2 (commit sắp push)
+| File | Thay đổi |
+| --- | --- |
+| `products.service.ts` | `listPaged` + param `filter` ('instock' → `stock > 0`) + `categoryId` (→ `category_id eq`); thêm `listCategories()` (bảng `categories`) |
+| `products.page.ts` | pageSize 30→**20**; chips `Tất cả \| Còn số lượng \| Tên A→Z \| Giá cao→thấp` (đều thật); `openCategoryMenu()` — ActionSheet chọn nhóm hàng thật (27 danh mục); bỏ `openSortMenu` cũ; `openDetail` → `/product/detail/:id` |
+| `product-detail.page.ts` (MỚI) | Trang xem "Chi tiết sản phẩm" chuẩn Isale: Số lượng/Đơn giá/Giá nhập/Mã SKU/Đơn vị/Danh mục + trạng thái; hành động Sửa / Nhân bản-Sao chép (copy thật) / Xóa (alert đúng text Isale); tip "Để cập nhật số lượng, hãy tạo Phiếu nhập kho." |
+| `app.routes.ts` | + `product/detail/:id` (trước `product/:id`) |
+| `product-edit.page.ts/html` | Sửa: Tồn kho **read-only** + note Isale (stock không gửi trong payload update — bảo vệ ledger); Thêm: nút "Lưu và tiếp tục" (reset form, giữ trang) |
+| `customer-edit.page.ts/html` + `models.ts` | + Mã khách hàng (`code` — cột v15 có sẵn), + Giới tính select (Không phân biệt/Nam/Nữ — lưu đúng giá trị import "Nam"/"Nữ") |
+| `order-detail.page.html/ts` | + hàng "Tổng số lượng" + "Tổng tiền hàng" (chuẩn Isale order-detail) |
+| TSC | `tsc --noEmit` ✅ + `ng build` AOT ✅ (sửa 1 lỗi template sót `openSortMenu` → `openCategoryMenu`) |
+
+## 18. Chưa làm (pass 3, có lý do)
+- Chip "Còn Hạn SD": cần cột `expiry_date` (migration additive) — không làm chip chết.
+- Mã vạch product: cần cột `barcode` (migration additive).
+- Lịch sử Nhập/Xuất trên product-detail: cần query join `order_items`/`received_note_items` — làm pass 3 khi audit schema.
+- Contact detail view page + CRM tabs: scope lớn.
+- Bulk-select nhiều SP (Chọn nhiều/Xóa nhiều): cần backend loop + confirm — pass 3.

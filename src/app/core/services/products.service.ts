@@ -40,7 +40,9 @@ export class ProductsService {
     search = '',
     page = 1,
     pageSize = 30,
-    sort: 'recent' | 'name' | 'price' = 'recent'
+    sort: 'recent' | 'name' | 'price' = 'recent',
+    filter: 'all' | 'instock' = 'all',
+    categoryId?: string | null
   ): Promise<{ items: Product[]; total: number }> {
     if (!this.sb.isConfigured || !this.shopId) return { items: [], total: 0 };
 
@@ -52,6 +54,12 @@ export class ProductsService {
       .select('*', { count: 'exact' })
       .eq('shop_id', this.shopId)
       .range(from, to);
+
+    // Isale chip "Còn số lượng": chỉ sản phẩm còn tồn kho
+    if (filter === 'instock') query = query.gt('stock', 0);
+
+    // Isale "Chọn Nhóm hàng": lọc theo danh mục
+    if (categoryId) query = query.eq('category_id', categoryId);
 
     switch (sort) {
       case 'name':
@@ -84,6 +92,18 @@ export class ProductsService {
       .maybeSingle();
     if (error) throw error;
     return (data as Product) ?? null;
+  }
+
+  /** Danh mục nhóm hàng (ISale: "Chọn Nhóm hàng") */
+  async listCategories(): Promise<{ id: string; name: string }[]> {
+    if (!this.sb.isConfigured || !this.shopId) return [];
+    const { data, error } = await this.sb
+      .from('categories')
+      .select('id, name')
+      .eq('shop_id', this.shopId)
+      .order('name', { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as { id: string; name: string }[];
   }
 
   /** Tìm sản phẩm theo mã (SKU) — dùng cho quét barcode */

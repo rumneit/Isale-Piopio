@@ -70,6 +70,14 @@
         </ion-list>
 
         <div class="detail-sums">
+          <div class="detail-sum-row">
+            <span>Tổng số lượng</span>
+            <span>{{ totalQty() }}</span>
+          </div>
+          <div class="detail-sum-row">
+            <span>Tổng tiền hàng</span>
+            <span>{{ formatMoney(o.total + (o.discount ?? 0)) }}</span>
+          </div>
           @if ((o.discount ?? 0) > 0) {
             <div class="detail-sum-row">
               <span>Giảm giá</span>

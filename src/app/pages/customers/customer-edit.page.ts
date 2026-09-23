@@ -68,9 +68,12 @@ export class CustomerEditPage implements OnInit {
   error = '';
 
   name = '';
+  code = '';
   phone = '';
   email = '';
   address = '';
+  /** ISale: Không phân biệt (null) | Nam | Nữ — lưu đúng giá trị import */
+  gender: string | null = null;
   debt: number | null = 0;
   routeId: string | null = null;
 
@@ -96,9 +99,11 @@ export class CustomerEditPage implements OnInit {
         const c = await this.customersService.get(id);
         if (c) {
           this.name = c.name;
+          this.code = c.code ?? '';
           this.phone = c.phone ?? '';
           this.email = c.email ?? '';
           this.address = c.address ?? '';
+          this.gender = c.gender ?? null;
           this.debt = c.debt;
           this.routeId = c.route_id ?? null;
         }
@@ -119,9 +124,11 @@ export class CustomerEditPage implements OnInit {
 
     const payload: Partial<Customer> = {
       name: this.name.trim(),
+      code: this.code.trim() || null,
       phone: this.phone.trim() || null,
       email: this.email.trim() || null,
       address: this.address.trim() || null,
+      gender: this.gender,
       debt: Number(this.debt ?? 0),
       route_id: this.routeId || null,
     };

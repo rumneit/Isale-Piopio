@@ -26,6 +26,7 @@ import {
   trashOutline,
   closeOutline,
   pricetagsOutline,
+  addCircleOutline,
 } from 'ionicons/icons';
 import { ProductsService } from '../../core/services/products.service';
 import { Product } from '../../core/models/models';
@@ -78,7 +79,7 @@ export class ProductEditPage implements OnInit {
   active = true;
 
   constructor() {
-    addIcons({ saveOutline, trashOutline, closeOutline, pricetagsOutline });
+    addIcons({ saveOutline, trashOutline, closeOutline, pricetagsOutline, addCircleOutline });
   }
 
   get isEdit(): boolean {
@@ -113,32 +114,48 @@ export class ProductEditPage implements OnInit {
     }
   }
 
-  async save() {
+  async save(continueAdding = false) {
     this.error = '';
     if (!this.name.trim()) {
       this.error = 'Vui lòng nhập tên sản phẩm.';
       return;
     }
 
+    // Isale: sửa số lượng chỉ qua Phiếu nhập kho — payload KHÔNG gửi stock khi sửa
     const payload: Partial<Product> = {
       name: this.name.trim(),
       sku: this.sku.trim() || null,
       unit: this.unit.trim() || 'Cái',
       price: Number(this.price ?? 0),
       cost: this.cost == null ? null : Number(this.cost),
-      stock: Number(this.stock ?? 0),
       active: this.active,
     };
+    if (!this.isEdit) {
+      payload.stock = Number(this.stock ?? 0);
+    }
 
     this.busy.set(true);
     try {
       if (this.isEdit) {
         await this.productsService.update(this.productId()!, payload);
+        this.toast('Đã lưu sản phẩm');
+        this.router.navigateByUrl('/product', { replaceUrl: true });
       } else {
         await this.productsService.create(payload);
+        if (continueAdding) {
+          this.toast('Đã thêm "' + this.name.trim() + '"');
+          this.error = '';
+          this.name = '';
+          this.sku = '';
+          this.unit = 'Cái';
+          this.price = null;
+          this.cost = null;
+          this.stock = 0;
+          this.active = true;
+        } else {
+          this.router.navigateByUrl('/product', { replaceUrl: true });
+        }
       }
-      this.toast('Đã lưu sản phẩm');
-      this.router.navigateByUrl('/product', { replaceUrl: true });
     } catch (e: any) {
       this.error = this.translateError(e?.message ?? 'Lưu thất bại.');
     } finally {

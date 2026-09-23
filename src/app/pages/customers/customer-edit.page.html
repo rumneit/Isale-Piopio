@@ -33,7 +33,17 @@
           <ion-input label="Tên khách hàng *" labelPlacement="stacked" placeholder="Nguyễn Văn A" [(ngModel)]="name" />
         </ion-item>
         <ion-item>
+          <ion-input label="Mã khách hàng" labelPlacement="stacked" placeholder="VD: KH001" [(ngModel)]="code" />
+        </ion-item>
+        <ion-item>
           <ion-input label="Số điện thoại" labelPlacement="stacked" type="tel" placeholder="09xx xxx xxx" [(ngModel)]="phone" />
+        </ion-item>
+        <ion-item>
+          <ion-select label="Giới tính" labelPlacement="stacked" [(ngModel)]="gender" interface="action-sheet" cancelText="Hủy">
+            <ion-select-option [value]="null">Không phân biệt</ion-select-option>
+            <ion-select-option value="Nam">Nam</ion-select-option>
+            <ion-select-option value="Nữ">Nữ</ion-select-option>
+          </ion-select>
         </ion-item>
         <ion-item>
           <ion-input label="Email" labelPlacement="stacked" type="email" placeholder="email@example.com" [(ngModel)]="email" />

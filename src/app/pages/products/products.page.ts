@@ -15,8 +15,8 @@ import {
   IonSpinner,
   IonMenuButton,
   IonToggle,
-  ToastController,
   ActionSheetController,
+  ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -77,9 +77,12 @@ export class ProductsPage implements OnInit {
   readonly loading = signal(true);
   readonly searchVisible = signal(false);
   readonly page = signal(1);
-  readonly pageSize = 30;
+  readonly pageSize = 20;
   search = '';
-  sortBy = signal<'recent' | 'name' | 'price'>('recent');
+  /** Chip lọc kiểu ISale: Tất cả | Còn số lượng | Tên A→Z | Giá cao→thấp */
+  readonly chip = signal<'all' | 'instock' | 'name' | 'price'>('all');
+  /** Nhóm hàng đang lọc (null = tất cả) */
+  readonly categoryId = signal<string | null>(null);
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
 
@@ -112,11 +115,14 @@ export class ProductsPage implements OnInit {
   async load() {
     this.loading.set(true);
     try {
+      const chip = this.chip();
       const { items, total } = await this.productsService.listPaged(
         this.search,
         this.page(),
         this.pageSize,
-        this.sortBy()
+        chip === 'name' ? 'name' : chip === 'price' ? 'price' : 'recent',
+        chip === 'instock' ? 'instock' : 'all',
+        this.categoryId()
       );
       this.items.set(items);
       this.total.set(total);
@@ -127,6 +133,12 @@ export class ProductsPage implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  async selectChip(chip: 'all' | 'instock' | 'name' | 'price') {
+    this.chip.set(chip);
+    this.page.set(1);
+    await this.load();
   }
 
   async onSearch(ev: CustomEvent) {
@@ -162,7 +174,7 @@ export class ProductsPage implements OnInit {
   }
 
   openDetail(item: Product) {
-    this.router.navigateByUrl(`/product/${item.id}`);
+    this.router.navigateByUrl(`/product/detail/${item.id}`);
   }
 
   openAdd() {
@@ -189,38 +201,33 @@ export class ProductsPage implements OnInit {
     this.router.navigateByUrl(path);
   }
 
-  async openSortMenu() {
-    const sheet = await this.actionSheetCtrl.create({
-      header: 'Lọc theo',
-      buttons: [
-        {
-          text: 'Gần đây' + (this.sortBy() === 'recent' ? ' ✓' : ''),
-          handler: () => {
-            this.sortBy.set('recent');
-            this.page.set(1);
-            this.load();
-          },
-        },
-        {
-          text: 'Tên A → Z' + (this.sortBy() === 'name' ? ' ✓' : ''),
-          handler: () => {
-            this.sortBy.set('name');
-            this.page.set(1);
-            this.load();
-          },
-        },
-        {
-          text: 'Giá cao → thấp' + (this.sortBy() === 'price' ? ' ✓' : ''),
-          handler: () => {
-            this.sortBy.set('price');
-            this.page.set(1);
-            this.load();
-          },
-        },
-        { text: 'Hủy', role: 'cancel' },
-      ],
-    });
+  /** ISale: "Chọn Nhóm hàng" — chọn danh mục để lọc */
+  async openCategoryMenu() {
+    const categories = await this.productsService.listCategories();
+    const buttons = [
+      {
+        text:
+          'Tất cả nhóm hàng' +
+          (this.categoryId() === null ? ' ✓' : ''),
+        handler: () => this.applyCategory(null),
+      },
+      ...categories
+        .filter((c) => c.id !== this.categoryId())
+        .slice(0, 25)
+        .map((c) => ({
+          text: c.name + (this.categoryId() === c.id ? ' ✓' : ''),
+          handler: () => this.applyCategory(c.id),
+        })),
+      { text: 'Hủy', role: 'cancel' as const },
+    ];
+    const sheet = await this.actionSheetCtrl.create({ header: 'Chọn Nhóm hàng', buttons });
     await sheet.present();
+  }
+
+  private async applyCategory(categoryId: string | null) {
+    this.categoryId.set(categoryId);
+    this.page.set(1);
+    await this.load();
   }
 
   async toggleSerial(item: Product, ev: any) {

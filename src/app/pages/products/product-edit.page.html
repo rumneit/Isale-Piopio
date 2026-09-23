@@ -63,15 +63,22 @@
             [(ngModel)]="cost"
           />
         </ion-item>
-        <ion-item>
-          <ion-input
-            label="Tồn kho"
-            labelPlacement="stacked"
-            type="number"
-            inputmode="decimal"
-            [(ngModel)]="stock"
-          />
-        </ion-item>
+        @if (isEdit) {
+          <ion-item>
+            <ion-input label="Tồn kho" labelPlacement="stacked" [value]="stock" [readonly]="true" />
+            <ion-note slot="end" class="stock-note">Để cập nhật số lượng, hãy tạo Phiếu nhập kho.</ion-note>
+          </ion-item>
+        } @else {
+          <ion-item>
+            <ion-input
+              label="Số lượng"
+              labelPlacement="stacked"
+              type="number"
+              inputmode="decimal"
+              [(ngModel)]="stock"
+            />
+          </ion-item>
+        }
         <ion-item>
           <ion-toggle [(ngModel)]="active">
             <ion-label>
@@ -82,6 +89,13 @@
         </ion-item>
       </ion-list>
     </div>
+
+    @if (!isEdit) {
+      <ion-button expand="block" fill="outline" (click)="save(true)" [disabled]="busy()">
+        <ion-icon slot="start" name="add-circle-outline" />
+        Lưu và tiếp tục
+      </ion-button>
+    }
 
     @if (isEdit) {
       <ion-button expand="block" color="danger" fill="outline" (click)="confirmDelete()" [disabled]="deleting()">

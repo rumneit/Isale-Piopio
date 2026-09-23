@@ -27,3 +27,10 @@ ion-toggle {
   font-size: 13px;
   margin-bottom: 12px;
 }
+
+.stock-note {
+  font-size: 11px;
+  color: var(--app-text-muted);
+  max-width: 150px;
+  text-align: end;
+}
