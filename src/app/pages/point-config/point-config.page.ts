@@ -12,6 +12,7 @@ import { addIcons } from 'ionicons';
 import {
   addOutline, createOutline, trashOutline, medalOutline, sparklesOutline,
   cardOutline, timeOutline, saveOutline, informationCircleOutline, chevronForwardOutline,
+  warningOutline,
 } from 'ionicons/icons';
 import { LoyaltyConfigService } from '../../core/services/loyalty-config.service';
 import { PointConfigRule, LoyaltyTierRule, DEFAULT_TIERS, pickPointRule } from '../../core/loyalty';
@@ -53,6 +54,12 @@ import { SettingsService } from '../../core/services/settings.service';
         <ion-refresher-content />
       </ion-refresher>
       <div class="app-page-container">
+        @if (migrationNeeded()) {
+          <div class="app-banner-warning">
+            <ion-icon name="warning-outline" />
+            <span>Cần chạy migration v14 trong Supabase để bật module này.</span>
+          </div>
+        }
         @if (loading()) {
           <div class="page-loading"><ion-spinner name="crescent" /></div>
         } @else if (tab() === 'history') {
@@ -181,6 +188,7 @@ export class PointConfigPage implements OnInit {
   readonly rules = signal<PointConfigRule[]>([]);
   readonly tiers = signal<LoyaltyTierRule[]>([]);
   readonly loading = signal(true);
+  readonly migrationNeeded = signal(false);
 
   redeemEnabled = true;
   minRedeem: number | null = 100;
@@ -190,6 +198,7 @@ export class PointConfigPage implements OnInit {
     addIcons({
       addOutline, createOutline, trashOutline, medalOutline, sparklesOutline,
       cardOutline, timeOutline, saveOutline, informationCircleOutline, chevronForwardOutline,
+      warningOutline,
     });
   }
 
@@ -219,6 +228,7 @@ export class PointConfigPage implements OnInit {
       this.history.set(history);
       this.rules.set(rules);
       this.tiers.set(tiers);
+      this.migrationNeeded.set(this.service.migrationNeeded());
     } catch (e: any) {
       console.error('load loyalty config failed', e);
     } finally {

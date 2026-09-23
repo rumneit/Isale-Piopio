@@ -32,4 +32,16 @@ export class SupabaseService {
   from<T = any>(table: string) {
     return this.client.from(table);
   }
+
+  /**
+   * Phát hiện lỗi "bảng chưa tồn tại" (migration chưa chạy).
+   * PostgREST trả 404 kèm mã PGRST205 khi quan hệ không tồn tại.
+   */
+  static isMissingTable(error: unknown): boolean {
+    if (!error) return false;
+    const e = error as { code?: string; status?: number; message?: string };
+    if (e.code === 'PGRST205' || e.code === '42P01') return true;
+    if (e.status === 404) return true;
+    return /relation .* does not exist|could not find the table|schema cache/i.test(e.message ?? '');
+  }
 }

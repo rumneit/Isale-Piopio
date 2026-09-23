@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { LogService } from './log.service';
@@ -16,6 +16,9 @@ export class LoyaltyConfigService {
   private auth = inject(AuthService);
   private logService = inject(LogService);
 
+  /** True khi bảng chưa tồn tại (chưa chạy migration v14). */
+  readonly migrationNeeded = signal(false);
+
   private get shopId(): string | null {
     return this.auth.shop()?.id ?? null;
   }
@@ -28,7 +31,14 @@ export class LoyaltyConfigService {
       .select('*')
       .eq('shop_id', this.shopId)
       .order('created_at', { ascending: false });
-    if (error) throw error;
+    if (error) {
+      if (SupabaseService.isMissingTable(error)) {
+        this.migrationNeeded.set(true);
+        return [];
+      }
+      throw error;
+    }
+    this.migrationNeeded.set(false);
     return (data ?? []) as PointConfigRule[];
   }
 
@@ -67,7 +77,14 @@ export class LoyaltyConfigService {
       .select('*')
       .eq('shop_id', this.shopId)
       .order('min_spend', { ascending: true });
-    if (error) throw error;
+    if (error) {
+      if (SupabaseService.isMissingTable(error)) {
+        this.migrationNeeded.set(true);
+        return [];
+      }
+      throw error;
+    }
+    this.migrationNeeded.set(false);
     return (data ?? []) as LoyaltyTierRule[];
   }
 

@@ -11,6 +11,7 @@ import { addIcons } from 'ionicons';
 import {
   addOutline, sparklesOutline, informationCircleOutline, flashOutline,
   cashOutline, constructOutline, gridOutline, trashOutline, chevronForwardOutline,
+  warningOutline,
 } from 'ionicons/icons';
 import { AiPagesService, AiPage } from '../../core/services/ai-pages.service';
 import { AI_PAGE_TEMPLATES, buildConfig } from '../../core/ai-pages';
@@ -42,6 +43,12 @@ import { AI_PAGE_TEMPLATES, buildConfig } from '../../core/ai-pages';
         <ion-refresher-content />
       </ion-refresher>
       <div class="app-page-container">
+        @if (migrationNeeded()) {
+          <div class="app-banner-warning">
+            <ion-icon name="warning-outline" />
+            <span>Cần chạy migration v14 trong Supabase để lưu trang. Thư viện mẫu vẫn xem được.</span>
+          </div>
+        }
         <div class="app-banner-warning">
           <ion-icon name="information-circle-outline" />
           <span>
@@ -133,12 +140,14 @@ export class AiDynamicPage implements OnInit {
 
   readonly pages = signal<AiPage[]>([]);
   readonly loading = signal(true);
+  readonly migrationNeeded = signal(false);
   readonly templates = AI_PAGE_TEMPLATES;
 
   constructor() {
     addIcons({
       addOutline, sparklesOutline, informationCircleOutline, flashOutline,
       cashOutline, constructOutline, gridOutline, trashOutline, chevronForwardOutline,
+      warningOutline,
     });
   }
 
@@ -150,6 +159,7 @@ export class AiDynamicPage implements OnInit {
     this.loading.set(true);
     try {
       this.pages.set(await this.service.list());
+      this.migrationNeeded.set(this.service.migrationNeeded());
     } catch (e: any) {
       console.error('load ai pages failed', e);
       this.pages.set([]);

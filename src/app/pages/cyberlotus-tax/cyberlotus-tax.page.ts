@@ -11,6 +11,7 @@ import { addIcons } from 'ionicons';
 import {
   addOutline, documentTextOutline, cloudDownloadOutline, settingsOutline,
   informationCircleOutline, trashOutline, businessOutline, cashOutline, checkmarkDoneOutline,
+  warningOutline,
 } from 'ionicons/icons';
 import { TaxService, TaxProfile, TaxDeclaration } from '../../core/services/tax.service';
 import {
@@ -56,6 +57,12 @@ import { CsvExportService } from '../../core/services/csv-export.service';
         <ion-refresher-content />
       </ion-refresher>
       <div class="app-page-container">
+        @if (migrationNeeded()) {
+          <div class="app-banner-warning">
+            <ion-icon name="warning-outline" />
+            <span>Cần chạy migration v14 trong Supabase để lưu hồ sơ & tờ khai.</span>
+          </div>
+        }
         @if (loading()) {
           <div class="page-loading"><ion-spinner name="crescent" /></div>
         } @else if (tab() === 'profile') {
@@ -228,6 +235,7 @@ export class CyberlotusTaxPage implements OnInit {
   readonly declarations = signal<TaxDeclaration[]>([]);
   readonly summary = signal<ReturnType<typeof computeTax> | null>(null);
   readonly loading = signal(true);
+  readonly migrationNeeded = signal(false);
 
   readonly periods = recentPeriods(12);
   readonly vatRates = DIRECT_VAT_RATES;
@@ -245,6 +253,7 @@ export class CyberlotusTaxPage implements OnInit {
     addIcons({
       addOutline, documentTextOutline, cloudDownloadOutline, settingsOutline,
       informationCircleOutline, trashOutline, businessOutline, cashOutline, checkmarkDoneOutline,
+      warningOutline,
     });
   }
 
@@ -272,6 +281,7 @@ export class CyberlotusTaxPage implements OnInit {
       ]);
       this.profiles.set(profiles);
       this.declarations.set(declarations);
+      this.migrationNeeded.set(this.service.migrationNeeded());
     } catch (e: any) {
       console.error('load tax data failed', e);
     } finally {

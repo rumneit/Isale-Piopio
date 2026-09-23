@@ -8,7 +8,7 @@ import {
 import { addIcons } from 'ionicons';
 import {
   addOutline, medalOutline, trashOutline, trophyOutline, informationCircleOutline,
-  trendingUpOutline,
+  trendingUpOutline, warningOutline,
 } from 'ionicons/icons';
 import { LoyaltyConfigService } from '../../core/services/loyalty-config.service';
 import { LoyaltyTierRule, DEFAULT_TIERS } from '../../core/loyalty';
@@ -37,6 +37,12 @@ import { LoyaltyTierRule, DEFAULT_TIERS } from '../../core/loyalty';
         <ion-refresher-content />
       </ion-refresher>
       <div class="app-page-container">
+        @if (migrationNeeded()) {
+          <div class="app-banner-warning">
+            <ion-icon name="warning-outline" />
+            <span>Cần chạy migration v14 trong Supabase để bật module này.</span>
+          </div>
+        }
         <div class="app-banner-warning">
           <ion-icon name="information-circle-outline" />
           <span>Khách được xét lên hạng khi đạt ĐỒNG THỜI mức chi tiêu và số điểm tối thiểu.</span>
@@ -110,11 +116,12 @@ export class LevelConfigPage implements OnInit {
 
   readonly tiers = signal<LoyaltyTierRule[]>([]);
   readonly loading = signal(true);
+  readonly migrationNeeded = signal(false);
 
   constructor() {
     addIcons({
       addOutline, medalOutline, trashOutline, trophyOutline, informationCircleOutline,
-      trendingUpOutline,
+      trendingUpOutline, warningOutline,
     });
   }
 
@@ -133,6 +140,7 @@ export class LevelConfigPage implements OnInit {
     this.loading.set(true);
     try {
       this.tiers.set(await this.service.listTiers());
+      this.migrationNeeded.set(this.service.migrationNeeded());
     } catch (e: any) {
       console.error('load tiers failed', e);
       this.tiers.set([]);

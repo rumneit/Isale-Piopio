@@ -9,7 +9,7 @@ import {
 import { addIcons } from 'ionicons';
 import {
   addOutline, carOutline, createOutline, trashOutline, checkmarkCircleOutline,
-  informationCircleOutline, pricetagOutline,
+  informationCircleOutline, pricetagOutline, warningOutline,
 } from 'ionicons/icons';
 import { ShippingPartnersService, ShippingPartner } from '../../core/services/shipping-partners.service';
 import { SHIPPING_CARRIERS, SHIPPING_ZONES, calcShippingFee } from '../../core/shipping';
@@ -50,6 +50,12 @@ import { SHIPPING_CARRIERS, SHIPPING_ZONES, calcShippingFee } from '../../core/s
         <ion-refresher-content />
       </ion-refresher>
       <div class="app-page-container">
+        @if (migrationNeeded()) {
+          <div class="app-banner-warning">
+            <ion-icon name="warning-outline" />
+            <span>Cần chạy migration v14 trong Supabase để bật module này.</span>
+          </div>
+        }
         @if (loading()) {
           <div class="page-loading"><ion-spinner name="crescent" /></div>
         } @else if (tab() === 'partners') {
@@ -125,6 +131,7 @@ export class ShippingPartnersPage implements OnInit {
 
   readonly items = signal<ShippingPartner[]>([]);
   readonly loading = signal(true);
+  readonly migrationNeeded = signal(false);
   readonly tab = signal<'partners' | 'fees'>('partners');
   readonly zones = SHIPPING_ZONES;
   readonly carriers = SHIPPING_CARRIERS;
@@ -133,7 +140,7 @@ export class ShippingPartnersPage implements OnInit {
   constructor() {
     addIcons({
       addOutline, carOutline, createOutline, trashOutline, checkmarkCircleOutline,
-      informationCircleOutline, pricetagOutline,
+      informationCircleOutline, pricetagOutline, warningOutline,
     });
   }
 
@@ -149,6 +156,7 @@ export class ShippingPartnersPage implements OnInit {
     this.loading.set(true);
     try {
       this.items.set(await this.service.list(this.search));
+      this.migrationNeeded.set(this.service.migrationNeeded());
     } catch (e: any) {
       console.error('load shipping partners failed', e);
       this.items.set([]);
