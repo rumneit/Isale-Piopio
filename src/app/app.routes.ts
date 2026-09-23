@@ -31,6 +31,7 @@ export const routes: Routes = [
   // Customers
   { path: 'contact', loadComponent: () => import('./pages/customers/customers.page').then((m) => m.CustomersPage), canActivate: [authGuard, permissionGuard] },
   { path: 'contact/add', loadComponent: () => import('./pages/customers/customer-edit.page').then((m) => m.CustomerEditPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'contact/detail/:id', loadComponent: () => import('./pages/customers/customer-detail.page').then((m) => m.CustomerDetailPage), canActivate: [authGuard, permissionGuard] },
   { path: 'contact/filter-duplicate', loadComponent: () => import('./pages/customers/duplicate-customers.page').then((m) => m.DuplicateCustomersPage), canActivate: [authGuard, permissionGuard] },
   { path: 'contact/:id', loadComponent: () => import('./pages/customers/customer-edit.page').then((m) => m.CustomerEditPage), canActivate: [authGuard, permissionGuard] },
   // Debt

@@ -16,6 +16,7 @@ import {
   IonMenuButton,
   IonToggle,
   ActionSheetController,
+  AlertController,
   ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
@@ -71,6 +72,7 @@ export class ProductsPage implements OnInit {
   private router = inject(Router);
   private toastCtrl = inject(ToastController);
   private actionSheetCtrl = inject(ActionSheetController);
+  private alertCtrl = inject(AlertController);
 
   readonly items = signal<Product[]>([]);
   readonly total = signal(0);
@@ -79,10 +81,16 @@ export class ProductsPage implements OnInit {
   readonly page = signal(1);
   readonly pageSize = 20;
   search = '';
-  /** Chip lọc kiểu ISale: Tất cả | Còn số lượng | Tên A→Z | Giá cao→thấp */
-  readonly chip = signal<'all' | 'instock' | 'name' | 'price'>('all');
+  /** Chip lọc kiểu ISale: Tất cả | Còn số lượng | Tên A→Z | Giá cao→thấp (+ Còn Hạn SD khi có cột) */
+  readonly chip = signal<'all' | 'instock' | 'notexpired' | 'name' | 'price'>('all');
   /** Nhóm hàng đang lọc (null = tất cả) */
   readonly categoryId = signal<string | null>(null);
+  /** Cột tùy chọn có trong schema (sau migration v16) */
+  readonly hasExpiry = signal(false);
+  readonly hasBarcode = signal(false);
+  /** Chế độ chọn nhiều (ISale: "Chọn nhiều") */
+  readonly selectMode = signal(false);
+  readonly selected = signal<Set<string>>(new Set());
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
 
@@ -110,6 +118,17 @@ export class ProductsPage implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.detectColumns();
+  }
+
+  private async detectColumns() {
+    try {
+      const cols = await this.productsService.detectOptionalColumns();
+      this.hasExpiry.set(cols.expiry);
+      this.hasBarcode.set(cols.barcode);
+    } catch {
+      /* bỏ qua — giữ mặc định */
+    }
   }
 
   async load() {
@@ -121,7 +140,7 @@ export class ProductsPage implements OnInit {
         this.page(),
         this.pageSize,
         chip === 'name' ? 'name' : chip === 'price' ? 'price' : 'recent',
-        chip === 'instock' ? 'instock' : 'all',
+        chip === 'instock' ? 'instock' : chip === 'notexpired' ? 'notexpired' : 'all',
         this.categoryId()
       );
       this.items.set(items);
@@ -135,7 +154,7 @@ export class ProductsPage implements OnInit {
     }
   }
 
-  async selectChip(chip: 'all' | 'instock' | 'name' | 'price') {
+  async selectChip(chip: 'all' | 'instock' | 'notexpired' | 'name' | 'price') {
     this.chip.set(chip);
     this.page.set(1);
     await this.load();
@@ -174,7 +193,90 @@ export class ProductsPage implements OnInit {
   }
 
   openDetail(item: Product) {
+    if (this.selectMode()) {
+      this.toggleSelect(item.id);
+      return;
+    }
     this.router.navigateByUrl(`/product/detail/${item.id}`);
+  }
+
+  /** ISale: "Chọn nhiều" — bật/tắt chế độ chọn */
+  toggleSelectMode() {
+    this.selectMode.update((v) => !v);
+    if (!this.selectMode()) this.selected.set(new Set());
+  }
+
+  toggleSelect(id: string) {
+    this.selected.update((set) => {
+      const next = new Set(set);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  /** ISale: xuất CSV các sản phẩm đang chọn */
+  async bulkExport() {
+    const ids = this.selected();
+    try {
+      const all = await this.productsService.list(this.search);
+      const rows = all
+        .filter((p) => ids.has(p.id))
+        .map((p) => [
+          p.name,
+          p.sku ?? '',
+          p.unit ?? '',
+          this.csvExport.formatMoney(p.price),
+          this.csvExport.formatMoney(p.cost),
+          this.csvExport.formatMoney(p.stock),
+          p.active ? 'Đang bán' : 'Ngừng bán',
+          this.csvExport.formatDateTime(p.created_at),
+        ]);
+      this.csvExport.export('san-pham-da-chon', ['Tên', 'Mã SP', 'Đơn vị', 'Giá bán', 'Giá nhập', 'Tồn kho', 'Trạng thái', 'Ngày tạo'], rows);
+      this.toast(`Đã xuất ${rows.length} sản phẩm`);
+    } catch (e: any) {
+      this.toast(e?.message ?? 'Xuất thất bại', 'danger');
+    }
+  }
+
+  /** ISale: "Bạn sắp xóa {{count}} sản phẩm..." — xóa thật từng sản phẩm */
+  async bulkDelete() {
+    const count = this.selected().size;
+    if (!count) {
+      this.toast('Bạn chưa chọn sản phẩm nào để xóa cả', 'warning');
+      return;
+    }
+    const alert = await this.alertCtrl.create({
+      header: `Xóa ${count} sản phẩm`,
+      message:
+        `Bạn sắp xóa ${count} sản phẩm. Tất cả giao dịch thuộc những sản phẩm này sẽ không bị xóa, tuy nhiên nội dung của chúng sẽ không thể khôi phục và hệ thống sẽ loại các sản phẩm này ra khỏi mọi báo cáo. Bạn có chắc muốn xóa?`,
+      buttons: [
+        { text: 'Hủy', role: 'cancel' },
+        {
+          text: 'Xóa',
+          role: 'destructive',
+          handler: () => this.doBulkDelete(),
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async doBulkDelete() {
+    const ids = [...this.selected()];
+    let ok = 0;
+    for (const id of ids) {
+      try {
+        await this.productsService.remove(id);
+        ok++;
+      } catch {
+        /* bỏ qua SP lỗi, tiếp tục */
+      }
+    }
+    this.selected.set(new Set());
+    this.selectMode.set(false);
+    this.toast(`Đã xóa ${ok}/${ids.length} sản phẩm`);
+    await this.load();
   }
 
   openAdd() {

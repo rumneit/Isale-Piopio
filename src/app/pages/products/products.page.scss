@@ -38,6 +38,48 @@ ion-content {
   }
 }
 
+/* ISale: chế độ chọn nhiều */
+.select-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 2px 10px;
+
+  .select-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    margin-right: 4px;
+  }
+}
+
+ion-button.active-btn {
+  --color: var(--ion-color-primary);
+  font-weight: 700;
+}
+
+.product-card.selectable {
+  cursor: pointer;
+  position: relative;
+
+  .check-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    color: var(--app-border);
+  }
+
+  &.selected {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 2px rgba(96, 48, 255, 0.25);
+
+    .check-badge {
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
 .filter-item {
   display: flex;
   align-items: center;

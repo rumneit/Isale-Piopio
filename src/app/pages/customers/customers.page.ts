@@ -169,7 +169,7 @@ export class CustomersPage implements OnInit {
   }
 
   openDetail(item: Customer) {
-    this.router.navigateByUrl(`/contact/${item.id}`);
+    this.router.navigateByUrl(`/contact/detail/${item.id}`);
   }
 
   openAdd() {

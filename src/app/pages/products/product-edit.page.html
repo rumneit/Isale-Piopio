@@ -40,6 +40,21 @@
         <ion-item>
           <ion-input label="Mã SP (SKU)" labelPlacement="stacked" placeholder="VD: TS001" [(ngModel)]="sku" />
         </ion-item>
+        @if (cols.barcode) {
+          <ion-item>
+            <ion-input label="Mã vạch" labelPlacement="stacked" placeholder="Quét hoặc nhập mã vạch" [(ngModel)]="barcode" />
+          </ion-item>
+        }
+        @if (cols.expiry) {
+          <ion-item>
+            <ion-input
+              label="Hạn sử dụng"
+              labelPlacement="stacked"
+              type="date"
+              [(ngModel)]="expiryDate"
+            />
+          </ion-item>
+        }
         <ion-item>
           <ion-input label="Đơn vị" labelPlacement="stacked" placeholder="Cái / Ly / Kg" [(ngModel)]="unit" />
         </ion-item>

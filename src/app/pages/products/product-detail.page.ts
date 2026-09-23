@@ -29,7 +29,7 @@ import {
   pricetags,
   cube,
 } from 'ionicons/icons';
-import { ProductsService } from '../../core/services/products.service';
+import { ProductsService, ProductHistoryRow } from '../../core/services/products.service';
 import { Product } from '../../core/models/models';
 
 /**
@@ -117,6 +117,30 @@ import { Product } from '../../core/models/models';
             </ion-list>
           </div>
 
+          <!-- ISale: "Lịch sử Nhập/Xuất" -->
+          <div class="app-card history-card">
+            <h3 class="history-title">Lịch sử Nhập/Xuất</h3>
+            @if (history().length === 0) {
+              <div class="history-empty">Chưa có giao dịch nhập/xuất cho sản phẩm này.</div>
+            } @else {
+              <div class="history-rows">
+                @for (h of history(); track $index) {
+                  <div class="history-row">
+                    <ion-badge [color]="h.kind === 'in' ? 'success' : 'primary'">{{ h.kind === 'in' ? 'Nhập' : 'Xuất' }}</ion-badge>
+                    <div class="history-main">
+                      <span class="history-code">{{ h.code || '—' }}</span>
+                      <span class="history-date">{{ h.date | date: 'dd/MM/yyyy HH:mm' }}</span>
+                    </div>
+                    <div class="history-nums">
+                      <span class="history-qty" [class.pos]="h.kind === 'in'">{{ h.kind === 'in' ? '+' : '-' }}{{ formatQty(h.qty) }}</span>
+                      <span class="history-amount">{{ formatMoney(h.amount) }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
           <ion-note class="detail-tip">Để cập nhật số lượng, hãy tạo Phiếu nhập kho.</ion-note>
 
           <ion-button expand="block" (click)="openEdit()">
@@ -166,6 +190,68 @@ import { Product } from '../../core/models/models';
         color: var(--app-text-muted);
         margin: 0 4px 12px;
       }
+      .history-card {
+        margin-bottom: 12px;
+      }
+      .history-title {
+        margin: 0 0 10px;
+        font-size: 14.5px;
+        font-weight: 750;
+        color: #1f2a5a;
+      }
+      .history-empty {
+        font-size: 12.5px;
+        color: var(--app-text-muted);
+        padding: 6px 2px 2px;
+      }
+      .history-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .history-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 0;
+        border-bottom: 1px solid var(--app-border);
+        font-size: 12.5px;
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+      .history-main {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+      }
+      .history-code {
+        font-weight: 700;
+        color: var(--app-text);
+      }
+      .history-date {
+        font-size: 11.5px;
+        color: var(--app-text-muted);
+      }
+      .history-nums {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+      }
+      .history-qty {
+        font-weight: 800;
+        color: var(--ion-color-danger);
+
+        &.pos {
+          color: var(--ion-color-success);
+        }
+      }
+      .history-amount {
+        font-size: 11.5px;
+        color: var(--app-text-muted);
+      }
     `,
   ],
   imports: [
@@ -199,6 +285,7 @@ export class ProductDetailPage implements OnInit {
   readonly busy = signal(false);
   readonly deleting = signal(false);
   readonly categoryName = signal<string | null>(null);
+  readonly history = signal<ProductHistoryRow[]>([]);
 
   constructor() {
     addIcons({ home, create, trash, copy, close, pricetags, cube });
@@ -215,7 +302,13 @@ export class ProductDetailPage implements OnInit {
   private async load(id: string) {
     this.loading.set(true);
     try {
-      const p = await this.productsService.get(id);
+      const [p] = await Promise.all([
+        this.productsService.get(id),
+        this.productsService
+          .getHistory(id)
+          .then((h) => this.history.set(h))
+          .catch(() => this.history.set([])),
+      ]);
       this.product.set(p);
       if (p?.category_id) {
         const cats = await this.productsService.listCategories();

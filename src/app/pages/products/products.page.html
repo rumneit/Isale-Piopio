@@ -32,6 +32,9 @@
       <span class="filter-label">Lọc theo</span>
       <div class="filter-chips">
         <button class="filter-chip" [class.active]="chip() === 'all'" (click)="selectChip('all')">Tất cả</button>
+        @if (hasExpiry()) {
+          <button class="filter-chip" [class.active]="chip() === 'notexpired'" (click)="selectChip('notexpired')">Còn Hạn SD</button>
+        }
         <button class="filter-chip" [class.active]="chip() === 'instock'" (click)="selectChip('instock')">Còn số lượng</button>
         <button class="filter-chip" [class.active]="chip() === 'name'" (click)="selectChip('name')">Tên A→Z</button>
         <button class="filter-chip" [class.active]="chip() === 'price'" (click)="selectChip('price')">Giá cao→thấp</button>
@@ -60,6 +63,9 @@
         <span class="toolbar-total">Tổng: {{ total() }} sản phẩm</span>
       </div>
       <div class="toolbar-actions">
+        <ion-button fill="clear" size="small" (click)="toggleSelectMode()" [class.active-btn]="selectMode()">
+          <ion-icon slot="icon-only" name="checkbox-outline" />
+        </ion-button>
         <ion-button fill="clear" size="small" (click)="exportCsv()">
           <ion-icon slot="icon-only" name="download-outline" />
         </ion-button>
@@ -68,6 +74,22 @@
         </ion-button>
       </div>
     </div>
+
+    <!-- Thanh hành động khi đang chọn nhiều (ISale) -->
+    @if (selectMode()) {
+      <div class="select-bar">
+        <span class="select-count">Đã chọn {{ selected().size }}</span>
+        <ion-button size="small" fill="outline" (click)="bulkExport()" [disabled]="selected().size === 0">
+          <ion-icon slot="start" name="download-outline" />
+          Xuất
+        </ion-button>
+        <ion-button size="small" fill="outline" color="danger" (click)="bulkDelete()" [disabled]="selected().size === 0">
+          <ion-icon slot="start" name="trash-outline" />
+          Xóa
+        </ion-button>
+        <ion-button size="small" fill="clear" (click)="toggleSelectMode()">Đóng</ion-button>
+      </div>
+    }
 
     @if (loading()) {
       <div class="page-loading"><ion-spinner name="crescent" /></div>
@@ -79,7 +101,10 @@
     } @else {
       <div class="product-list">
         @for (item of items(); track item.id) {
-          <div class="product-card" (click)="openDetail(item)">
+          <div class="product-card" [class.selectable]="selectMode()" [class.selected]="selectMode() && selected().has(item.id)" (click)="openDetail(item)">
+            @if (selectMode()) {
+              <ion-icon class="check-badge" name="checkmark-circle-outline" />
+            }
             <h2 class="product-name">{{ item.name }}</h2>
             <div class="product-fields">
               <div class="field-row">

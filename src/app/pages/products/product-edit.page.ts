@@ -77,6 +77,10 @@ export class ProductEditPage implements OnInit {
   cost: number | null = null;
   stock: number | null = 0;
   active = true;
+  /** v16 (additive) — chỉ hiển thị/lưu khi cột đã tồn tại trong DB */
+  barcode = '';
+  expiryDate = '';
+  cols = { expiry: false, barcode: false };
 
   constructor() {
     addIcons({ saveOutline, trashOutline, closeOutline, pricetagsOutline, addCircleOutline });
@@ -87,6 +91,11 @@ export class ProductEditPage implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    try {
+      this.cols = await this.productsService.detectOptionalColumns();
+    } catch {
+      this.cols = { expiry: false, barcode: false };
+    }
     const id = this.route.snapshot.paramMap.get('id');
     if (id && id !== 'add') {
       this.productId.set(id);
@@ -106,6 +115,8 @@ export class ProductEditPage implements OnInit {
         this.cost = p.cost;
         this.stock = p.stock;
         this.active = p.active;
+        this.barcode = p.barcode ?? '';
+        this.expiryDate = p.expiry_date ?? '';
       }
     } catch (e: any) {
       this.error = e?.message ?? 'Không tải được sản phẩm.';
@@ -133,6 +144,9 @@ export class ProductEditPage implements OnInit {
     if (!this.isEdit) {
       payload.stock = Number(this.stock ?? 0);
     }
+    // Cột v16 — chỉ gửi khi schema đã có (tránh lỗi PGRST204)
+    if (this.cols.barcode) payload.barcode = this.barcode.trim() || null;
+    if (this.cols.expiry) payload.expiry_date = this.expiryDate || null;
 
     this.busy.set(true);
     try {
@@ -152,6 +166,8 @@ export class ProductEditPage implements OnInit {
           this.cost = null;
           this.stock = 0;
           this.active = true;
+          this.barcode = '';
+          this.expiryDate = '';
         } else {
           this.router.navigateByUrl('/product', { replaceUrl: true });
         }

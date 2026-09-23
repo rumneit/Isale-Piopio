@@ -41,6 +41,20 @@ export class OrdersService {
     return (data ?? []) as Order[];
   }
 
+  /** Đơn hàng của một khách hàng (ISale contact-detail) */
+  async listByCustomer(customerId: string, limit = 10): Promise<Order[]> {
+    if (!this.sb.isConfigured || !this.shopId) return [];
+    const { data, error } = await this.sb
+      .from('orders')
+      .select('*')
+      .eq('shop_id', this.shopId)
+      .eq('customer_id', customerId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return (data ?? []) as Order[];
+  }
+
   static readonly orderStatuses = [
     { value: 'pending', label: 'Chờ xử lý' },
     { value: 'shipping', label: 'Đang giao' },

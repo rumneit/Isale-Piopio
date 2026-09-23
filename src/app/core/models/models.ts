@@ -34,6 +34,9 @@ export interface Product {
   category_id: string | null;
   active: boolean;
   serial_managed?: boolean;
+  /** Migration v16 (additive) */
+  expiry_date?: string | null;
+  barcode?: string | null;
   created_at?: string;
 }
 
