@@ -417,3 +417,17 @@ Phương pháp: mở **tab mới** mỗi route (history sạch) → render đún
 - CRM đầy đủ (leads/deals/timeline) — cần v12/v13/v14 migrations của đợt 3.
 - Serial/IMEI (bảng serials chưa có), combo/NVL view, multi-print, share.
 - Runtime responsive test với cửa sổ hiện.
+
+## 28. Điều hướng mặc định theo yêu cầu user (commit `6ba70bb`, dpl `hhrjmpc30`)
+**Yêu cầu**: "reset trang thì auto qua Kho/Sản Phẩm → muốn ra trang thì qua bên Bán Hàng".
+- Chẩn đoán: F5 tại trang bất kỳ **giữ nguyên trang** (deep-link OK — verify `#/order` qua reload); hiện tượng "rơi về Kho/Sản phẩm" xảy ra khi mở/reload **URL gốc** (`/` → '' → home → tab mặc định `inventory` từ Pass 1).
+- Fix theo user (ưu tiên user > Isale-fidelity, ghi nhận deliberate deviation):
+  - `app.routes.ts`: `''` redirect `/home` → **`/sale`** (mở app → thẳng POS Bán hàng).
+  - `home.page.ts`: `selectedTab` mặc định `inventory` → **`selling`** (home mở ở nhóm Bán hàng).
+- Verify production: mở `/` → `#/sale`, title "Bán hàng" ✅; home segment checked = "Bán hàng" ✅; F5 tại `#/order` vẫn ở Đơn hàng ✅.
+
+## 29. v17 ĐÃ CHẠY (user) — xác nhận production
+- Probe read-only: `orders.payment_method` **EXISTS** ✅.
+- POS hiển thị chips **Hình thức thanh toán: Tiền mặt / Chuyển khoản / Thẻ / Ví điện tử** ✅ (feature-detect mở khóa).
+- Order-detail row "Hình thức thanh toán" active (0 đơn hiện có → sẽ hiện trên đơn mới tạo).
+- **DATA: 117/117 SP · 89/89 KH · 27/27 danh mục — nguyên vẹn.**
