@@ -71,18 +71,15 @@ export class ProductsPage implements OnInit {
   private actionSheetCtrl = inject(ActionSheetController);
 
   readonly items = signal<Product[]>([]);
+  readonly total = signal(0);
   readonly loading = signal(true);
   readonly searchVisible = signal(false);
   readonly page = signal(1);
-  readonly pageSize = 20;
+  readonly pageSize = 30;
   search = '';
   sortBy = signal<'recent' | 'name' | 'price'>('recent');
 
-  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.items().length / this.pageSize)));
-  readonly pagedItems = computed(() => {
-    const start = (this.page() - 1) * this.pageSize;
-    return this.items().slice(start, start + this.pageSize);
-  });
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
 
   constructor() {
     addIcons({
@@ -113,25 +110,20 @@ export class ProductsPage implements OnInit {
   async load() {
     this.loading.set(true);
     try {
-      const list = await this.productsService.list(this.search);
-      this.items.set(this.applySort(list));
+      const { items, total } = await this.productsService.listPaged(
+        this.search,
+        this.page(),
+        this.pageSize,
+        this.sortBy()
+      );
+      this.items.set(items);
+      this.total.set(total);
     } catch (e: any) {
       console.error('load products failed', e);
       this.items.set([]);
+      this.total.set(0);
     } finally {
       this.loading.set(false);
-    }
-  }
-
-  private applySort(list: Product[]): Product[] {
-    const arr = [...list];
-    switch (this.sortBy()) {
-      case 'name':
-        return arr.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
-      case 'price':
-        return arr.sort((a, b) => Number(b.price) - Number(a.price));
-      default:
-        return arr.sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
     }
   }
 
@@ -154,11 +146,17 @@ export class ProductsPage implements OnInit {
   }
 
   nextPage() {
-    if (this.page() < this.totalPages()) this.page.update((p) => p + 1);
+    if (this.page() < this.totalPages()) {
+      this.page.update((p) => p + 1);
+      this.load();
+    }
   }
 
   prevPage() {
-    if (this.page() > 1) this.page.update((p) => p - 1);
+    if (this.page() > 1) {
+      this.page.update((p) => p - 1);
+      this.load();
+    }
   }
 
   openDetail(item: Product) {
@@ -197,6 +195,7 @@ export class ProductsPage implements OnInit {
           text: 'Gần đây' + (this.sortBy() === 'recent' ? ' ✓' : ''),
           handler: () => {
             this.sortBy.set('recent');
+            this.page.set(1);
             this.load();
           },
         },
@@ -204,6 +203,7 @@ export class ProductsPage implements OnInit {
           text: 'Tên A → Z' + (this.sortBy() === 'name' ? ' ✓' : ''),
           handler: () => {
             this.sortBy.set('name');
+            this.page.set(1);
             this.load();
           },
         },
@@ -211,6 +211,7 @@ export class ProductsPage implements OnInit {
           text: 'Giá cao → thấp' + (this.sortBy() === 'price' ? ' ✓' : ''),
           handler: () => {
             this.sortBy.set('price');
+            this.page.set(1);
             this.load();
           },
         },
@@ -230,20 +231,24 @@ export class ProductsPage implements OnInit {
     }
   }
 
-  exportCsv() {
-    const rows = this.items().map((p) => [
-      p.name,
-      p.sku ?? '',
-      p.unit ?? '',
-      this.csvExport.formatMoney(p.price),
-      this.csvExport.formatMoney(p.cost),
-      this.csvExport.formatMoney(p.stock),
-      p.active ? 'Đang bán' : 'Ngừng bán',
-      this.csvExport.formatDateTime(p.created_at),
-    ]);
-    this.csvExport.export('san-pham', ['Tên', 'Mã SP', 'Đơn vị', 'Giá bán', 'Giá nhập', 'Tồn kho', 'Trạng thái', 'Ngày tạo'], rows);
+  async exportCsv() {
+    try {
+      const all = await this.productsService.list(this.search);
+      const rows = all.map((p) => [
+        p.name,
+        p.sku ?? '',
+        p.unit ?? '',
+        this.csvExport.formatMoney(p.price),
+        this.csvExport.formatMoney(p.cost),
+        this.csvExport.formatMoney(p.stock),
+        p.active ? 'Đang bán' : 'Ngừng bán',
+        this.csvExport.formatDateTime(p.created_at),
+      ]);
+      this.csvExport.export('san-pham', ['Tên', 'Mã SP', 'Đơn vị', 'Giá bán', 'Giá nhập', 'Tồn kho', 'Trạng thái', 'Ngày tạo'], rows);
+    } catch (e: any) {
+      this.toast(e?.message ?? 'Xuất thất bại', 'danger');
+    }
   }
-
   formatMoney(v: number | null | undefined): string {
     return new Intl.NumberFormat('vi-VN').format(v ?? 0) + ' ₫';
   }

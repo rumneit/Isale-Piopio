@@ -49,6 +49,7 @@ export interface Customer {
   gender?: string | null;
   important?: boolean;
   last_activity?: string | null;
+  route_id?: string | null;
   created_at?: string;
 }
 
@@ -63,6 +64,7 @@ export interface Order {
   discount: number;
   paid: boolean;
   note: string | null;
+  channel_id?: string | null;
   created_at: string;
 }
 

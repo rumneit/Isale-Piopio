@@ -48,6 +48,14 @@
             [(ngModel)]="debt"
           />
         </ion-item>
+        <ion-item>
+          <ion-select label="Tuyến bán hàng" labelPlacement="stacked" placeholder="Chưa gán" [(ngModel)]="routeId">
+            <ion-select-option [value]="null">— Chưa gán —</ion-select-option>
+            @for (r of routes(); track r.id) {
+              <ion-select-option [value]="r.id">{{ r.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
       </ion-list>
     </div>
 

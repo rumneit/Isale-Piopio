@@ -178,6 +178,21 @@ export class AuthService {
     return data;
   }
 
+  /** Đổi mật khẩu tài khoản đang đăng nhập. */
+  async changePassword(newPassword: string): Promise<void> {
+    if (!this.sb.isConfigured) {
+      throw new Error('Chưa cấu hình Supabase (supabaseUrl / supabaseAnonKey).');
+    }
+    if (!this.session()) {
+      throw new Error('Bạn chưa đăng nhập.');
+    }
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('Mật khẩu mới phải có ít nhất 6 ký tự.');
+    }
+    const { error } = await this.sb.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+  }
+
   async logout() {
     if (this.sb.isConfigured) {
       await this.sb.auth.signOut();

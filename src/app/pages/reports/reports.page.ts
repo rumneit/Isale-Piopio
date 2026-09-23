@@ -21,6 +21,8 @@ import {
   readerOutline,
   newspaperOutline,
   downloadOutline,
+  pieChartOutline,
+  timeOutline,
 } from 'ionicons/icons';
 
 interface ReportItem {
@@ -58,9 +60,12 @@ export class ReportsPage {
     { id: 'staff', label: 'Tổng hợp theo nhân viên', icon: 'person-outline', color: '#2dd55b', path: '/staff' },
     { id: 'chart', label: 'Biểu đồ doanh thu', icon: 'bar-chart-outline', color: '#ff7043', path: '/report/chart' },
     { id: 'debt', label: 'Báo cáo vay/nợ', icon: 'bar-chart-outline', color: '#5c6bc0', path: '/report/debt' },
+    { id: 'category', label: 'Doanh thu theo danh mục', icon: 'pie-chart-outline', color: '#ab47bc', path: '/report/category' },
+    { id: 'timely', label: 'Doanh thu theo thời điểm', icon: 'time-outline', color: '#26a69a', path: '/report/timely' },
   ];
 
   readonly exportReports: ReportItem[] = [
+    { id: 'excel', label: 'Xuất dữ liệu đơn hàng (CSV)', icon: 'download-outline', color: '#42a5f5', path: '/report/excel' },
     { id: 'excel-products', label: 'Xuất SP ra Excel', icon: 'reader-outline', color: '#ec407a', path: '/product' },
     { id: 'stock', label: 'Báo cáo tồn kho tổng hợp', icon: 'document-outline', color: '#26c6da', path: '/report/stock' },
     { id: 'inout', label: 'Báo cáo xuất nhập', icon: 'newspaper-outline', color: '#8d6e63', path: '/report/inout' },
@@ -76,6 +81,8 @@ export class ReportsPage {
       readerOutline,
       newspaperOutline,
       downloadOutline,
+      pieChartOutline,
+      timeOutline,
     });
   }
 

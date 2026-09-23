@@ -14,6 +14,8 @@ import {
   IonItem,
   IonInput,
   IonTextarea,
+  IonSelect,
+  IonSelectOption,
   AlertController,
   ToastController,
 } from '@ionic/angular';
@@ -21,6 +23,7 @@ import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { saveOutline, trashOutline, closeOutline } from 'ionicons/icons';
 import { CustomersService } from '../../core/services/customers.service';
+import { SalesRoutesService, SalesRoute } from '../../core/services/sales-routes.service';
 import { Customer } from '../../core/models/models';
 
 @Component({
@@ -41,6 +44,8 @@ import { Customer } from '../../core/models/models';
     IonItem,
     IonInput,
     IonTextarea,
+    IonSelect,
+    IonSelectOption,
     FormsModule,
   ],
 })
@@ -48,12 +53,14 @@ export class CustomerEditPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private customersService = inject(CustomersService);
+  private routesService = inject(SalesRoutesService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
 
   readonly customerId = signal<string | null>(null);
   readonly busy = signal(false);
   readonly deleting = signal(false);
+  readonly routes = signal<SalesRoute[]>([]);
   error = '';
 
   name = '';
@@ -61,6 +68,7 @@ export class CustomerEditPage implements OnInit {
   email = '';
   address = '';
   debt: number | null = 0;
+  routeId: string | null = null;
 
   constructor() {
     addIcons({ saveOutline, trashOutline, closeOutline });
@@ -71,6 +79,11 @@ export class CustomerEditPage implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.routesService
+      .list()
+      .then((r) => this.routes.set(r))
+      .catch((e) => console.error('load routes failed', e));
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id && id !== 'add') {
       this.customerId.set(id);
@@ -83,6 +96,7 @@ export class CustomerEditPage implements OnInit {
           this.email = c.email ?? '';
           this.address = c.address ?? '';
           this.debt = c.debt;
+          this.routeId = c.route_id ?? null;
         }
       } catch (e: any) {
         this.error = e?.message ?? 'Không tải được khách hàng.';
@@ -105,6 +119,7 @@ export class CustomerEditPage implements OnInit {
       email: this.email.trim() || null,
       address: this.address.trim() || null,
       debt: Number(this.debt ?? 0),
+      route_id: this.routeId || null,
     };
 
     this.busy.set(true);

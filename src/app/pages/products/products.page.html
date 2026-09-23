@@ -54,7 +54,7 @@
         <ion-button fill="clear" size="small" (click)="toggleSearch()">
           <ion-icon slot="icon-only" name="search-outline" />
         </ion-button>
-        <span class="toolbar-total">Tổng: {{ items().length }} sản phẩm</span>
+        <span class="toolbar-total">Tổng: {{ total() }} sản phẩm</span>
       </div>
       <div class="toolbar-actions">
         <ion-button fill="clear" size="small" (click)="exportCsv()">
@@ -75,7 +75,7 @@
       </div>
     } @else {
       <div class="product-list">
-        @for (item of pagedItems(); track item.id) {
+        @for (item of items(); track item.id) {
           <div class="product-card" (click)="openDetail(item)">
             <h2 class="product-name">{{ item.name }}</h2>
             <div class="product-fields">

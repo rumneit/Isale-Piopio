@@ -31,6 +31,7 @@ import { CustomersService } from '../../core/services/customers.service';
 import { TransactionsService } from '../../core/services/transactions.service';
 import { PromotionsService, Promotion } from '../../core/services/promotions.service';
 import { PointsService } from '../../core/services/points.service';
+import { SalesChannelsService, SalesChannel } from '../../core/services/sales-channels.service';
 import { Product, Customer } from '../../core/models/models';
 
 interface DraftItem {
@@ -76,6 +77,7 @@ export class OrderAddPage implements OnInit {
   private transactionsService = inject(TransactionsService);
   readonly promotionsService = inject(PromotionsService);
   private pointsService = inject(PointsService);
+  private channelsService = inject(SalesChannelsService);
   private toastCtrl = inject(ToastController);
 
   readonly busy = signal(false);
@@ -85,8 +87,10 @@ export class OrderAddPage implements OnInit {
   readonly discount = signal(0);
   readonly promotions = signal<Promotion[]>([]);
   readonly selectedPromoId = signal<string>('');
+  readonly channels = signal<SalesChannel[]>([]);
 
   customerId: string | null = null;
+  channelId: string | null = null;
   paid = true;
   recordIncome = true;
   note = '';
@@ -101,14 +105,16 @@ export class OrderAddPage implements OnInit {
   async ngOnInit(): Promise<void> {
     this.isQuoteMode.set(this.route.snapshot.queryParamMap.get('mode') === 'quote');
     try {
-      const [products, customers, promotions] = await Promise.all([
+      const [products, customers, promotions, channels] = await Promise.all([
         this.productsService.list(),
         this.customersService.list(),
         this.isQuoteMode() ? Promise.resolve([]) : this.promotionsService.list(true),
+        this.isQuoteMode() ? Promise.resolve([]) : this.channelsService.list(),
       ]);
       this.products.set(products);
       this.customers.set(customers);
       this.promotions.set(promotions);
+      this.channels.set(channels);
     } catch (e: any) {
       console.error('load order form data failed', e);
     }
@@ -184,6 +190,7 @@ export class OrderAddPage implements OnInit {
           discount: Number(this.discount() || 0),
           paid: this.isQuoteMode() ? false : this.paid,
           note: this.note.trim() || null,
+          channel_id: this.channelId || null,
         },
         this.items()
       );

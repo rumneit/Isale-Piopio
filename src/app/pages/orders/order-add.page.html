@@ -111,6 +111,23 @@
         </ion-item>
       }
 
+      @if (!isQuoteMode() && channels().length > 0) {
+        <ion-item lines="full">
+          <ion-select
+            label="Kênh bán hàng"
+            labelPlacement="floating"
+            placeholder="Chưa gán"
+            [(ngModel)]="channelId"
+            interface="action-sheet"
+          >
+            <ion-select-option [value]="null">— Chưa gán —</ion-select-option>
+            @for (ch of channels(); track ch.id) {
+              <ion-select-option [value]="ch.id">{{ ch.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      }
+
       <ion-item lines="full">
         <ion-input
           label="Giảm giá (₫)"

@@ -87,6 +87,8 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   promotion: 'sell',
   delivery: 'sell',
   trade: 'sell',
+  'sales-route': 'sell',
+  'sales-channels': 'sell',
   // Tiền
   'money-account': 'money',
   debt: 'money',

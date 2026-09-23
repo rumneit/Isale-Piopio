@@ -12,6 +12,17 @@ import {
 } from 'ionicons/icons';
 import { SettingsService } from '../../core/services/settings.service';
 import { SupabaseService } from '../../core/services/supabase.service';
+import { IntegrationsService, IntegrationProvider } from '../../core/services/integrations.service';
+import { Router } from '@angular/router';
+
+/** Ánh xạ khoá cấu hình cũ -> provider mới (bảng integration_settings). */
+const PROVIDER_BY_KEY: Record<string, IntegrationProvider> = {
+  fb_page_token: 'fbpage',
+  zalo_oa_token: 'zbs',
+  sms_api_key: 'sms',
+  sepay_token: 'sepay',
+  ai_api_key: 'ai',
+};
 
 interface Integration {
   key: string;
@@ -20,6 +31,8 @@ interface Integration {
   icon: string;
   color: string;
   keyLabel: string;
+  /** Trang cấu hình chi tiết (nếu có). */
+  path?: string;
 }
 
 @Component({
@@ -49,13 +62,13 @@ interface Integration {
           <div class="app-card">
             <ion-list lines="full">
               @for (item of integrations; track item.key) {
-                <ion-item button (click)="editKey(item)" detail="true">
+                <ion-item button (click)="open(item)" detail="true">
                   <div class="int-icon" slot="start"><ion-icon [name]="item.icon" [color]="item.color" /></div>
                   <ion-label>
                     <h3>{{ item.name }}</h3>
                     <p>{{ item.desc }}</p>
                   </ion-label>
-                  @if (settingsService.get(item.key)) {
+                  @if (isConnected(item)) {
                     <ion-badge slot="end" color="success"><ion-icon name="checkmark-circle-outline" /> Đã kết nối</ion-badge>
                   } @else {
                     <ion-badge slot="end" color="medium">Chưa cấu hình</ion-badge>
@@ -83,19 +96,22 @@ interface Integration {
 })
 export class IntegrationsPage implements OnInit {
   readonly settingsService = inject(SettingsService);
+  private integrationsService = inject(IntegrationsService);
+  private router = inject(Router);
   private sb = inject(SupabaseService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
 
   readonly loading = signal(true);
+  readonly enabledProviders = signal<Partial<Record<IntegrationProvider, boolean>>>({});
 
   readonly integrations: Integration[] = [
-    { key: 'sepay_token', name: 'SePay', desc: 'Tự động đối soát chuyển khoản ngân hàng', icon: 'card-outline', color: 'primary', keyLabel: 'SePay API Token' },
-    { key: 'zalo_oa_token', name: 'Zalo OA', desc: 'Gửi tin nhắn chăm sóc khách qua Zalo Official Account', icon: 'chatbubble-ellipses-outline', color: 'primary', keyLabel: 'Zalo OA Access Token' },
-    { key: 'sms_api_key', name: 'SMS Brandname', desc: 'Gửi SMS marketing / OTP đến khách hàng', icon: 'megaphone-outline', color: 'tertiary', keyLabel: 'SMS API Key' },
-    { key: 'fb_page_token', name: 'Facebook Page', desc: 'Kết nối fanpage để nhận tin nhắn + đơn online', icon: 'logo-facebook', color: 'primary', keyLabel: 'Page Access Token' },
-    { key: 'external_api_key', name: 'External API', desc: 'Cho hệ thống ngoài gọi dữ liệu PioPio', icon: 'code-slash-outline', color: 'medium', keyLabel: 'API Key' },
-    { key: 'ai_api_key', name: 'AI Assistant', desc: 'Trợ lý AI phân tích doanh thu, gợi ý bán hàng', icon: 'sparkles-outline', color: 'warning', keyLabel: 'AI API Key' },
+    { key: 'fb_page_token', name: 'Facebook Fanpage', desc: 'Kết nối fanpage để nhận tin nhắn + đơn online', icon: 'logo-facebook', color: 'primary', keyLabel: 'Page Access Token', path: '/fbpage' },
+    { key: 'zalo_oa_token', name: 'Zalo ZBS Marketing', desc: 'Gửi tin Zalo ZNS/ZBS chăm sóc khách hàng', icon: 'chatbubble-ellipses-outline', color: 'primary', keyLabel: 'Zalo OA Access Token', path: '/zbs-marketing' },
+    { key: 'sms_api_key', name: 'SMS Brandname', desc: 'Gửi SMS marketing / OTP đến khách hàng', icon: 'megaphone-outline', color: 'tertiary', keyLabel: 'SMS API Key', path: '/sms-marketing' },
+    { key: 'sepay_token', name: 'SePay', desc: 'Tự động đối soát chuyển khoản ngân hàng', icon: 'card-outline', color: 'primary', keyLabel: 'SePay API Token', path: '/sepay-payment' },
+    { key: 'ai_api_key', name: 'Trợ lý AI', desc: 'Phân tích doanh thu, gợi ý bán hàng bằng AI', icon: 'sparkles-outline', color: 'warning', keyLabel: 'AI API Key', path: '/ai-services' },
+    { key: 'external_api_key', name: 'External API', desc: 'Cấp token cho hệ thống ngoài gọi dữ liệu PioPio', icon: 'code-slash-outline', color: 'medium', keyLabel: 'API Key', path: '/external-api' },
   ];
 
   constructor() {
@@ -107,6 +123,14 @@ export class IntegrationsPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.settingsService.load();
+    try {
+      const list = await this.integrationsService.list();
+      const map: Partial<Record<IntegrationProvider, boolean>> = {};
+      for (const s of list) map[s.provider] = s.enabled;
+      this.enabledProviders.set(map);
+    } catch (e: any) {
+      console.error('load integrations failed', e);
+    }
     this.loading.set(false);
   }
 
@@ -153,6 +177,21 @@ export class IntegrationsPage implements OnInit {
       ],
     });
     await alert.present();
+  }
+
+  open(item: Integration) {
+    if (item.path) {
+      this.router.navigateByUrl(item.path);
+      return;
+    }
+    this.editKey(item);
+  }
+
+  /** Đã kết nối khi có khoá cũ (settings) hoặc cấu hình mới đang bật. */
+  isConnected(item: Integration): boolean {
+    if (this.settingsService.get(item.key)) return true;
+    const provider = PROVIDER_BY_KEY[item.key];
+    return !!provider && !!this.enabledProviders()[provider];
   }
 
   private async toast(message: string, color: string = 'success') {

@@ -81,7 +81,7 @@ Khuyến mãi, Đơn từ website, Quản bàn, Thu/Chi, Công nợ, Khách hàn
 Ghi chú, Lịch, Ca làm việc, CRM + Pipeline, Sơ đồ tổ chức, Báo cáo (8 loại),
 Sổ tiền, Cấu hình shop, Quét mã, Nhập dữ liệu, Phân quyền, Lịch sử thay đổi.
 
-### 🟡 Đã code nhưng sai/thiếu logic (ĐÃ SỬA)
+### 🟡 Đã code nhưng sai/thiếu logic (ĐÃ SỬA — đợt 1)
 
 | # | Vấn đề | Mức độ | Cách xử lý |
 | --- | --- | --- | --- |
@@ -90,49 +90,59 @@ Sổ tiền, Cấu hình shop, Quét mã, Nhập dữ liệu, Phân quyền, L�
 | 3 | Vai trò chỉ có `owner`/`staff`, không có preset chuẩn kho. | Trung bình | Thêm 5 vai trò + preset (Quản lý kho, Picker, Kế toán…). |
 | 4 | Trang Kiểm kho **sửa thẳng `stock`**, không có phiếu, không lưu vết, không tính chênh lệch. | Cao (toàn vẹn dữ liệu) | Viết lại thành **phiếu kiểm kê** (draft → completed), tính diff, chỉ ghi tồn khi chốt. |
 | 5 | RLS chỉ theo "thành viên shop", không phân biệt quyền ghi. | Cao (bảo mật) | Migration v12: `has_permission()` + siết policy ghi cho products/categories/transactions/money_accounts/customers/stock_counts. |
+| 6 | Danh sách sản phẩm **tải toàn bộ SKU** rồi phân trang phía client → chậm/nặng với hàng nghìn SKU. | Trung bình (hiệu năng) | `ProductsService.listPaged()` — phân trang + sắp xếp + tìm kiếm **phía máy chủ** (`range`/`count`), UI chuyển trang gọi lại server. |
 
-### 🔴 Chưa có (ghi nhận — chưa xây trong đợt này)
+### 🔴 Chưa có → ĐÃ XÂY (đợt 2)
 
-| # | Module mẫu | Ghi chú |
-| --- | --- | --- |
-| 1 | `/sales-route` — Tuyến bán hàng | Nghiệp vụ riêng, cần bảng `sales_routes` + gán khách theo tuyến. |
-| 2 | `/sales-channels` — Kênh bán hàng | Danh mục + gắn vào đơn. |
-| 3 | `/contact/filter-duplicate` — Lọc khách trùng | Thuật toán so khớp SĐT/tên. |
-| 4 | `/contact/crm-deals`, `crm-forecast`, `crm-quota`, `crm-approvals`, `crm-flow-settings` | Mở rộng CRM nâng cao. |
-| 5 | `/fbpage`, `/zbs-marketing`, `/sms-marketing` | Tích hợp marketing (cần API bên thứ ba). |
-| 6 | `/ai-services`, `/ai-dynamic-page` | Dịch vụ AI (cần API key nhà cung cấp). |
-| 7 | `/table`, `/custom-field` — Bảng & trường tùy chỉnh | Metadata-driven, khối lượng lớn. |
-| 8 | `/sepay-payment` — Loa/đối soát SePay | Cần webhook + API SePay. |
-| 9 | `/excel-report`, `/timely-report`, `/category-report` | Biến thể báo cáo. |
-| 10 | `/external-api`, `/request-pro`, `/pricing` | Vận hành SaaS/đối tác. |
+| # | Module mẫu | Trạng thái | Ghi chú |
+| --- | --- | --- | --- |
+| 1 | `/sales-route` — Tuyến bán hàng | ✅ Hoạt động | Bảng `sales_routes` + `customers.route_id`; CRUD + đếm số khách mỗi tuyến. |
+| 2 | `/sales-channels` — Kênh bán hàng | ✅ Hoạt động | Bảng `sales_channels` + `orders.channel_id`; CRUD + doanh thu theo kênh. |
+| 3 | `/contact/filter-duplicate` — Lọc khách trùng | ✅ Hoạt động | Thuật toán chuẩn hoá SĐT/tên/email (thuần, có unit test) + xoá bản trùng. |
+| 4 | `/crm/deals`, `/crm/forecast`, `/crm/quota`, `/crm/approvals` | ✅ Hoạt động | Bảng `crm_deals`, `crm_quotas`, `crm_approvals`; dự báo có trọng số + pipeline + chỉ tiêu + luồng duyệt. |
+| 5 | `/fbpage`, `/zbs-marketing`, `/sms-marketing` | 🟡 Cấu hình | Bảng `integration_settings`: lưu Page ID/Token/OA… Bật/tắt + nhập khoá. **Gửi tin thật cần backend worker + API nhà cung cấp.** |
+| 6 | `/ai-services` | 🟡 Cấu hình | Lưu base URL/model/API key theo shop. Gọi AI thật cần backend giữ khoá. |
+| 7 | `/table`, `/custom-field` | ✅ Hoạt động | `custom_fields` (metadata trường) + `custom_tables`/`custom_table_rows` (bảng động, nhập dòng, xuất CSV). |
+| 8 | `/sepay-payment` | 🟡 Cấu hình | Lưu số TK + webhook token. **Nhận webhook cần endpoint công khai.** |
+| 9 | `/excel-report`, `/timely-report`, `/category-report` | ✅ Hoạt động | `AdvancedReportsService` — doanh thu theo danh mục, theo giờ/thứ, xuất CSV toàn bộ đơn. |
+| 10 | `/external-api`, `/request-pro`, `/pricing` | ✅ Hoạt động | `api_tokens` (tạo/thu hồi token cho hệ thống ngoài) + `upgrade_requests` + trang bảng giá 3 gói. |
+| 11 | `/change-password` | ✅ Hoạt động | `AuthService.changePassword()` (Supabase `updateUser`). |
+| 12 | Ảo hóa danh sách SKU | ✅ Hoạt động | Phân trang phía máy chủ (xem mục 🟡 #6) — thay cho virtual-scroll CDK để không thêm phụ thuộc. |
 
-### Ghi chú về ảo hóa & barcode (chuẩn WMS)
-
-- **Barcode/QR**: đã có `scan.page.ts` (camera `BarcodeDetector` + nhập tay + tra theo SKU).
-- **Ảo hóa (virtualization)**: codebase hiện **chưa** dùng `cdk-virtual-scroll`/`ion-virtual-scroll`.
-  Danh sách hiện tải toàn bộ theo shop. Với hàng nghìn SKU cần bổ sung — ghi nhận là hạng mục
-  tiếp theo, chưa thực hiện trong đợt này để tránh thay đổi rộng chưa kiểm thử.
+**Trung thực về phạm vi:** các module đánh dấu 🟡 quản lý **cấu hình** đúng nghĩa
+(lưu trữ theo shop, RLS theo quyền, UI đầy đủ). Phần "gửi/nhận thật" (webhook SePay,
+gửi Zalo/SMS/Facebook, gọi AI) **bắt buộc có backend worker + API key của nhà cung cấp**
+— không thể và không nên nhúng khoá bí mật vào frontend. Đây là giới hạn kiến trúc,
+không phải code giả.
 
 ---
 
 ## 4. Đã thực thi trong đợt này
 
-**File mới**
+**Đợt 1**
 - `src/app/core/permissions.ts` — nguồn duy nhất cho RBAC (quyền, vai trò, preset, map route→quyền).
 - `src/app/core/permissions.spec.ts` — 9 test đơn vị cho RBAC.
 - `src/app/core/services/stock-counts.service.ts` — nghiệp vụ phiếu kiểm kê.
 - `src/app/pages/stock-check/stock-count-detail.page.ts` — tạo/sửa/chốt phiếu kiểm kê.
 - `supabase-migration-v12.sql` — bảng `stock_counts`, hàm `has_permission()`, siết RLS.
 
-**File sửa**
-- `src/app/core/services/auth.service.ts` — thêm `can()`, `canAccessRoute()`, `isOwner`.
-- `src/app/core/guards/auth.guard.ts` — thêm `permissionGuard`.
-- `src/app/app.routes.ts` — gắn guard cho 48 route + 2 route kiểm kê mới.
-- `src/app/app.component.ts|html` — menu lọc theo quyền.
-- `src/app/pages/permissions/permissions.page.ts` — chọn vai trò + preset.
-- `src/app/pages/stock-check/*` — danh sách phiếu kiểm kê.
-- `src/app/core/models/models.ts` — `Profile.permissions`, `StockCount`, `StockCountItem`.
-- `audit.mjs`, `package.json` — thêm route kiểm kê + script `test:ci`.
+**Đợt 2 (module còn thiếu)**
+- `supabase-migration-v13.sql` — 10 bảng mới: `sales_routes`, `sales_channels`,
+  `crm_deals`, `crm_quotas`, `crm_approvals`, `custom_fields`, `custom_tables`,
+  `custom_table_rows`, `integration_settings`, `api_tokens`, `upgrade_requests` + RLS.
+- Service mới: `sales-routes`, `sales-channels`, `crm-deals`, `custom-fields`,
+  `custom-tables`, `integrations`, `api-tokens`, `upgrade-requests`, `advanced-reports`.
+- Logic thuần + test: `src/app/core/duplicate-detection.ts` (+ spec),
+  `crm-deals.spec.ts` (dự báo có trọng số, pipeline).
+- Trang mới: `sales-routes`, `sales-channels`, `duplicate-customers`, `crm-deals`,
+  `crm-forecast`, `crm-quota`, `crm-approvals`, `custom-fields`, `custom-tables`,
+  `custom-table-detail`, `integration-config` (dùng chung cho fbpage/zbs/sms/sepay/ai),
+  `external-api`, `pricing`, `change-password`, `report-category`, `report-timely`,
+  `report-excel`.
+- `ProductsService.listPaged()` + `products.page` — phân trang phía máy chủ.
+- `AuthService.changePassword()`, `Customer.route_id`, `Order.channel_id`.
+- `app.routes.ts` (86 route), `app.component.ts` (menu), `reports.page.ts`,
+  `integrations.page.ts`, `audit.mjs` (76 route audit).
 
 ---
 
@@ -140,18 +150,23 @@ Sổ tiền, Cấu hình shop, Quét mã, Nhập dữ liệu, Phân quyền, L�
 
 | Kiểm tra | Lệnh | Kết quả |
 | --- | --- | --- |
-| Icon hợp lệ | `npm run check:icons` | 108 icon, **0 lỗi** |
+| Icon hợp lệ | `npm run check:icons` | 117 icon, **0 lỗi** |
 | Lint | `npm run lint` | **All files pass** |
 | Build | `npm run build` | **exit 0** |
-| Test đơn vị | `npm run test:ci` | **9/9 pass** |
-| Audit route (Playwright) | `npm run audit` | **54/54 PASS, 0 FAIL** |
+| Test đơn vị | `npm run test:ci` | **20/20 pass** (RBAC 9, trùng khách 7, CRM 4) |
+| Audit route (Playwright) | `npm run audit` | **76/76 PASS, 0 FAIL**, 0 lỗi console thật, 0 cảnh báo ionicon |
 
 ---
 
 ## 6. Việc còn lại / cần quyết định
 
-1. **Chạy migration v12** trên Supabase Dashboard (SQL Editor) để bảng `stock_counts`
-   và RBAC cấp DB có hiệu lực.
-2. **Push & deploy**: repo local chưa có `.git`, chưa có credential GitHub/Vercel
-   (`GITHUB_TOKEN`, `VERCEL_TOKEN` đều trống, `gh`/`vercel` chưa đăng nhập) → **chưa thể push**.
-3. Ưu tiên đợt sau: ảo hóa danh sách SKU, Tuyến bán hàng, Lọc khách trùng.
+1. **Chạy migration v12 và v13** trên Supabase Dashboard (SQL Editor) để các bảng
+   `stock_counts`, `sales_routes`, `sales_channels`, `crm_deals`, `crm_quotas`,
+   `crm_approvals`, `custom_fields`, `custom_tables`, `custom_table_rows`,
+   `integration_settings`, `api_tokens`, `upgrade_requests` và RBAC cấp DB có hiệu lực.
+2. **Bảo mật:** thu hồi/xoay khoá API `sk-27a67…` đã từng bị đẩy lên GitHub.
+3. **Backend worker** (ngoài phạm vi frontend) nếu muốn gửi Zalo/SMS/Facebook,
+   nhận webhook SePay, hoặc gọi AI thật — giữ khoá bí mật ở server.
+4. Ưu tiên đợt sau (nếu cần): CRM flow-settings/stage-settings chi tiết, shipping-partners,
+   cyberlotus-tax, level-config/point-config, ai-dynamic-page, gán tuyến/kênh trực tiếp
+   trong màn hình khách hàng và đơn hàng.

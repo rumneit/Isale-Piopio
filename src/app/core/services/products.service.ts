@@ -32,6 +32,48 @@ export class ProductsService {
     return (data ?? []) as Product[];
   }
 
+  /**
+   * Danh sách phân trang phía máy chủ (chống tải hàng nghìn SKU một lúc).
+   * Trả về cả tổng số dòng để hiển thị đúng số trang.
+   */
+  async listPaged(
+    search = '',
+    page = 1,
+    pageSize = 30,
+    sort: 'recent' | 'name' | 'price' = 'recent'
+  ): Promise<{ items: Product[]; total: number }> {
+    if (!this.sb.isConfigured || !this.shopId) return { items: [], total: 0 };
+
+    const from = Math.max(0, (page - 1) * pageSize);
+    const to = from + pageSize - 1;
+
+    let query = this.sb
+      .from('products')
+      .select('*', { count: 'exact' })
+      .eq('shop_id', this.shopId)
+      .range(from, to);
+
+    switch (sort) {
+      case 'name':
+        query = query.order('name', { ascending: true });
+        break;
+      case 'price':
+        query = query.order('price', { ascending: false });
+        break;
+      default:
+        query = query.order('created_at', { ascending: false });
+    }
+
+    if (search.trim()) {
+      const term = `%${search.trim()}%`;
+      query = query.or(`name.ilike.${term},sku.ilike.${term}`);
+    }
+
+    const { data, error, count } = await query;
+    if (error) throw error;
+    return { items: (data ?? []) as Product[], total: count ?? (data ?? []).length };
+  }
+
   async get(id: string): Promise<Product | null> {
     if (!this.sb.isConfigured || !this.shopId) return null;
     const { data, error } = await this.sb
