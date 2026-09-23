@@ -132,7 +132,7 @@ export class HomePage implements OnInit {
   private router = inject(Router);
   private toastCtrl = inject(ToastController);
 
-  readonly selectedTab = signal('inventory');
+  readonly selectedTab = signal('selling');
   readonly tipDismissed = signal<Record<string, boolean>>({});
   readonly walletLoading = signal(true);
   readonly hasDefaultWallet = signal(true);
