@@ -179,6 +179,10 @@ triển khai đúng phần frontend có thể làm:
 - **CyberLotus**: lưu hồ sơ + tính + xuất tờ khai. Nộp lên cơ quan thuế cần tài
   khoản đối tác CyberLotus + backend.
 
+**Suy giảm an toàn trước khi chạy migration:** cả 6 trang mới phát hiện bảng chưa
+tồn tại (`PGRST205`/HTTP 404) và hiển thị banner "Cần chạy migration v14…" thay vì
+lỗi console; trang rơi về empty state và app vẫn dùng được bình thường.
+
 ---
 
 ## 7. Việc còn lại / cần quyết định
