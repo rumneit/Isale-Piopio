@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonFab, IonFabButton,
   IonRefresher, IonRefresherContent, AlertController, ToastController,
@@ -21,6 +22,7 @@ interface CrmActivity {
 @Component({
   selector: 'app-crm-activities',
   imports: [
+    IonButton,
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon,
     IonContent, IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonFab,
     IonFabButton, IonRefresher, IonRefresherContent,
@@ -28,7 +30,7 @@ interface CrmActivity {
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/crm" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/crm" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>CRM — Hoạt động</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -84,6 +86,12 @@ interface CrmActivity {
   `],
 })
 export class CrmActivitiesPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly svc = inject(ShopTableService);
   readonly crmService = inject(CrmService);
   private alertCtrl = inject(AlertController);

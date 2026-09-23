@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -29,7 +30,7 @@ import { SHIPPING_CARRIERS, SHIPPING_ZONES, calcShippingFee } from '../../core/s
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Đối tác vận chuyển</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -125,6 +126,12 @@ import { SHIPPING_CARRIERS, SHIPPING_ZONES, calcShippingFee } from '../../core/s
   `],
 })
 export class ShippingPartnersPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(ShippingPartnersService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

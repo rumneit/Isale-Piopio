@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -28,7 +29,7 @@ interface InOutRow {
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/report" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/report" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Báo cáo xuất nhập</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="exportCsv()"><ion-icon slot="icon-only" name="download-outline" /></ion-button>
@@ -96,6 +97,12 @@ interface InOutRow {
   `],
 })
 export class ReportInOutPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private svc = inject(ShopTableService);
   private csvExport = inject(CsvExportService);
 

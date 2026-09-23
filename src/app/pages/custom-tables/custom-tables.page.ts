@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import {
+import { Router, RouterLink } from '@angular/router';
+import { IonButton,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonFab, IonFabButton,
   IonSearchbar, IonRefresher, IonRefresherContent, AlertController, ToastController,
@@ -13,6 +13,7 @@ import { CustomTablesService, CustomTable, CustomTableColumn } from '../../core/
 @Component({
   selector: 'app-custom-tables',
   imports: [
+    IonButton,
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon,
     IonContent, IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonFab,
     IonFabButton, IonSearchbar, IonRefresher, IonRefresherContent, RouterLink,
@@ -20,7 +21,7 @@ import { CustomTablesService, CustomTable, CustomTableColumn } from '../../core/
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Bảng dữ liệu tùy chỉnh</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -75,6 +76,12 @@ import { CustomTablesService, CustomTable, CustomTableColumn } from '../../core/
   `],
 })
 export class CustomTablesPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(CustomTablesService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

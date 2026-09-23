@@ -33,7 +33,7 @@ import { AI_PAGE_TEMPLATES, buildConfig } from '../../core/ai-pages';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Tạo trang với AI</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -133,6 +133,10 @@ import { AI_PAGE_TEMPLATES, buildConfig } from '../../core/ai-pages';
   `],
 })
 export class AiDynamicPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(AiPagesService);
   private router = inject(Router);
   private alertCtrl = inject(AlertController);

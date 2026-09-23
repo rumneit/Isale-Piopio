@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -26,6 +27,7 @@ import { Profile } from '../../core/models/models';
   templateUrl: './staff.page.html',
   styleUrls: ['./staff.page.scss'],
   imports: [
+    IonButton,
     CommonModule,
     IonHeader,
     IonToolbar,
@@ -43,6 +45,12 @@ import { Profile } from '../../core/models/models';
   ],
 })
 export class StaffPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private sb = inject(SupabaseService);
   readonly auth = inject(AuthService);
 

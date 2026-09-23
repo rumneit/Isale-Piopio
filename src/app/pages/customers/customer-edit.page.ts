@@ -50,6 +50,10 @@ import { Customer } from '../../core/models/models';
   ],
 })
 export class CustomerEditPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private customersService = inject(CustomersService);

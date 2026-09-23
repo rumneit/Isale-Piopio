@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -40,7 +41,7 @@ import { CsvExportService } from '../../core/services/csv-export.service';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Kết nối thuế CyberLotus</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -224,6 +225,12 @@ import { CsvExportService } from '../../core/services/csv-export.service';
   `],
 })
 export class CyberlotusTaxPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(TaxService);
   private settings = inject(SettingsService);
   private csv = inject(CsvExportService);

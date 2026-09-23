@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonFab, IonFabButton,
   IonSegment, IonSegmentButton, IonRefresher, IonRefresherContent,
@@ -13,6 +14,7 @@ import { CustomFieldsService, CustomField, CustomFieldEntity } from '../../core/
 @Component({
   selector: 'app-custom-fields',
   imports: [
+    IonButton,
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon,
     IonContent, IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonFab,
     IonFabButton, IonSegment, IonSegmentButton, IonRefresher, IonRefresherContent,
@@ -20,7 +22,7 @@ import { CustomFieldsService, CustomField, CustomFieldEntity } from '../../core/
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Trường tùy chỉnh</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -81,6 +83,12 @@ import { CustomFieldsService, CustomField, CustomFieldEntity } from '../../core/
   `],
 })
 export class CustomFieldsPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly service = inject(CustomFieldsService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

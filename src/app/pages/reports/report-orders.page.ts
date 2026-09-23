@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
@@ -55,6 +56,12 @@ type Range = 'today' | 'week' | 'month' | 'year';
   ],
 })
 export class ReportOrdersPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private ordersService = inject(OrdersService);
   private csvExport = inject(CsvExportService);
 

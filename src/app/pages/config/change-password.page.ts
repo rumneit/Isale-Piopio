@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -17,7 +18,7 @@ import { AuthService } from '../../core/services/auth.service';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/config" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/config" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Đổi mật khẩu</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -70,6 +71,12 @@ import { AuthService } from '../../core/services/auth.service';
   `],
 })
 export class ChangePasswordPage {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private auth = inject(AuthService);
   private toastCtrl = inject(ToastController);
 

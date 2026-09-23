@@ -36,7 +36,7 @@ import { SettingsService } from '../../core/services/settings.service';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Tích điểm</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -177,6 +177,10 @@ import { SettingsService } from '../../core/services/settings.service';
   `],
 })
 export class PointConfigPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(LoyaltyConfigService);
   private settings = inject(SettingsService);
   private router = inject(Router);

@@ -57,6 +57,10 @@ import { Order } from '../../core/models/models';
   ],
 })
 export class QuotesPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private ordersService = inject(OrdersService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
@@ -60,6 +61,12 @@ import { Customer } from '../../core/models/models';
   ],
 })
 export class PointsPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly pointsService = inject(PointsService);
   private customersService = inject(CustomersService);
   private alertCtrl = inject(AlertController);

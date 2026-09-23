@@ -50,6 +50,10 @@ import { Product } from '../../core/models/models';
   ],
 })
 export class ScanPage implements OnDestroy {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private productsService = inject(ProductsService);
   private router = inject(Router);
 

@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -17,7 +18,7 @@ import { CrmService, CrmLead } from '../../core/services/crm.service';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/crm" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/crm" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Pipeline</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="openList()"><ion-icon slot="icon-only" name="list-outline" /></ion-button>
@@ -128,6 +129,12 @@ import { CrmService, CrmLead } from '../../core/services/crm.service';
   `],
 })
 export class CrmPipelinePage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly crmService = inject(CrmService);
   private actionSheetCtrl = inject(ActionSheetController);
   private toastCtrl = inject(ToastController);

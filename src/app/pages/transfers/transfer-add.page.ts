@@ -32,6 +32,9 @@ interface DraftItem {
       <ion-toolbar>
         <ion-buttons slot="start">
           <ion-button (click)="goBack()"><ion-icon slot="icon-only" name="close-outline" /></ion-button>
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
         </ion-buttons>
         <ion-title>Phiếu chuyển hàng</ion-title>
         <ion-buttons slot="end">
@@ -121,6 +124,10 @@ interface DraftItem {
   `],
 })
 export class TransferAddPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private svc = inject(ShopTableService);
   private productsService = inject(ProductsService);
   private router = inject(Router);

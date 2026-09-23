@@ -69,6 +69,10 @@ interface DraftItem {
   ],
 })
 export class OrderAddPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private ordersService = inject(OrdersService);

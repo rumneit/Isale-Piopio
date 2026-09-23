@@ -64,6 +64,10 @@ import { StockCount } from '../../core/models/models';
   ],
 })
 export class StockCheckPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private stockCountsService = inject(StockCountsService);
   private router = inject(Router);
   private alertCtrl = inject(AlertController);

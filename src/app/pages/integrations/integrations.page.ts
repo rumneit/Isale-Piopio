@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote,
   AlertController, ToastController,
@@ -38,13 +38,14 @@ interface Integration {
 @Component({
   selector: 'app-integrations',
   imports: [
+    IonButton,
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon,
     IonContent, IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote,
   ],
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Tích hợp</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -95,6 +96,10 @@ interface Integration {
   `],
 })
 export class IntegrationsPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly settingsService = inject(SettingsService);
   private integrationsService = inject(IntegrationsService);
   private router = inject(Router);

@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -22,7 +23,7 @@ import { CustomersService } from '../../core/services/customers.service';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Nhập dữ liệu</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -93,6 +94,12 @@ import { CustomersService } from '../../core/services/customers.service';
   `],
 })
 export class ImportPage {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private productsService = inject(ProductsService);
   private customersService = inject(CustomersService);
   private toastCtrl = inject(ToastController);

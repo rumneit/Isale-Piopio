@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonRefresher, IonRefresherContent,
 } from '@ionic/angular';
@@ -14,6 +15,7 @@ import { LogService, ActivityLog } from '../../core/services/log.service';
 @Component({
   selector: 'app-activity-log',
   imports: [
+    IonButton,
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon,
     IonContent, IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote,
     IonRefresher, IonRefresherContent,
@@ -21,7 +23,7 @@ import { LogService, ActivityLog } from '../../core/services/log.service';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Lịch sử thay đổi</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -77,6 +79,12 @@ import { LogService, ActivityLog } from '../../core/services/log.service';
   `],
 })
 export class ActivityLogPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly logService = inject(LogService);
 
   readonly items = signal<ActivityLog[]>([]);

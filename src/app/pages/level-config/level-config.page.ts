@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -27,7 +28,7 @@ import { LoyaltyTierRule, DEFAULT_TIERS } from '../../core/loyalty';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/point-config" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/point-config" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Cấu hình thăng hạng</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -110,6 +111,12 @@ import { LoyaltyTierRule, DEFAULT_TIERS } from '../../core/loyalty';
   `],
 })
 export class LevelConfigPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(LoyaltyConfigService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

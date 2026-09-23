@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonFab, IonFabButton,
   IonRefresher, IonRefresherContent, AlertController, ToastController,
@@ -12,6 +13,7 @@ import { CrmDealsService, CrmQuota } from '../../core/services/crm-deals.service
 @Component({
   selector: 'app-crm-quota',
   imports: [
+    IonButton,
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon,
     IonContent, IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonFab,
     IonFabButton, IonRefresher, IonRefresherContent,
@@ -19,7 +21,7 @@ import { CrmDealsService, CrmQuota } from '../../core/services/crm-deals.service
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/crm" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/crm" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Chỉ tiêu doanh số</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -71,6 +73,12 @@ import { CrmDealsService, CrmQuota } from '../../core/services/crm-deals.service
   `],
 })
 export class CrmQuotaPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(CrmDealsService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

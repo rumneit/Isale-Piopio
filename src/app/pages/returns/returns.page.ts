@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -27,6 +28,7 @@ import { ReturnsService, ReturnNote } from '../../core/services/returns.service'
   templateUrl: './returns.page.html',
   styleUrls: ['./returns.page.scss'],
   imports: [
+    IonButton,
     CommonModule,
     IonHeader,
     IonToolbar,
@@ -47,6 +49,12 @@ import { ReturnsService, ReturnNote } from '../../core/services/returns.service'
   ],
 })
 export class ReturnsPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly returnsService = inject(ReturnsService);
 
   readonly items = signal<ReturnNote[]>([]);

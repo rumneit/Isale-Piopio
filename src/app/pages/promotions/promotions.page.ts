@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import {
+import { IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -29,6 +29,7 @@ import { PromotionsService, Promotion } from '../../core/services/promotions.ser
   templateUrl: './promotions.page.html',
   styleUrls: ['./promotions.page.scss'],
   imports: [
+    IonButton,
     CommonModule,
     IonHeader,
     IonToolbar,
@@ -50,6 +51,10 @@ import { PromotionsService, Promotion } from '../../core/services/promotions.ser
   ],
 })
 export class PromotionsPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly promotionsService = inject(PromotionsService);
   private router = inject(Router);
 

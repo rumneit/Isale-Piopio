@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -19,7 +20,7 @@ import { ApiTokensService, ApiToken } from '../../core/services/api-tokens.servi
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/integrations" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/integrations" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>API cho hệ thống ngoài</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -90,6 +91,12 @@ import { ApiTokensService, ApiToken } from '../../core/services/api-tokens.servi
   `],
 })
 export class ExternalApiPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(ApiTokensService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

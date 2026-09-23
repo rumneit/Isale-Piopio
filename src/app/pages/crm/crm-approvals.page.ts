@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -20,7 +21,7 @@ import { CrmDealsService, CrmApproval } from '../../core/services/crm-deals.serv
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/crm" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/crm" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Phê duyệt CRM</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -85,6 +86,12 @@ import { CrmDealsService, CrmApproval } from '../../core/services/crm-deals.serv
   `],
 })
 export class CrmApprovalsPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(CrmDealsService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

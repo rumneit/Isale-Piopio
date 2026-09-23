@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -19,7 +20,7 @@ import { Customer } from '../../core/models/models';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/report" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/report" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>BC công nợ</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="exportCsv()"><ion-icon slot="icon-only" name="download-outline" /></ion-button>
@@ -72,6 +73,12 @@ import { Customer } from '../../core/models/models';
   `],
 })
 export class ReportDebtPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private customersService = inject(CustomersService);
   private csvExport = inject(CsvExportService);
 

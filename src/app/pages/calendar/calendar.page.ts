@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -33,7 +34,7 @@ interface CalEvent {
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Lịch</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="prevMonth()"><ion-icon slot="icon-only" name="chevron-back-outline" /></ion-button>
@@ -123,6 +124,12 @@ interface CalEvent {
   `],
 })
 export class CalendarPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private svc = inject(ShopTableService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

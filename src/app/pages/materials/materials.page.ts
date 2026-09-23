@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -31,6 +32,7 @@ import { MaterialsService, Material } from '../../core/services/materials.servic
   templateUrl: './materials.page.html',
   styleUrls: ['./materials.page.scss'],
   imports: [
+    IonButton,
     CommonModule,
     IonHeader,
     IonToolbar,
@@ -53,6 +55,12 @@ import { MaterialsService, Material } from '../../core/services/materials.servic
   ],
 })
 export class MaterialsPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly materialsService = inject(MaterialsService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

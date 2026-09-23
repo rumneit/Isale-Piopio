@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import {
+import { IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -43,6 +43,7 @@ import { CrmService, CrmLead } from '../../core/services/crm.service';
   templateUrl: './crm-list.page.html',
   styleUrls: ['./crm-list.page.scss'],
   imports: [
+    IonButton,
     CommonModule,
     IonHeader,
     IonToolbar,
@@ -67,6 +68,10 @@ import { CrmService, CrmLead } from '../../core/services/crm.service';
   ],
 })
 export class CrmListPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly crmService = inject(CrmService);
   private actionSheetCtrl = inject(ActionSheetController);
   private router = inject(Router);

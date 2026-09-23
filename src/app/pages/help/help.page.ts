@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import {
+import { IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -45,9 +45,13 @@ interface HelpItem {
   selector: 'app-help',
   templateUrl: './help.page.html',
   styleUrls: ['./help.page.scss'],
-  imports: [CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent, IonList, IonItem, IonLabel],
+  imports: [ IonButton,CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent, IonList, IonItem, IonLabel],
 })
 export class HelpPage {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private router = inject(Router);
 
   readonly items: HelpItem[] = [

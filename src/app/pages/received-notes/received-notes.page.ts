@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import {
+import { IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -33,6 +33,7 @@ import { DataService } from '../../core/services/data.service';
   templateUrl: './received-notes.page.html',
   styleUrls: ['./received-notes.page.scss'],
   imports: [
+    IonButton,
     CommonModule,
     IonHeader,
     IonToolbar,
@@ -55,6 +56,10 @@ import { DataService } from '../../core/services/data.service';
   ],
 })
 export class ReceivedNotesPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private notesService = inject(ReceivedNotesService);
   private dataService = inject(DataService);
   private alertCtrl = inject(AlertController);

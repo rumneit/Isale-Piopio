@@ -52,6 +52,10 @@ import { CrmService, CrmLead } from '../../core/services/crm.service';
   ],
 })
 export class CrmEditPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly route = inject(ActivatedRoute);
   private router = inject(Router);
   readonly crmService = inject(CrmService);

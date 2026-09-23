@@ -33,7 +33,7 @@ interface CountRow extends StockCountItem {
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/stock-check" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/stock-check" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>{{ isNew() ? 'Phiếu kiểm kê mới' : 'Phiếu ' + code() }}</ion-title>
         @if (!isNew()) {
           <ion-badge slot="end" [color]="statusColor()">{{ statusLabel() }}</ion-badge>
@@ -149,6 +149,10 @@ interface CountRow extends StockCountItem {
   `],
 })
 export class StockCountDetailPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private productsService = inject(ProductsService);

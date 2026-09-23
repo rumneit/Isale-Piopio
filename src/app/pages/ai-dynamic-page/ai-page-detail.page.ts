@@ -35,7 +35,7 @@ interface RenderedWidget {
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/ai-dynamic-page" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/ai-dynamic-page" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>{{ page()?.name ?? 'Trang động' }}</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="run()"><ion-icon slot="icon-only" name="refresh-outline" /></ion-button>
@@ -107,6 +107,10 @@ interface RenderedWidget {
   `],
 })
 export class AiPageDetailPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(AiPagesService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);

@@ -55,6 +55,10 @@ import { NotificationsService, AppNotification } from '../../core/services/notif
   ],
 })
 export class NotificationsPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly notificationsService = inject(NotificationsService);
   private router = inject(Router);
 

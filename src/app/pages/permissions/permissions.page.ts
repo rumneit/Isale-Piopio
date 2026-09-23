@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -22,7 +23,7 @@ import { PERMISSION_DEFS, ROLES, presetsForRole } from '../../core/permissions';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Phân quyền</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -108,6 +109,12 @@ import { PERMISSION_DEFS, ROLES, presetsForRole } from '../../core/permissions';
   `],
 })
 export class PermissionsPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private sb = inject(SupabaseService);
   private auth = inject(AuthService);
   private toastCtrl = inject(ToastController);

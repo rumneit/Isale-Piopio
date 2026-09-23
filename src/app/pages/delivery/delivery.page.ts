@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import {
+import { IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -33,6 +33,7 @@ import { Order } from '../../core/models/models';
   templateUrl: './delivery.page.html',
   styleUrls: ['./delivery.page.scss'],
   imports: [
+    IonButton,
     CommonModule,
     IonHeader,
     IonToolbar,
@@ -55,6 +56,10 @@ import { Order } from '../../core/models/models';
   ],
 })
 export class DeliveryPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly ordersService = inject(OrdersService);
   private actionSheetCtrl = inject(ActionSheetController);
   private toastCtrl = inject(ToastController);

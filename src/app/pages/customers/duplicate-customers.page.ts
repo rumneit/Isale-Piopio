@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -20,7 +21,7 @@ import { findDuplicates, DuplicateGroup, DuplicateCandidate } from '../../core/d
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/contact" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/contact" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Lọc khách trùng</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="scan()"><ion-icon slot="icon-only" name="search-outline" /></ion-button>
@@ -88,6 +89,12 @@ import { findDuplicates, DuplicateGroup, DuplicateCandidate } from '../../core/d
   `],
 })
 export class DuplicateCustomersPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private customersService = inject(CustomersService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

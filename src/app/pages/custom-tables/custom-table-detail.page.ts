@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonList, IonItem, IonLabel, IonSpinner, IonNote, IonFab, IonFabButton, IonButton,
@@ -24,7 +24,7 @@ import {
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/custom-table" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/custom-table" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>{{ table()?.name ?? 'Bảng dữ liệu' }}</ion-title>
         <ion-buttons slot="end">
           <ion-button [disabled]="rows().length === 0" (click)="exportCsv()">
@@ -100,6 +100,12 @@ import {
   `],
 })
 export class CustomTableDetailPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(CustomTablesService);
   private route = inject(ActivatedRoute);
   private alertCtrl = inject(AlertController);

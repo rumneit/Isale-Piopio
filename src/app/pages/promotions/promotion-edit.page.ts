@@ -54,6 +54,10 @@ import { PromotionsService, Promotion } from '../../core/services/promotions.ser
   ],
 })
 export class PromotionEditPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private promotionsService = inject(PromotionsService);

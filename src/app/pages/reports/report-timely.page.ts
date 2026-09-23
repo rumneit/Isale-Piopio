@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonSpinner, IonNote, IonBadge, IonSegment, IonSegmentButton, IonList, IonItem, IonLabel,
   IonRefresher, IonRefresherContent,
@@ -13,6 +14,7 @@ import { ReportRange } from '../../core/services/reports.service';
 @Component({
   selector: 'app-report-timely',
   imports: [
+    IonButton,
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon,
     IonContent, IonSpinner, IonNote, IonBadge, IonSegment, IonSegmentButton, IonList,
     IonItem, IonLabel, IonRefresher, IonRefresherContent,
@@ -20,7 +22,7 @@ import { ReportRange } from '../../core/services/reports.service';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/report" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/report" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Doanh thu theo thời điểm</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -95,6 +97,12 @@ import { ReportRange } from '../../core/services/reports.service';
   `],
 })
 export class ReportTimelyPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(AdvancedReportsService);
 
   readonly rows = signal<TimelyReportRow[]>([]);

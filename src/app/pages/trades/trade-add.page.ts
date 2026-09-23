@@ -54,6 +54,10 @@ import { Transaction } from '../../core/models/models';
   ],
 })
 export class TradeAddPage {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private router = inject(Router);
   private transactionsService = inject(TransactionsService);
   private toastCtrl = inject(ToastController);

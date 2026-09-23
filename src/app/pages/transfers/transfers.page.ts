@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import {
+import { IonButton,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonSearchbar, IonList, IonItem, IonLabel, IonBadge, IonFab, IonFabButton, IonSpinner,
   IonNote, IonRefresher, IonRefresherContent,
@@ -22,6 +22,7 @@ interface Transfer {
 @Component({
   selector: 'app-transfers',
   imports: [
+    IonButton,
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon,
     IonContent, IonSearchbar, IonList, IonItem, IonLabel, IonBadge, IonFab, IonFabButton,
     IonSpinner, IonNote, IonRefresher, IonRefresherContent,
@@ -29,7 +30,7 @@ interface Transfer {
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Chuyển hàng</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -88,6 +89,10 @@ interface Transfer {
   `],
 })
 export class TransfersPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly svc = inject(ShopTableService);
   private router = inject(Router);
 

@@ -67,6 +67,7 @@ import {
   carOutline,
   medalOutline,
   sparklesOutline,
+  homeOutline,
 } from 'ionicons/icons';
 import { AuthService } from './core/services/auth.service';
 
@@ -264,6 +265,7 @@ export class AppComponent implements OnInit {
       carOutline,
       medalOutline,
       sparklesOutline,
+      homeOutline,
     });
   }
 

@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -34,6 +35,7 @@ import { ReportsService, ReportRange, ReportResult } from '../../core/services/r
   templateUrl: './report-chart.page.html',
   styleUrls: ['./report-chart.page.scss'],
   imports: [
+    IonButton,
     CommonModule,
     IonHeader,
     IonToolbar,
@@ -55,6 +57,12 @@ import { ReportsService, ReportRange, ReportResult } from '../../core/services/r
   ],
 })
 export class ReportChartPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly reportsService = inject(ReportsService);
 
   readonly ranges: { value: ReportRange; label: string }[] = [

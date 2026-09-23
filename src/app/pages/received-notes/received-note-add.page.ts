@@ -57,6 +57,10 @@ import { Product } from '../../core/models/models';
   ],
 })
 export class ReceivedNoteAddPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private router = inject(Router);
   private notesService = inject(ReceivedNotesService);
   private productsService = inject(ProductsService);

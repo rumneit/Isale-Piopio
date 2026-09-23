@@ -187,6 +187,24 @@ lỗi console; trang rơi về empty state và app vẫn dùng được bình th
 
 ## 7. Việc còn lại / cần quyết định
 
+### 7.1 Nút Home trên mọi trang con (đã xong)
+
+Trước đây chỉ 9 trang cấp 1 (Đơn hàng, Khách hàng, Sản phẩm, Giao dịch, Công nợ,
+Cấu hình, Báo cáo, Đơn từ Website) có icon Home ở header. Nay **toàn bộ các trang
+còn lại** đều có nút Home nằm ngay cạnh nút Back/Close ở `slot="start"`, bấm vào
+quay về `/home` — giống hệt hành vi trang Quản lý đơn hàng.
+
+- Icon `home-outline` được đăng ký toàn cục trong `app.component.ts` (`addIcons`),
+  nên mọi trang dùng chung, không cần import lẻ.
+- Trang `coming-soon` dùng lại `goHome()` sẵn có; các trang khác dùng `openHome()`
+  (thêm `Router` + `inject` khi còn thiếu).
+- `online-order` được đưa nút Home từ `slot="end"` về `slot="start"` cho đồng nhất.
+- Kiểm chứng tự động: `npm run verify:home` → 43/43 trang con đại diện đều có nút
+  Home và bấm về `/home` thành công; `npm run audit` → 82/82 route PASS,
+  0 lỗi console thật, 0 cảnh báo sai tên icon.
+
+### 7.2 Việc còn lại
+
 1. **Chạy migration v12, v13, v14** trên Supabase Dashboard (SQL Editor) để các
    bảng `stock_counts`, `sales_routes`, `sales_channels`, `crm_deals`, `crm_quotas`,
    `crm_approvals`, `custom_fields`, `custom_tables`, `custom_table_rows`,

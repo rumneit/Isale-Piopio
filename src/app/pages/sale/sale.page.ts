@@ -80,6 +80,10 @@ interface SaleItem {
   ],
 })
 export class SalePage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private productsService = inject(ProductsService);
   private ordersService = inject(OrdersService);
   private customersService = inject(CustomersService);

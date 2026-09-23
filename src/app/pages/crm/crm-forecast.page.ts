@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonSpinner, IonNote, IonBadge, IonRefresher, IonRefresherContent,
 } from '@ionic/angular';
@@ -11,13 +12,14 @@ import { CrmDealsService, CrmDeal, CrmQuota } from '../../core/services/crm-deal
 @Component({
   selector: 'app-crm-forecast',
   imports: [
+    IonButton,
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon,
     IonContent, IonSpinner, IonNote, IonBadge, IonRefresher, IonRefresherContent,
   ],
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/crm" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/crm" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Dự báo doanh thu</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -104,6 +106,12 @@ import { CrmDealsService, CrmDeal, CrmQuota } from '../../core/services/crm-deal
   `],
 })
 export class CrmForecastPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly service = inject(CrmDealsService);
 
   readonly deals = signal<CrmDeal[]>([]);

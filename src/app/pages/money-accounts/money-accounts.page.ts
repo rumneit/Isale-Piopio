@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -37,6 +38,7 @@ import { MoneyAccount } from '../../core/models/models';
   templateUrl: './money-accounts.page.html',
   styleUrls: ['./money-accounts.page.scss'],
   imports: [
+    IonButton,
     CommonModule,
     IonHeader,
     IonToolbar,
@@ -56,6 +58,12 @@ import { MoneyAccount } from '../../core/models/models';
   ],
 })
 export class MoneyAccountsPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly accountsService = inject(MoneyAccountsService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

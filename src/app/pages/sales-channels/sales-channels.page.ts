@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
+import { IonButton,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonSearchbar,
   IonFab, IonFabButton, IonRefresher, IonRefresherContent,
@@ -13,6 +14,7 @@ import { SalesChannelsService, SalesChannel } from '../../core/services/sales-ch
 @Component({
   selector: 'app-sales-channels',
   imports: [
+    IonButton,
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon,
     IonContent, IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonSearchbar,
     IonFab, IonFabButton, IonRefresher, IonRefresherContent,
@@ -20,7 +22,7 @@ import { SalesChannelsService, SalesChannel } from '../../core/services/sales-ch
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/home" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Kênh bán hàng</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -80,6 +82,12 @@ import { SalesChannelsService, SalesChannel } from '../../core/services/sales-ch
   `],
 })
 export class SalesChannelsPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   readonly service = inject(SalesChannelsService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);

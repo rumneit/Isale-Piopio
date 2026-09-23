@@ -49,11 +49,11 @@ interface MonthTab {
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-menu-button menu="app-menu" auto-hide="false" /></ion-buttons>
-        <ion-title>Đơn từ Website</ion-title>
-        <ion-buttons slot="end">
+        <ion-buttons slot="start">
+          <ion-menu-button menu="app-menu" auto-hide="false" />
           <ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button>
         </ion-buttons>
+        <ion-title>Đơn từ Website</ion-title>
       </ion-toolbar>
       <ion-toolbar>
         <div class="month-tabs">
@@ -69,9 +69,6 @@ interface MonthTab {
         <div class="online-toolbar">
           <ion-icon name="funnel-outline" />
           <span class="online-total">Tổng: {{ formatMoney(total()) }}</span>
-          <ion-button fill="clear" size="small" (click)="openHome()">
-            <ion-icon slot="icon-only" name="home-outline" />
-          </ion-button>
         </div>
 
         @if (loading()) {

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
   IonList, IonItem, IonLabel, IonToggle, IonSpinner, IonNote, IonButton, IonInput,
@@ -26,7 +26,7 @@ import { IntegrationsService, IntegrationProvider, ProviderMeta } from '../../co
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/integrations" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/integrations" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>{{ meta()?.name ?? 'Cấu hình tích hợp' }}</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -95,6 +95,12 @@ import { IntegrationsService, IntegrationProvider, ProviderMeta } from '../../co
   `],
 })
 export class IntegrationConfigPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(IntegrationsService);
   private route = inject(ActivatedRoute);
   private toastCtrl = inject(ToastController);

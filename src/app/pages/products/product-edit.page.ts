@@ -54,6 +54,10 @@ import { Product } from '../../core/models/models';
   ],
 })
 export class ProductEditPage implements OnInit {
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private productsService = inject(ProductsService);

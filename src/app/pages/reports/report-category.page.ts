@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
@@ -20,7 +21,7 @@ import { ReportRange } from '../../core/services/reports.service';
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/report" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/report" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons>
         <ion-title>Doanh thu theo danh mục</ion-title>
         <ion-buttons slot="end">
           <ion-button [disabled]="rows().length === 0" (click)="exportCsv()">
@@ -93,6 +94,12 @@ import { ReportRange } from '../../core/services/reports.service';
   `],
 })
 export class ReportCategoryPage implements OnInit {
+  private readonly router = inject(Router);
+
+  openHome() {
+    this.router.navigateByUrl('/home');
+  }
+
   private service = inject(AdvancedReportsService);
   private toastCtrl = inject(ToastController);
 
