@@ -201,3 +201,36 @@ Phương pháp: mở **tab mới** mỗi route (history sạch) → render đún
 - Isale filter chips "Còn Hạn SD / Còn số lượng" (product) — cần field expiry trong schema.
 - Detail pages (product/:id, contact/:id, order/:id), modals/drawers, config tabs — audit sâu chưa xong.
 - Responsive verify 4 breakpoint + dark mode regression (warning #ff0ade trong dark palette đang sẵn — kiểm tra không break).
+- Page size phân trang PioPio = 30/trang, Isale = 20/trang — cân nhắc chỉnh.
+
+---
+
+# PHASE 5 — DEPLOYMENT + PRODUCTION VERIFICATION (commit `62881ae`)
+
+## 13. Deploy
+- Push: `aacdd59..62881ae main -> main` → Vercel build **38s** → deployment `dpl_G1L4XZXyFZgrrrrb1j88oXhqJ2EV` target=production **● Ready**.
+- Sự cố: edge cache hkg1 phục vụ stale index ~15 phút → dùng `vercel alias set` ép re-alias domain → nội dung mới phủ sóng (CLI đã login bằng device flow user duyệt).
+
+## 14. Production verification (DOM computed trên https://quanlykhopiopio.vercel.app)
+| Hạng mục | Kết quả |
+|---|---|
+| Font body | **Roboto, "Helvetica Neue", sans-serif** ✅ (trước: Times New Roman) |
+| ion-title | **15.2px / 650 / rgb(96,48,255) tím** ✅ (trước: 17px/800 dark) |
+| Tip banner home | **rgba(255,10,222,0.1) hồng warning** ✅ |
+| Home tab mặc định | **"Kho/Sản phẩm"** ✅ (trước: BÁN HÀNG) |
+| Home tab labels | **viết thường** "Bán hàng/Khách và Nhân viên" ✅ (trước IN HOA) |
+| Tab Kho | đủ **10 tile** (có "Báo cáo, biểu đồ") ✅ |
+| Product header icons | `home, barcode-sharp, add-circle-sharp, apps` ✅ = Isale |
+| Product list | **display:grid 3 cột**, card radius 12px, 30 card ✅ |
+| Product card | Số lượng/Đơn giá/**Giá nhập**/Đơn vị/Serial toggle ✅ (Giá nhập null → "—") |
+| FAB product | `add` + `sparkles-outline` (+caret-up khi cuộn) ✅ |
+| Contact header icons | `home, person-add, apps` ✅ |
+| Contact tabs | 3 khối, active **"Gần đây" nền tím đặc rgb(96,48,255)** ✅ |
+| Contact list | grid 3 cột, card Điện thoại/Giới tính/Địa chỉ/Quan trọng/Hoạt động cuối ✅ |
+| FAB contact | `person-add` + `sparkles-outline` ✅ |
+| **DATA** | **Tổng: 117 sản phẩm ✅ / Tổng: 89 khách/đối tác ✅ — 0 mất mát** |
+
+## 15. Final Gate (pass 1)
+- Critical functionality (list + data hiển thị): 100% ✅ — mọi trang list hoạt động, data nguyên vẹn.
+- Critical defects: 0 ✅ | Data loss: 0 ✅ | Broken routes: 0 ✅ (product, contact, home + 5 trang được thêm FAB đều nav bình thường).
+- Điểm similarity ước tính pass này: Home ~93 (thiếu Mã giới thiệu/Gói MP cards — cố ý bỏ, SaaS của Isale), Product ~92 (thiếu bulk toolbar + filter Còn Hạn SD), Contact ~93 (thiếu icon chat/call inline đã có sẵn ✅ — điểm trừ là pagination page-size + màu label nhỏ). Overall dự kiến **~92-93** → mục tiêu ≥95 cần pass 2 (detail pages, modals, bulk actions, responsive).
