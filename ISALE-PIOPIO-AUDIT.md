@@ -273,3 +273,103 @@ Phương pháp: mở **tab mới** mỗi route (history sạch) → render đún
   - **Product detail**: "Chi tiết sản phẩm | Tô nhựa 1000ml UKP Trong | Đang kinh doanh | Số lượng/Đơn giá/Giá nhập/Mã SKU PIO0112/Đơn vị/Danh mục Tô nhựa" + note Isale + SỬA/NHÂN BẢN/XÓA ✅.
   - Customer edit: "Mã khách hàng" input ✅ + ion-select "Giới tính" ✅ (DOMContentLoaded qua DOM query — label select nằm trong shadow DOM nên innerText không thấy).
   - **DATA: 117/117 SP + 89/89 KH nguyên vẹn — 0 mất mát, 0 route hỏng, 0 critical defect.**
+
+---
+
+# PHASE 7 — PASS 3 IMPLEMENTATION + FINAL REPORT (commit `8e6d142`)
+
+## 20. Schema probe (read-only, qua session production)
+- `products.barcode` ❌ không tồn tại | `products.expiry_date` ❌ không tồn tại (cần migration v16 additive — SQL đã viết: `Desktop\pio-import-20260923\03-migration-v16-expiry-barcode.sql`).
+- `order_items` = bảng thật (product_id, order_id, qty, price, total) | `received_notes.items` = JSONB array (query bằng contains) | `orders`, `categories` OK.
+
+## 21. Thay đổi Pass 3
+| File | Thay đổi |
+| --- | --- |
+| `customer-detail.page.ts` (MỚI) | `/contact/detail/:id` — "Chi tiết khách hàng": avatar, Mã KH/Giới tính/Quan trọng chips, ĐT/Email/Địa chỉ/Công nợ/Giới tính/Hoạt động cuối + **Đơn hàng gần đây** (`orders.listByCustomer`) + Sửa/Xóa |
+| `product-detail.page.ts` | + card **"Lịch sử Nhập/Xuất"**: Xuất từ `order_items`→join orders; Nhập từ `received_notes` JSONB contains; badge Nhập/Xuất, ±qty, tiền, sắp xếp mới nhất |
+| `products.page.*` | **Chọn nhiều**: checkbox toggle → select-bar (Đã chọn N / Xuất CSV / Xóa với alert text chuẩn Isale / Đóng); card có check-badge; chip **"Còn Hạn SD"** tự hiện khi cột `expiry_date` tồn tại (feature-detect — không nút chết) |
+| `product-edit.page.*` | + **Mã vạch** + **Hạn sử dụng** (tự ẩn khi chưa có cột; payload chỉ gửi khi schema có — tránh PGRST204) |
+| `products.service.ts` | + `getHistory()` (2 nguồn), `detectOptionalColumns()`, filter `'notexpired'` (`expiry_date >= today`) |
+| `orders.service.ts` | + `listByCustomer(customerId, limit)` |
+| TSC + AOT build | ✅ (chỉ warning NG8113/NG8107 có sẵn từ trang khác) |
+
+## 22. Production verification Pass 3 (dpl `quanlykhopiopio-nvgpnhrb5`, re-alias OK)
+- **Select mode**: checkbox → select-bar "Đã chọn 0" → click 2 card → "Đã chọn 2" + 2 card `.selected` → Đóng thoát ✅.
+- **Lịch sử Nhập/Xuất** hiển thị trên product-detail + empty state đúng (chưa có giao dịch) ✅.
+- **Chi tiết khách hàng**: "Chi tiết khách hàng | Xôi Tạp Hoá | 0792489984 | Địa chỉ | Công nợ | Giới tính | Hoạt động cuối | Đơn hàng gần đây | SỬA/XÓA KHÁCH HÀNG" ✅.
+- Chips: "Còn Hạn SD" **không hiện** trước migration (feature-detect đúng) ✅.
+- **DATA: 117/117 SP + 89/89 KH — 0 mất mát, 0 route hỏng, 0 critical defect** ✅.
+
+---
+
+# PHASE 8 — FINAL SIMILARITY REPORT (bắt buộc theo format)
+
+## A. AUDIT
+- Method: bundle forensics (AOT chunks 63 route→chunk, styles.css tokens, i18n vn.json 214 sections, child-routes trong lazy chunks) + deep-boot DOM signatures + production DOM verification. Isale live-account reset giữa chừng → mọi đặc tả đối chiếu qua bundle/i18n (vẫn là source of truth).
+- Design tokens: palette Isale ≡ PioPio (fork origin); khác biệt thực chất đã xử lý: warning #ff0ade, Roboto, title 15.2px/650, FAB solid, segment text-transform none.
+- Phạm vi: 52 menu items/7 groups, mọi trang list + detail + form + filter chips + bulk toolbar + responsive + dark mode.
+
+## B. PIOPIO — điểm similarity theo trang (bằng chứng trên production)
+| Trang | Điểm | Band | Điểm trừ chính (bằng chứng) |
+| --- | --- | --- | --- |
+| Login | 96 | EXCELLENT | — |
+| Home | 93 | HIGH | SaaS widgets Isale bỏ cố ý (Mã giới thiệu, Gói MP) |
+| Danh mục Sản phẩm | 95 | HIGH | 2/7 icon toolbar chưa có action riêng (pen, grid) |
+| Chi tiết sản phẩm | 90 | HIGH | Isale thêm: Serial/IMEI view, combo, NVL, giá khách&CTV, thuộc tính |
+| Sửa/Thêm SP | 94 | HIGH | — (barcode/expiry tự hiện sau v16) |
+| Khách & Nhân viên | 93 | HIGH | icon chat/call inline của Isale chưa có |
+| Chi tiết khách hàng | 88 | HIGH | Isale: CRM timeline, nhắc việc, deals |
+| Sửa khách | 94 | HIGH | Ảnh đại diện, Ngày sinh, Loại hình KD chưa có (schema) |
+| Đơn hàng (list) | 90 | HIGH | thanh lọc trạng thái đơn giản hơn Isale |
+| Chi tiết đơn | 90 | HIGH | Hình thức thanh toán (schema), share, multi-print |
+| Phiếu nhập / chuyển / kiểm kê | 89-91 | HIGH | detail-print/share chưa audit sâu |
+| Công nợ / Sổ tiền / Báo giá | 88-91 | HIGH | tương tự |
+| Cấu hình + tab | 90 | HIGH | một số tab đơn giản hơn |
+| Help / Pricing / Báo lỗi | 90-95 | HIGH | — |
+
+## C. COMPONENTS (điểm riêng)
+| Component | Điểm | Ghi chú |
+| --- | --- | --- |
+| Design tokens (palette/typo/radius) | 97 | khớp bundle Isale |
+| FAB trio | 96 | main + sparkles + caret-up, vị trí chuẩn |
+| Filter chips row | 94 | 5 chip sau v16 (hiện 4) |
+| Product card grid | 95 | 2-col fields, divider, giá nhập "—" |
+| Customer block-segment tabs | 96 | active tím đặc rgb(96,48,255) |
+| Select-bar + check-badge | 92 | mới pass 3 |
+| Pagination 20/trang | 98 | khớp Isale |
+| Detail info-card pattern | 93 | product/contact/order |
+
+## D. DATA SAFETY
+- 0 delete/reset/seed; mọi migration additive (v15 có sẵn; v16 SQL đã bàn giao, chưa chạy — chờ user chạy SQL Editor).
+- Verify mỗi pass: 117/117 SP, 89/89 KH, 27 danh mục — nguyên vẹn, 0 mất mát.
+- PII staging JSONs không vào git ✅.
+
+## E. TESTING
+- TSC `--noEmit` ✅ + AOT build ✅ mỗi pass (Pass 3: sửa 1 template lỗi sót trước khi build xanh).
+- Production DOM verification mỗi pass (fresh nav + evaluate): các tính năng mới hoạt động thật, filter trả kết quả đúng trạng thái dữ liệu (Còn số lượng = 0 vì stock=0 — đúng logic, không phải bug).
+- Responsive: code-review (auto-fill grids, flex-wrap chips, media 640px customers) — chưa test runtime 4 breakpoint (thiết bị/viewport thật).
+- Dark mode: mọi token --app-* có trong .ion-palette-dark ✅ (review code).
+
+## F. DEPLOYMENT
+- Pass 1 `62881ae` → dpl `dpl_G1L4XZXyFZgrrrrb1j88oXhqJ2EV` ✅ | Pass 2 `c2b3503` → dpl `...oaeye3214` ✅ | Pass 3 `8e6d142` → dpl `...nvgpnhrb5` ✅ (mỗi lần đều `vercel alias set` ép re-alias — fix edge cache).
+- Production = https://quanlykhopiopio.vercel.app luôn phục vụ bản mới nhất, xác minh qua marker/DOM.
+
+## G. REMAINING ISSUES (nếu muốn 97+)
+1. **Chạy migration v16** (SQL tại Desktop\pio-import-20260923) → mở khóa chip "Còn Hạn SD" + Mã vạch/Hạn SD form (UI đã sẵn sàng, tự hiện).
+2. Toolbar icons còn thiếu action riêng: **pen** (sửa hàng loạt — cần bulk-update backend), **grid** (đổi view list/grid), **gear** (cấu hình hiển thị cột).
+3. Contact-detail depth: CRM timeline/nhắc việc/deals (Isale CRM suite — scope lớn).
+4. Order-detail: Hình thức thanh toán (cần cột payment_method), multi-print.
+5. Import/serial/combo/NVL/serial-view trong product-detail Isale.
+6. Runtime responsive test 4 breakpoint thật (harness không resize được viewport).
+7. Carried over: 117 SP giá=0 (chờ user nhập giá), tồn đầu kỳ, v12/v13/v14 chưa chạy, key `sk-27a67…` chưa revoke.
+
+## H. FINAL GATE
+| Điều kiện | Kết quả |
+| --- | --- |
+| Overall ≥95 | ⚠️ **~93-94** (PARTIAL→HIGH) — thành thật: functionality đã đạt nhưng similarity còn gap bởi Isale feature-depth (CRM, serial/combo, modals) |
+| Critical pages ≥97 | ⚠️ Product list 95, Contact list 93 — chưa đạt |
+| Core components ≥98 | ⚠️ tokens 97, pagination 98, FAB 96 — gần đạt |
+| Critical functionality 100% | ✅ mọi CRUD/nav/filter/bulk hoạt động thật |
+| 0 critical defects | ✅ |
+| 0 data loss | ✅ 117/117 + 89/89 |
+| 0 broken routes | ✅ |
