@@ -118,6 +118,13 @@ export const routes: Routes = [
   { path: 'stock-check/:id', loadComponent: () => import('./pages/stock-check/stock-count-detail.page').then((m) => m.StockCountDetailPage), canActivate: [authGuard, permissionGuard] },
   // Staff
   { path: 'staff', loadComponent: () => import('./pages/staff/staff.page').then((m) => m.StaffPage), canActivate: [authGuard] },
+  // Đợt 3 — module còn lại sau audit
+  { path: 'shipping-partners', loadComponent: () => import('./pages/shipping-partners/shipping-partners.page').then((m) => m.ShippingPartnersPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'point-config', loadComponent: () => import('./pages/point-config/point-config.page').then((m) => m.PointConfigPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'level-config', loadComponent: () => import('./pages/level-config/level-config.page').then((m) => m.LevelConfigPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'ai-dynamic-page', loadComponent: () => import('./pages/ai-dynamic-page/ai-dynamic-page.page').then((m) => m.AiDynamicPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'ai-page/:id', loadComponent: () => import('./pages/ai-dynamic-page/ai-page-detail.page').then((m) => m.AiPageDetailPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'cyberlotus-tax', loadComponent: () => import('./pages/cyberlotus-tax/cyberlotus-tax.page').then((m) => m.CyberlotusTaxPage), canActivate: [authGuard, permissionGuard] },
   // Help
   { path: 'help', loadComponent: () => import('./pages/help/help.page').then((m) => m.HelpPage), canActivate: [authGuard] },
   // Placeholder for future modules

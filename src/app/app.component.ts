@@ -64,6 +64,9 @@ import {
   optionsOutline,
   keyOutline,
   rocketOutline,
+  carOutline,
+  medalOutline,
+  sparklesOutline,
 } from 'ionicons/icons';
 import { AuthService } from './core/services/auth.service';
 
@@ -197,9 +200,14 @@ export class AppComponent implements OnInit {
     { title: 'Phê duyệt CRM', icon: 'shield-checkmark-outline', path: '/crm/approvals', permission: 'crm' },
     { title: 'Tuyến bán hàng', icon: 'git-branch-outline', path: '/sales-route', permission: 'sell' },
     { title: 'Kênh bán hàng', icon: 'storefront-outline', path: '/sales-channels', permission: 'sell' },
+    { title: 'Đối tác vận chuyển', icon: 'car-outline', path: '/shipping-partners', permission: 'sell' },
     { title: 'Lọc khách trùng', icon: 'git-merge-outline', path: '/contact/filter-duplicate', permission: 'crm' },
+    { title: 'Tích điểm', icon: 'sparkles-outline', path: '/point-config', permission: 'crm' },
+    { title: 'Cấu hình thăng hạng', icon: 'medal-outline', path: '/level-config', permission: 'crm' },
     { title: 'Trường tùy chỉnh', icon: 'options-outline', path: '/custom-field' },
     { title: 'Bảng tùy chỉnh', icon: 'grid-outline', path: '/custom-table' },
+    { title: 'Trang AI', icon: 'sparkles-outline', path: '/ai-dynamic-page', permission: 'report' },
+    { title: 'Kết nối thuế', icon: 'document-text-outline', path: '/cyberlotus-tax', permission: 'money' },
     { title: 'API đối tác', icon: 'key-outline', path: '/external-api' },
     { title: 'Nâng cấp gói', icon: 'rocket-outline', path: '/pricing' },
     { title: 'Nhân viên', icon: 'person-outline', path: '/staff' },
@@ -253,6 +261,9 @@ export class AppComponent implements OnInit {
       optionsOutline,
       keyOutline,
       rocketOutline,
+      carOutline,
+      medalOutline,
+      sparklesOutline,
     });
   }
 

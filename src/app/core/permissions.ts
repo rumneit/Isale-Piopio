@@ -89,19 +89,24 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   trade: 'sell',
   'sales-route': 'sell',
   'sales-channels': 'sell',
+  'shipping-partners': 'sell',
   // Tiền
   'money-account': 'money',
   debt: 'money',
+  'cyberlotus-tax': 'money',
   // CRM & khách hàng
   crm: 'crm',
   'crm-activities': 'crm',
   contact: 'crm',
   point: 'crm',
+  'point-config': 'crm',
+  'level-config': 'crm',
   note: 'crm',
   calendar: 'crm',
   'activity-log': 'crm',
   // Báo cáo
   report: 'report',
+  'ai-dynamic-page': 'report',
 };
 
 /** Lấy quyền cần có cho một route, dựa vào phân đoạn đầu tiên của đường dẫn. */

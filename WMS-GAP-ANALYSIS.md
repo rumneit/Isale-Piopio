@@ -150,23 +150,46 @@ không phải code giả.
 
 | Kiểm tra | Lệnh | Kết quả |
 | --- | --- | --- |
-| Icon hợp lệ | `npm run check:icons` | 117 icon, **0 lỗi** |
+| Icon hợp lệ | `npm run check:icons` | 121 icon, **0 lỗi** |
 | Lint | `npm run lint` | **All files pass** |
 | Build | `npm run build` | **exit 0** |
-| Test đơn vị | `npm run test:ci` | **20/20 pass** (RBAC 9, trùng khách 7, CRM 4) |
-| Audit route (Playwright) | `npm run audit` | **76/76 PASS, 0 FAIL**, 0 lỗi console thật, 0 cảnh báo ionicon |
+| Test đơn vị | `npm run test:ci` | **55/55 pass** (RBAC 9, trùng khách 7, CRM 4, vận chuyển 8, tích điểm 10, thuế 8, trang AI 9) |
+| Audit route (Playwright) | `npm run audit` | **82/82 PASS, 0 FAIL**, 0 lỗi console thật, 0 cảnh báo ionicon, 43 mục menu |
 
 ---
 
-## 6. Việc còn lại / cần quyết định
+## 6. Đợt 3 — Các module còn lại (đã xây)
 
-1. **Chạy migration v12 và v13** trên Supabase Dashboard (SQL Editor) để các bảng
-   `stock_counts`, `sales_routes`, `sales_channels`, `crm_deals`, `crm_quotas`,
+| # | Module mẫu | Trang đích | Trạng thái | Ghi chú |
+| --- | --- | --- | --- | --- |
+| 1 | `/shipping-partners` | `/shipping-partners` | ✅ Hoạt động | Bảng `shipping_partners`; CRUD, đặt mặc định, bảng giá theo 3 vùng (nội/ngoại/liên tỉnh) tính từ chiết khấu đối tác. Logic phí thuần + 8 test. |
+| 2 | `/point-config` | `/point-config` | ✅ Hoạt động | Bảng `point_configs` + `loyalty_tiers`; 4 tab: lịch sử tích điểm, cấu hình thanh toán, quy tắc tích điểm, hạng thành viên. Logic tích điểm/thăng hạng thuần + 10 test. |
+| 3 | `/level-config` | `/level-config` | ✅ Hoạt động | Cấu hình thăng hạng theo chi tiêu + điểm, chiết khấu mỗi hạng; tạo bộ 4 hạng mặc định. |
+| 4 | `/ai-dynamic-page` | `/ai-dynamic-page` + `/ai-page/:id` | ✅ Hoạt động (mẫu) | Bảng `ai_pages`; thư viện 4 mẫu trang, chạy cấu hình trên **dữ liệu thật** (orders/customers/products) → KPI/bảng/bar. Sinh cấu hình từ chat cần backend AI. Logic thuần + 9 test. |
+| 5 | `/cyberlotus-tax` | `/cyberlotus-tax` | ✅ Hoạt động (tính + xuất) | Bảng `tax_profiles` + `tax_declarations`; hồ sơ thuế, tính GTGT trực tiếp/khấu trừ từ doanh thu thật, xuất tờ khai 01/GTGT CSV. Nộp qua API cần tài khoản đối tác. Logic thuần + 8 test. |
+
+**Đã xác nhận có sẵn từ đợt 2 (không cần làm lại):** gán tuyến bán hàng trong
+màn hình khách hàng (`customer-edit`) và gán kênh bán hàng trong màn hình tạo đơn
+(`order-add`) — cả hai đã được nối với `SalesRoutesService` / `SalesChannelsService`.
+
+**Trung thực về phạm vi (đợt 3):** hai module cần backend giữ khoá bí mật được
+triển khai đúng phần frontend có thể làm:
+- **Trang AI**: chọn mẫu dựng sẵn → hiển thị số liệu thật. Sinh cấu hình từ câu
+  chat cần gọi mô hình AI qua backend.
+- **CyberLotus**: lưu hồ sơ + tính + xuất tờ khai. Nộp lên cơ quan thuế cần tài
+  khoản đối tác CyberLotus + backend.
+
+---
+
+## 7. Việc còn lại / cần quyết định
+
+1. **Chạy migration v12, v13, v14** trên Supabase Dashboard (SQL Editor) để các
+   bảng `stock_counts`, `sales_routes`, `sales_channels`, `crm_deals`, `crm_quotas`,
    `crm_approvals`, `custom_fields`, `custom_tables`, `custom_table_rows`,
-   `integration_settings`, `api_tokens`, `upgrade_requests` và RBAC cấp DB có hiệu lực.
+   `integration_settings`, `api_tokens`, `upgrade_requests`, `shipping_partners`,
+   `point_configs`, `loyalty_tiers`, `ai_pages`, `tax_profiles`,
+   `tax_declarations` và RBAC cấp DB có hiệu lực.
 2. **Bảo mật:** thu hồi/xoay khoá API `sk-27a67…` đã từng bị đẩy lên GitHub.
 3. **Backend worker** (ngoài phạm vi frontend) nếu muốn gửi Zalo/SMS/Facebook,
-   nhận webhook SePay, hoặc gọi AI thật — giữ khoá bí mật ở server.
-4. Ưu tiên đợt sau (nếu cần): CRM flow-settings/stage-settings chi tiết, shipping-partners,
-   cyberlotus-tax, level-config/point-config, ai-dynamic-page, gán tuyến/kênh trực tiếp
-   trong màn hình khách hàng và đơn hàng.
+   nhận webhook SePay, sinh trang bằng AI, hoặc nộp tờ khai CyberLotus — giữ khoá
+   bí mật ở server.
