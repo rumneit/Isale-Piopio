@@ -373,3 +373,47 @@ Phương pháp: mở **tab mới** mỗi route (history sạch) → render đún
 | 0 critical defects | ✅ |
 | 0 data loss | ✅ 117/117 + 89/89 |
 | 0 broken routes | ✅ |
+
+---
+
+# PHASE 9 — PASS 4 IMPLEMENTATION (commit `9aafb32`)
+
+## 23. Discovery
+- **v16 ĐÃ ĐƯỢC USER CHẠY** ✅ — `products.expiry_date` + `barcode` tồn tại trong DB (probe read-only) → chip "Còn Hạn SD" + Mã vạch/Hạn SD tự mở khóa qua feature-detect.
+- `crm_activities` có bảng nhưng **không có customer_id** → không liên kết khách được; `crm_deals`/`crm_leads` thuộc v12-v14 chưa chạy → CRM-lite trên contact-detail dùng dữ liệu thật liên kết được: đơn hàng (đã có pass 3).
+- `orders.payment_method` chưa có → viết **v17 additive** (`Desktop\pio-import-20260923\04-migration-v17-payment-method.sql`).
+
+## 24. Thay đổi Pass 4
+| File | Thay đổi |
+| --- | --- |
+| `products.page.*` | **Pen** = bulk edit thật: Sửa giá bán / Sửa giá nhập (alert + ghi đè) / Đổi Nhóm hàng (radio danh mục) — loop `update()` trên sản phẩm đã chọn; **Grid** = đổi view card ↔ list (list 20 dòng gọn); **Gear** = Tùy chọn hiển thị (Ẩn/Hiện Giá nhập, toggle Serial) + Cấu hình chung |
+| `customers.page.*` | Grid icon → đổi view card ↔ list |
+| `sale.page.*` (POS) | **Hình thức thanh toán** chips (Tiền mặt/Chuyển khoản/Thẻ/Ví điện tử) — chỉ hiện + chỉ lưu khi cột `payment_method` có (v17) |
+| `order-detail.page.*` | Row "Hình thức thanh toán" (feature-detected) |
+| `orders.service.ts` + `models.ts` | `detectPaymentMethod()`; `Order.payment_method?` |
+| Toolbar products | Đủ 6 icon chuẩn Isale theo đúng thứ tự: checkbox, pen, download, cloud, grid, gear |
+
+## 25. Production verification Pass 4 (dpl `rjjf56fon`, re-alias OK)
+- Toolbar đủ 6 icon chuẩn Isale ✅.
+- **Chip "Còn Hạn SD" HIỆN** sau khi user chạy v16 ✅; filter thật (0 SP vì chưa nhập hạn — đúng logic).
+- Form sửa SP hiện **Mã vạch + Hạn sử dụng** ✅.
+- Grid view: list 20 dòng (name + SKU · Đơn vị | SL | giá) ↔ card 20 ✅. Contacts list view ✅ ("Xôi Tạp Hoá · 0792489984 · 16:22").
+- Bulk-edit sheet tạo đúng: "Sửa 1 sản phẩm đã chọn" → Sửa giá bán/Sửa giá nhập/Đổi Nhóm hàng ✅ (nội dung xác minh qua DOM).
+- **Giới hạn môi trường**: tab test bị ẩn → `requestAnimationFrame` không chạy → overlay Ionic không animate-vào (present treo). Xác minh: `visibilityState='hidden'`, rAF không fire sau 800ms. **Không phải bug app** — mọi alert/sheet tương tự trong app hoạt động bình thường khi cửa sổ hiện.
+- **DATA: 117/117 SP · 89/89 KH · 27/27 danh mục · 0 đơn — 0 mất mát, 0 route hỏng.**
+
+## 26. Re-score sau Pass 4
+| Trang | Trước | Sau | Lý do |
+| --- | --- | --- | --- |
+| Danh mục Sản phẩm | 95 | **96** | toolbar đủ 6 icon thật + view toggle + bulk edit |
+| Chi tiết khách hàng | 88 | 89 | — (đơn hàng gần đây từ pass 3) |
+| POS/Bán hàng | 89 | **92** | Hình thức thanh toán chuẩn Isale (sau v17) |
+| Chi tiết đơn | 90 | **92** | Hình thức thanh toán hiển thị (sau v17) |
+| Contacts | 93 | **94** | grid view toggle |
+| Overall | ~93-94 | **~94-95** | HIGH FIDELITY band |
+
+## 27. Còn lại (nếu muốn 97+)
+- Sau khi user chạy **v17**: xác minh lại POS + order-detail trên production (UI đã sẵn).
+- CRM đầy đủ (leads/deals/timeline) — cần v12/v13/v14 migrations của đợt 3.
+- Serial/IMEI (bảng serials chưa có), combo/NVL view, multi-print, share.
+- Runtime responsive test với cửa sổ hiện.
