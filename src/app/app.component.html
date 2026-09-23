@@ -30,7 +30,7 @@
       }
 
       <ion-list>
-        @for (item of menuItems; track item.path) {
+        @for (item of visibleMenuItems(); track item.path) {
           <ion-menu-toggle auto-hide="false">
             <ion-item [routerLink]="item.path" routerLinkActive="ion-activatable" detail="true">
               <ion-icon slot="start" [name]="item.icon" />

@@ -9,7 +9,10 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "check:icons": "node check-icons.mjs",
+    "test:ci": "ng test --configuration ci",
+    "audit": "node audit.mjs"
   },
   "private": true,
   "dependencies": {
@@ -49,5 +52,9 @@
   "description": "An Ionic project",
   "engines": {
     "node": ">=22.22.3"
+  },
+  "allowScripts": {
+    "esbuild@0.27.7": true,
+    "esbuild@0.28.0": true
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, computed } from '@angular/core';
 import {
   IonApp,
   IonMenu,
@@ -62,6 +62,8 @@ interface MenuItem {
   title: string;
   icon: string;
   path: string;
+  /** Quyền cần có để thấy mục này (bỏ trống = ai cũng thấy). */
+  permission?: string;
 }
 
 /**
@@ -159,32 +161,37 @@ export class AppComponent implements OnInit {
 
   readonly menuItems: MenuItem[] = [
     { title: 'Trang chủ', icon: 'grid-outline', path: '/home' },
-    { title: 'Đơn hàng', icon: 'cart-outline', path: '/order' },
-    { title: 'Trả hàng', icon: 'return-down-back-outline', path: '/returns' },
-    { title: 'Sản phẩm', icon: 'pricetags-outline', path: '/product' },
-    { title: 'Nhập hàng', icon: 'download-outline', path: '/received-note' },
-    { title: 'Chuyển hàng', icon: 'arrow-redo-outline', path: '/transfer' },
-    { title: 'Khách hàng', icon: 'people-outline', path: '/contact' },
-    { title: 'Giao dịch', icon: 'swap-horizontal-outline', path: '/trade' },
-    { title: 'Sổ tiền', icon: 'wallet-outline', path: '/money-account' },
-    { title: 'Công nợ', icon: 'document-text-outline', path: '/debt' },
-    { title: 'Báo cáo', icon: 'bar-chart-outline', path: '/report' },
-    { title: 'Kiểm kho', icon: 'clipboard-outline', path: '/stock-check' },
-    { title: 'Lịch', icon: 'calendar-outline', path: '/calendar' },
-    { title: 'Ghi chú', icon: 'book-outline', path: '/note' },
+    { title: 'Đơn hàng', icon: 'cart-outline', path: '/order', permission: 'sell' },
+    { title: 'Trả hàng', icon: 'return-down-back-outline', path: '/returns', permission: 'sell' },
+    { title: 'Sản phẩm', icon: 'pricetags-outline', path: '/product', permission: 'inventory' },
+    { title: 'Nhập hàng', icon: 'download-outline', path: '/received-note', permission: 'inventory' },
+    { title: 'Chuyển hàng', icon: 'arrow-redo-outline', path: '/transfer', permission: 'inventory' },
+    { title: 'Khách hàng', icon: 'people-outline', path: '/contact', permission: 'crm' },
+    { title: 'Giao dịch', icon: 'swap-horizontal-outline', path: '/trade', permission: 'sell' },
+    { title: 'Sổ tiền', icon: 'wallet-outline', path: '/money-account', permission: 'money' },
+    { title: 'Công nợ', icon: 'document-text-outline', path: '/debt', permission: 'money' },
+    { title: 'Báo cáo', icon: 'bar-chart-outline', path: '/report', permission: 'report' },
+    { title: 'Kiểm kho', icon: 'clipboard-outline', path: '/stock-check', permission: 'inventory' },
+    { title: 'Lịch', icon: 'calendar-outline', path: '/calendar', permission: 'crm' },
+    { title: 'Ghi chú', icon: 'book-outline', path: '/note', permission: 'crm' },
     { title: 'Ca làm việc', icon: 'time-outline', path: '/shift' },
-    { title: 'Quản bàn', icon: 'restaurant-outline', path: '/cafe-tables' },
-    { title: 'Nhập dữ liệu', icon: 'cloud-upload-outline', path: '/import' },
-    { title: 'Lịch sử thay đổi', icon: 'pulse-outline', path: '/activity-log' },
+    { title: 'Quản bàn', icon: 'restaurant-outline', path: '/cafe-tables', permission: 'sell' },
+    { title: 'Nhập dữ liệu', icon: 'cloud-upload-outline', path: '/import', permission: 'inventory' },
+    { title: 'Lịch sử thay đổi', icon: 'pulse-outline', path: '/activity-log', permission: 'crm' },
     { title: 'Phân quyền', icon: 'lock-closed-outline', path: '/permission' },
     { title: 'Tích hợp', icon: 'link-outline', path: '/integrations' },
     { title: 'Hỗ trợ', icon: 'mail-outline', path: '/support' },
-    { title: 'CRM', icon: 'analytics-outline', path: '/crm' },
+    { title: 'CRM', icon: 'analytics-outline', path: '/crm', permission: 'crm' },
     { title: 'Nhân viên', icon: 'person-outline', path: '/staff' },
     { title: 'Cửa hàng', icon: 'storefront-outline', path: '/config' },
     { title: 'Trợ giúp', icon: 'help-circle-outline', path: '/help' },
     { title: 'Cấu hình', icon: 'settings-outline', path: '/config' },
   ];
+
+  /** Menu đã lọc theo quyền của người dùng hiện tại. */
+  readonly visibleMenuItems = computed(() =>
+    this.menuItems.filter((item) => !item.permission || this.auth.can(item.permission))
+  );
 
   constructor() {
     addIcons({

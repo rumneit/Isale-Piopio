@@ -6,7 +6,7 @@
     <ion-title>Kiểm kho</ion-title>
   </ion-toolbar>
   <ion-toolbar>
-    <ion-searchbar placeholder="Tìm sản phẩm" [debounce]="300" (ionInput)="onSearch($any($event))" />
+    <ion-searchbar placeholder="Tìm theo mã phiếu" [debounce]="300" (ionInput)="onSearch($any($event))" />
   </ion-toolbar>
 </ion-header>
 
@@ -21,32 +21,44 @@
     } @else if (items().length === 0) {
       <div class="app-empty">
         <div><ion-icon name="clipboard-outline" /></div>
-        Không có sản phẩm để kiểm kho
+        Chưa có phiếu kiểm kê nào. Nhấn + để tạo phiếu đếm thực tế.
       </div>
     } @else {
       <div class="app-card">
         <ion-list lines="full">
-          @for (item of items(); track item.id) {
-            <ion-item>
-              <ion-icon slot="start" name="pricetags-outline" color="medium" />
+          @for (count of items(); track count.id) {
+            <ion-item button (click)="openDetail(count)">
+              <ion-icon slot="start" [name]="statusIcon(count.status)" [color]="statusColor(count.status)" />
               <ion-label>
-                <h3>{{ item.name }}</h3>
-                <p>{{ item.sku ?? '—' }} · {{ formatMoney(item.price) }}</p>
+                <h3>{{ count.code }}</h3>
+                <p>
+                  {{ count.items.length }} SP ·
+                  <span [class.sc-pos]="count.total_diff > 0" [class.sc-neg]="count.total_diff < 0">
+                    lệch {{ count.total_diff > 0 ? '+' : '' }}{{ count.total_diff }}
+                  </span>
+                  · {{ count.created_at | date: 'dd/MM HH:mm' }}
+                </p>
               </ion-label>
-              <div class="stock-actions" slot="end">
-                <ion-badge [color]="(item.stock ?? 0) > 0 ? 'primary' : 'danger'">Tồn: {{ item.stock }}</ion-badge>
-                <ion-button fill="clear" size="small" (click)="adjustStock(item)">
-                  <ion-icon slot="icon-only" name="create-outline" />
+              <ion-badge slot="end" [color]="statusColor(count.status)">{{ statusLabel(count.status) }}</ion-badge>
+              @if (count.status === 'draft') {
+                <ion-button slot="end" fill="clear" color="danger" (click)="confirmRemove(count, $event)">
+                  <ion-icon slot="icon-only" name="trash-outline" />
                 </ion-button>
-              </div>
+              }
             </ion-item>
           }
         </ion-list>
       </div>
       <ion-note class="page-hint">
         <ion-icon name="checkmark-done-outline" />
-        Nhấn bút chì để nhập số lượng thực tế đếm được
+        Mở phiếu để nhập số lượng đếm; chốt phiếu mới cập nhật tồn kho
       </ion-note>
     }
   </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openNew()">
+      <ion-icon name="add-outline" />
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

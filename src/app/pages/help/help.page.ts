@@ -82,7 +82,7 @@ export class HelpPage {
       path: '/contact',
     },
     {
-      icon: 'barChartOutline',
+      icon: 'bar-chart-outline',
       title: 'Báo cáo',
       desc: 'Doanh thu theo ngày/tuần/tháng/năm, tổng thu - chi, top 5 sản phẩm bán chạy và biểu đồ theo ngày.',
       path: '/report',
@@ -136,7 +136,7 @@ export class HelpPage {
       path: '/support',
     },
     {
-      icon: 'documentTextOutline',
+      icon: 'document-text-outline',
       title: 'Cấu hình cửa hàng',
       desc: 'Đổi tên cửa hàng, tên hiển thị của bạn, đăng xuất tài khoản.',
       path: '/config',

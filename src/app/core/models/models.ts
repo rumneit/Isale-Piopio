@@ -3,6 +3,7 @@ export interface Profile {
   shop_id: string | null;
   full_name: string | null;
   role: string | null;
+  permissions?: Record<string, boolean>;
   created_at?: string;
 }
 
@@ -104,4 +105,27 @@ export interface HomeStats {
   debtTotal: number;
   productCount: number;
   customerCount: number;
+}
+
+/** Phiếu kiểm kê kho (cycle count). */
+export interface StockCountItem {
+  product_id: string | null;
+  name: string;
+  sku: string | null;
+  system_qty: number;
+  counted_qty: number;
+  diff: number;
+}
+
+export interface StockCount {
+  id: string;
+  shop_id: string;
+  code: string;
+  status: 'draft' | 'completed' | 'cancelled';
+  items: StockCountItem[];
+  total_diff: number;
+  note: string | null;
+  created_by: string | null;
+  created_at: string;
+  completed_at: string | null;
 }

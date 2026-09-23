@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { Profile, Shop } from '../models/models';
+import { PERMISSION_DEFS, permissionForRoute } from '../permissions';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -16,6 +17,31 @@ export class AuthService {
     const email = this.session()?.user?.email as string | undefined;
     return p?.full_name?.trim() || email?.split('@')[0] || 'Người dùng';
   });
+
+  readonly isOwner = computed(() => this.profile()?.role === 'owner');
+
+  /**
+   * Kiểm tra quyền của người dùng hiện tại.
+   * - Chủ cửa hàng: luôn có toàn quyền.
+   * - Chưa có hồ sơ (đang tải / môi trường test): cho phép, tránh khoá nhầm.
+   * - Nhân viên: theo cờ quyền đã lưu ở profiles.permissions.
+   */
+  can(permission: string): boolean {
+    const p = this.profile();
+    if (!p) return true;
+    if (p.role === 'owner') return true;
+    const perms = (p.permissions ?? {}) as Record<string, boolean>;
+    return !!perms[permission];
+  }
+
+  /** Quyền cần có để vào một route (null = không yêu cầu). */
+  canAccessRoute(path: string | null | undefined): boolean {
+    const perm = permissionForRoute(path);
+    return !perm || this.can(perm);
+  }
+
+  /** Quyền mặc định khi chưa gán gì cho nhân viên. */
+  readonly permissionDefs = PERMISSION_DEFS;
 
   private sb = inject(SupabaseService);
 

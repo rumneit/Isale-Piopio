@@ -75,3 +75,7 @@ Thumbs.db
 # Ket qua audit Playwright (chi chay local, khong push)
 /audit-output/
 
+# Cau hinh OpenCode cua may ca nhan — chua API key, KHONG commit
+opencode.json
+opencode.jsonc
+

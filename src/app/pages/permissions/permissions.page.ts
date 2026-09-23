@@ -2,27 +2,22 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonContent,
-  IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonToggle, IonButton, ToastController,
+  IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonToggle, IonButton,
+  IonSelect, IonSelectOption, ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { lockClosedOutline, personOutline } from 'ionicons/icons';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Profile } from '../../core/models/models';
-
-const PERMISSION_DEFS = [
-  { key: 'sell', label: 'Bán hàng & Đơn hàng' },
-  { key: 'inventory', label: 'Kho & Sản phẩm' },
-  { key: 'money', label: 'Thu chi & Sổ tiền' },
-  { key: 'report', label: 'Báo cáo' },
-  { key: 'crm', label: 'CRM' },
-];
+import { PERMISSION_DEFS, ROLES, presetsForRole } from '../../core/permissions';
 
 @Component({
   selector: 'app-permissions',
   imports: [
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon,
     IonContent, IonList, IonItem, IonLabel, IonBadge, IonSpinner, IonNote, IonToggle, IonButton,
+    IonSelect, IonSelectOption,
   ],
   template: `
     <ion-header>
@@ -49,9 +44,19 @@ const PERMISSION_DEFS = [
             <div class="app-card">
               <div class="perm-head">
                 <div class="perm-avatar">{{ (m.full_name || '?') | uppercase }}</div>
-                <div>
+                <div class="perm-info">
                   <h3>{{ m.full_name ?? 'Chưa đặt tên' }}</h3>
-                  <p>{{ m.role === 'owner' ? 'Chủ cửa hàng' : 'Nhân viên' }}</p>
+                  <ion-select
+                    interface="popover"
+                    [value]="m.role ?? 'staff'"
+                    (ionChange)="changeRole(m, $any($event.detail.value))"
+                    class="perm-role"
+                    aria-label="Vai trò"
+                  >
+                    @for (r of roles; track r.value) {
+                      <ion-select-option [value]="r.value">{{ r.label }}</ion-select-option>
+                    }
+                  </ion-select>
                 </div>
                 <ion-button size="small" fill="outline" (click)="savePermissions(m)">Lưu</ion-button>
               </div>
@@ -94,6 +99,8 @@ const PERMISSION_DEFS = [
     .perm-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(var(--ion-color-secondary-rgb), 0.15); color: var(--ion-color-secondary); display: flex; align-items: center; justify-content: center; font-weight: 700; }
     .perm-head h3 { margin: 0; font-size: 15px; font-weight: 700; color: var(--app-text); }
     .perm-head p { margin: 0; font-size: 12px; color: var(--app-text-muted); }
+    .perm-info { flex: 1; min-width: 0; }
+    .perm-role { font-size: 12.5px; max-width: 220px; margin-top: 2px; --padding-start: 0; }
     .perm-head ion-button { margin-left: auto; }
     ion-list { background: transparent; }
     ion-item { --background: transparent; }
@@ -106,6 +113,7 @@ export class PermissionsPage implements OnInit {
   private toastCtrl = inject(ToastController);
 
   readonly permissionDefs = PERMISSION_DEFS;
+  readonly roles = ROLES;
   readonly staff = signal<Profile[]>([]);
   readonly loading = signal(true);
 
@@ -155,11 +163,22 @@ export class PermissionsPage implements OnInit {
     (m as any).permissions = perms;
   }
 
+  /** Đổi vai trò → áp preset quyền chuẩn của vai trò đó. */
+  changeRole(m: Profile, role: string) {
+    m.role = role;
+    if (role === 'owner') {
+      (m as any).permissions = presetsForRole('owner');
+    } else {
+      (m as any).permissions = presetsForRole(role);
+    }
+    this.staff.update((list) => [...list]);
+  }
+
   async savePermissions(m: Profile) {
     try {
       await this.sb
         .from('profiles')
-        .update({ permissions: this.permsOf(m) })
+        .update({ permissions: this.permsOf(m), role: m.role ?? 'staff' })
         .eq('id', m.id)
         .eq('shop_id', this.auth.shop()!.id);
       this.toast(`Đã lưu quyền cho ${m.full_name}`);

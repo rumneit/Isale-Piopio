@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
@@ -18,18 +19,22 @@ import {
   IonNote,
   IonRefresher,
   IonRefresherContent,
+  IonFab,
+  IonFabButton,
   AlertController,
   ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   clipboardOutline,
-  pricetagsOutline,
-  createOutline,
+  addOutline,
   checkmarkDoneOutline,
+  timeOutline,
+  closeCircleOutline,
+  trashOutline,
 } from 'ionicons/icons';
-import { ProductsService } from '../../core/services/products.service';
-import { Product } from '../../core/models/models';
+import { StockCountsService } from '../../core/services/stock-counts.service';
+import { StockCount } from '../../core/models/models';
 
 @Component({
   selector: 'app-stock-check',
@@ -54,19 +59,22 @@ import { Product } from '../../core/models/models';
     IonNote,
     IonRefresher,
     IonRefresherContent,
+    IonFab,
+    IonFabButton,
   ],
 })
 export class StockCheckPage implements OnInit {
-  private productsService = inject(ProductsService);
+  private stockCountsService = inject(StockCountsService);
+  private router = inject(Router);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
 
-  readonly items = signal<Product[]>([]);
+  readonly items = signal<StockCount[]>([]);
   readonly loading = signal(true);
   search = '';
 
   constructor() {
-    addIcons({ clipboardOutline, pricetagsOutline, createOutline, checkmarkDoneOutline });
+    addIcons({ clipboardOutline, addOutline, checkmarkDoneOutline, timeOutline, closeCircleOutline, trashOutline });
   }
 
   ngOnInit(): void {
@@ -76,9 +84,9 @@ export class StockCheckPage implements OnInit {
   async load() {
     this.loading.set(true);
     try {
-      this.items.set(await this.productsService.list(this.search));
+      this.items.set(await this.stockCountsService.list(this.search));
     } catch (e: any) {
-      console.error('load stock failed', e);
+      console.error('load stock counts failed', e);
       this.items.set([]);
     } finally {
       this.loading.set(false);
@@ -94,37 +102,47 @@ export class StockCheckPage implements OnInit {
     this.load().finally(() => (event.target as HTMLIonRefresherElement).complete());
   }
 
-  async adjustStock(product: Product) {
+  openDetail(count: StockCount) {
+    this.router.navigateByUrl(`/stock-check/${count.id}`);
+  }
+
+  openNew() {
+    this.router.navigateByUrl('/stock-check/new');
+  }
+
+  statusLabel(status: StockCount['status']): string {
+    return { draft: 'Nháp', completed: 'Đã chốt', cancelled: 'Đã hủy' }[status];
+  }
+
+  statusColor(status: StockCount['status']): string {
+    return { draft: 'warning', completed: 'success', cancelled: 'medium' }[status];
+  }
+
+  statusIcon(status: StockCount['status']): string {
+    return {
+      draft: 'time-outline',
+      completed: 'checkmark-done-outline',
+      cancelled: 'close-circle-outline',
+    }[status];
+  }
+
+  async confirmRemove(count: StockCount, ev: Event) {
+    ev.stopPropagation();
     const alert = await this.alertCtrl.create({
-      header: 'Điều chỉnh tồn kho',
-      message: `${product.name} — tồn hiện tại: ${product.stock}`,
-      inputs: [
-        {
-          name: 'stock',
-          type: 'number',
-          value: String(product.stock ?? 0),
-          placeholder: 'Số lượng thực tế',
-          attributes: { inputmode: 'decimal' },
-        },
-      ],
+      header: 'Xóa phiếu kiểm kê',
+      message: `Xóa phiếu ${count.code}? Chỉ xóa được phiếu nháp.`,
       buttons: [
         { text: 'Hủy', role: 'cancel' },
         {
-          text: 'Cập nhật',
-          handler: async (data) => {
-            const value = Number(data?.stock ?? 0);
-            if (Number.isNaN(value) || value < 0) {
-              this.toast('Số lượng không hợp lệ', 'danger');
-              return false;
-            }
+          text: 'Xóa',
+          role: 'destructive',
+          handler: async () => {
             try {
-              await this.productsService.update(product.id, { stock: value });
-              this.toast(`Đã cập nhật tồn kho: ${product.stock} → ${value}`);
+              await this.stockCountsService.remove(count.id);
+              this.toast('Đã xóa phiếu');
               await this.load();
-              return true;
             } catch (e: any) {
-              this.toast(e?.message ?? 'Cập nhật thất bại', 'danger');
-              return false;
+              this.toast(e?.message ?? 'Xóa thất bại', 'danger');
             }
           },
         },
@@ -136,9 +154,5 @@ export class StockCheckPage implements OnInit {
   private async toast(message: string, color: string = 'success') {
     const t = await this.toastCtrl.create({ message, duration: 1800, color, position: 'bottom' });
     await t.present();
-  }
-
-  formatMoney(v: number | null | undefined): string {
-    return new Intl.NumberFormat('vi-VN').format(v ?? 0) + ' ₫';
   }
 }

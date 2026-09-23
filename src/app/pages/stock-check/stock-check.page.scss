@@ -4,10 +4,14 @@
   padding: 40px 0;
 }
 
-.stock-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.sc-pos {
+  color: var(--ion-color-success);
+  font-weight: 600;
+}
+
+.sc-neg {
+  color: var(--ion-color-danger);
+  font-weight: 600;
 }
 
 ion-list {
@@ -30,8 +34,10 @@ ion-list {
 }
 
 .page-hint {
-  display: block;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
   font-size: 12px;
   padding: 4px;
 }

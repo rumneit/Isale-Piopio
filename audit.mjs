@@ -74,6 +74,8 @@ const ROUTES = [
   '/money-account',
   '/config',
   '/stock-check',
+  '/stock-check/new',
+  '/stock-check/00000000-0000-4000-8000-000000000000',
   '/staff',
   '/help',
 ];
@@ -312,6 +314,9 @@ const summary = {
   failed: failed.length,
   routesWithConsoleErrors: withErrors.length,
   routesWithWarnings: withWarnings.length,
+  // Loi that (bo qua 401 do JWT gia) va canh bao icon sai ten
+  realConsoleErrors: [...new Set(results.flatMap((r) => r.errors))].filter((e) => !/\b401\b/.test(e)),
+  ioniconWarnings: [...new Set(results.flatMap((r) => r.warnings))].filter((w) => /Ionicons Warning/i.test(w)),
   failedRoutes: failed.map((f) => ({ route: f.route, url: f.url, reason: f.navError || f.evalError || (f.redirectedToLogin ? 'redirect /login' : 'khong render duoc header/noi dung'), errors: f.errors.slice(0, 3) })),
   menuItems: menuReport.items.length,
   results,
@@ -326,6 +331,16 @@ lines.push('');
 lines.push(`- Thoi diem: ${summary.auditedAt}`);
 lines.push(`- Tong so route: ${summary.total} | PASS: ${summary.passed} | FAIL: ${summary.failed}`);
 lines.push(`- Route co loi console: ${summary.routesWithConsoleErrors}`);
+lines.push(`- Loi console THAT (da bo 401 do JWT gia): ${summary.realConsoleErrors.length}`);
+lines.push(`- Canh bao icon sai ten: ${summary.ioniconWarnings.length}`);
+lines.push('');
+lines.push('## Loi console THAT (khong tinh 401 do token gia)');
+if (!summary.realConsoleErrors.length) lines.push('Khong co.');
+for (const e of summary.realConsoleErrors) lines.push(`- ${e.slice(0, 300)}`);
+lines.push('');
+lines.push('## Canh bao Ionicons');
+if (!summary.ioniconWarnings.length) lines.push('Khong co.');
+for (const w of summary.ioniconWarnings) lines.push(`- ${w.slice(0, 300)}`);
 lines.push('');
 lines.push('## Route FAIL');
 if (!failed.length) lines.push('Khong co.');
