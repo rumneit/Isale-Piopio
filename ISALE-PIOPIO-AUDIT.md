@@ -264,3 +264,12 @@ Phương pháp: mở **tab mới** mỗi route (history sạch) → render đún
 - Lịch sử Nhập/Xuất trên product-detail: cần query join `order_items`/`received_note_items` — làm pass 3 khi audit schema.
 - Contact detail view page + CRM tabs: scope lớn.
 - Bulk-select nhiều SP (Chọn nhiều/Xóa nhiều): cần backend loop + confirm — pass 3.
+
+## 19. Deployment + Production verification (commit `c2b3503`, dpl `quanlykhopiopio-oaeye3214`)
+- Push `b7c520a..c2b3503` → Vercel production build → **Ready** → force re-alias `vercel alias set` (edge-cache fix) → Success.
+- Verify live (DOM, tab production):
+  - Products: chips `Tất cả(active) | Còn số lượng | Tên A→Z | Giá cao→thấp` ✅; "Chọn Nhóm hàng" ✅; **Trang 1/6** (117 ÷ 20) ✅; **Tổng: 117 sản phẩm** ✅.
+  - Chip "Còn số lượng" → Tổng: 0 (đúng: mọi SP stock=0, tồn đầu kỳ chưa nhập) ✅ logic filter thật.
+  - **Product detail**: "Chi tiết sản phẩm | Tô nhựa 1000ml UKP Trong | Đang kinh doanh | Số lượng/Đơn giá/Giá nhập/Mã SKU PIO0112/Đơn vị/Danh mục Tô nhựa" + note Isale + SỬA/NHÂN BẢN/XÓA ✅.
+  - Customer edit: "Mã khách hàng" input ✅ + ion-select "Giới tính" ✅ (DOMContentLoaded qua DOM query — label select nằm trong shadow DOM nên innerText không thấy).
+  - **DATA: 117/117 SP + 89/89 KH nguyên vẹn — 0 mất mát, 0 route hỏng, 0 critical defect.**
