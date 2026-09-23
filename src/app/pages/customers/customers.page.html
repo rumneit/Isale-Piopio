@@ -3,16 +3,16 @@
     <ion-buttons slot="start">
       <ion-menu-button menu="app-menu" auto-hide="false" />
       <ion-button (click)="openHome()">
-        <ion-icon slot="icon-only" name="home-outline" />
+        <ion-icon slot="icon-only" name="home" />
       </ion-button>
     </ion-buttons>
     <ion-title>Quản lý khách hàng</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="openAdd()">
-        <ion-icon slot="icon-only" name="person-add-outline" />
+        <ion-icon slot="icon-only" name="person-add" />
       </ion-button>
       <ion-button (click)="openSettings()">
-        <ion-icon slot="icon-only" name="apps-outline" />
+        <ion-icon slot="icon-only" name="apps" />
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -23,19 +23,19 @@
     <ion-refresher-content />
   </ion-refresher>
 
-  <div class="app-page-container">
-    <!-- Tab phân loại -->
+  <div class="app-page-container customers-container">
+    <!-- Tab phân loại (ISale: 3 khối lớn, active nền tím đặc) -->
     <div class="customer-tabs">
       <button class="customer-tab" [class.active]="tab() === 'all'" (click)="selectTab('all')">
-        <ion-icon name="people-outline" />
+        <ion-icon name="people" />
         Tất cả
       </button>
       <button class="customer-tab" [class.active]="tab() === 'important'" (click)="selectTab('important')">
-        <ion-icon name="star-outline" />
+        <ion-icon name="star" />
         Quan trọng
       </button>
       <button class="customer-tab" [class.active]="tab() === 'recent'" (click)="selectTab('recent')">
-        <ion-icon name="time-outline" />
+        <ion-icon name="time" />
         Gần đây
       </button>
     </div>
@@ -66,7 +66,7 @@
       <div class="page-loading"><ion-spinner name="crescent" /></div>
     } @else if (filtered().length === 0) {
       <div class="app-empty">
-        <div><ion-icon name="people-outline" /></div>
+        <div><ion-icon name="people" /></div>
         Chưa có khách hàng nào. Bấm nút + để thêm khách hàng đầu tiên.
       </div>
     } @else {
@@ -131,5 +131,8 @@
         </ion-button>
       </div>
     }
+
+    <!-- Bộ 3 FAB chuẩn ISale -->
+    <app-fab-trio mainIcon="person-add" mainLabel="Thêm khách hàng" (mainAction)="openAdd()" />
   </div>
 </ion-content>

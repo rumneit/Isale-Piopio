@@ -40,6 +40,7 @@ import {
   createOutline,
   trashOutline,
 } from 'ionicons/icons';
+import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 import { TransactionsService } from '../../core/services/transactions.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { Transaction } from '../../core/models/models';
@@ -69,6 +70,7 @@ interface MonthTab {
     IonSpinner,
     IonMenuButton,
     IonBadge,
+      FabTrioComponent,
   ],
 })
 export class TradesPage implements OnInit {

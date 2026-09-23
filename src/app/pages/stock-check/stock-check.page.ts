@@ -33,6 +33,7 @@ import {
   closeCircleOutline,
   trashOutline,
 } from 'ionicons/icons';
+import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 import { StockCountsService } from '../../core/services/stock-counts.service';
 import { StockCount } from '../../core/models/models';
 
@@ -61,6 +62,7 @@ import { StockCount } from '../../core/models/models';
     IonRefresherContent,
     IonFab,
     IonFabButton,
+      FabTrioComponent,
   ],
 })
 export class StockCheckPage implements OnInit {

@@ -26,6 +26,7 @@ import {
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addOutline, receiptOutline, closeOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 import { OrdersService } from '../../core/services/orders.service';
 import { Order } from '../../core/models/models';
 
@@ -54,6 +55,7 @@ import { Order } from '../../core/models/models';
     IonFab,
     IonFabButton,
     IonButton,
+      FabTrioComponent,
   ],
 })
 export class QuotesPage implements OnInit {

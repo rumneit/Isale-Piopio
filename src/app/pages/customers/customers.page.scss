@@ -3,41 +3,40 @@ ion-content {
 }
 
 /* ---------- Tab phân loại ---------- */
+/* ---------- Tab phân loại (ISale: 3 khối lớn, active nền tím đặc) ---------- */
 .customer-tabs {
-  display: flex;
-  gap: 6px;
-  padding: 2px 0 10px;
-  border-bottom: 1px solid var(--app-border);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  background: rgba(var(--ion-color-primary-rgb), 0.06);
+  border-radius: 10px;
+  padding: 4px;
   margin-bottom: 10px;
-  overflow-x: auto;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 .customer-tab {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
+  gap: 3px;
   background: none;
   border: none;
-  padding: 7px 12px;
+  padding: 9px 8px;
   font-size: 13px;
-  font-weight: 700;
-  color: var(--app-text-muted);
+  font-weight: 600;
+  color: var(--app-text);
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 8px;
+  transition: background 0.15s ease, color 0.15s ease;
 
   ion-icon {
-    font-size: 16px;
+    font-size: 18px;
   }
 
   &.active {
-    color: var(--ion-color-primary);
-    background: rgba(var(--ion-color-primary-rgb), 0.1);
+    background: var(--ion-color-primary);
+    color: #ffffff;
+    font-weight: 700;
   }
 }
 
@@ -71,18 +70,29 @@ ion-content {
   padding: 40px 0;
 }
 
+/* Danh sách khách (ISale: grid card responsive full-width) */
+.customers-container {
+  max-width: none;
+}
+
 .customer-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .customer-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .customer-card {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: var(--app-radius);
-  box-shadow: var(--app-shadow-sm);
-  padding: 14px 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 3px 1px rgba(0, 0, 0, 0.04);
+  padding: 14px 16px 12px;
   cursor: pointer;
 
   &:active {
@@ -91,8 +101,11 @@ ion-content {
 
   .customer-name {
     margin: 0 0 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--app-border);
     font-size: 15.5px;
     font-weight: 800;
+    color: #1f2a5a;
     letter-spacing: -0.01em;
     color: var(--app-text);
   }
@@ -105,10 +118,10 @@ ion-content {
 }
 
 .field-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 24px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+  align-items: end;
 }
 
 .field {
@@ -117,8 +130,7 @@ ion-content {
   gap: 1px;
 
   &.grow {
-    flex: 1;
-    min-width: 180px;
+    grid-column: 1 / -1;
   }
 
   .field-label {

@@ -25,6 +25,7 @@ import { IonButton,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addOutline, downloadOutline, alertCircleOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 import { ReceivedNotesService, ReceivedNote } from '../../core/services/received-notes.service';
 import { DataService } from '../../core/services/data.service';
 
@@ -53,6 +54,7 @@ import { DataService } from '../../core/services/data.service';
     IonNote,
     IonRefresher,
     IonRefresherContent,
+      FabTrioComponent,
   ],
 })
 export class ReceivedNotesPage implements OnInit {

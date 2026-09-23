@@ -2,21 +2,20 @@ ion-content {
   --background: var(--app-page-bg);
 }
 
-/* ---------- Tip banner ---------- */
+/* ---------- Tip banner (ISale: nền hồng warning) ---------- */
 .tip-banner {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
-  border-radius: 14px;
-  padding: 12px 14px;
+  background: rgba(var(--ion-color-warning-rgb), 0.1);
+  border: 1px solid rgba(var(--ion-color-warning-rgb), 0.28);
+  border-radius: 8px;
+  padding: 10px 12px;
   margin-bottom: 14px;
-  box-shadow: var(--app-shadow-sm);
 
   .tip-icon {
-    font-size: 20px;
-    color: var(--ion-color-tertiary);
+    font-size: 18px;
+    color: var(--ion-color-warning);
     flex-shrink: 0;
     margin-top: 1px;
   }
@@ -34,7 +33,7 @@ ion-content {
     border: none;
     padding: 0;
     cursor: pointer;
-    color: var(--app-text-muted);
+    color: var(--ion-color-danger);
 
     ion-icon {
       font-size: 18px;
@@ -45,17 +44,21 @@ ion-content {
 /* ---------- Tabs ---------- */
 .home-tabs {
   margin-bottom: 14px;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
-/* ---------- Quick action grid ---------- */
+/* ---------- Quick action grid (ISale: 5 cột desktop) ---------- */
 .home-actions-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
   margin-bottom: 6px;
 
-  @media (max-width: 420px) {
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 640px) {
     grid-template-columns: repeat(3, 1fr);
   }
 }
@@ -88,13 +91,14 @@ ion-content {
     position: relative;
     width: 46px;
     height: 46px;
-    border-radius: 14px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: transparent;
 
     ion-icon {
-      font-size: 24px;
+      font-size: 30px;
     }
 
     .action-new-badge {
@@ -119,13 +123,11 @@ ion-content {
   }
 }
 
-/* ---------- Section title ---------- */
+/* ---------- Section title (ISale: viết thường, xám) ---------- */
 .section-title {
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--app-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   margin: 18px 4px 10px;
 }
 
@@ -293,6 +295,27 @@ html.ion-palette-dark .config-box {
 
   &:active {
     background: rgba(var(--ion-color-primary-rgb), 0.18);
+  }
+}
+
+/* ---------- Support card (ISale) ---------- */
+.support-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--app-text-muted);
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    ion-icon {
+      font-size: 15px;
+      color: var(--ion-color-primary);
+    }
   }
 }
 

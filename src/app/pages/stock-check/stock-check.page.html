@@ -59,9 +59,6 @@
     }
   </div>
 
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="openNew()">
-      <ion-icon name="add-outline" />
-    </ion-fab-button>
-  </ion-fab>
+  <!-- Bộ 3 FAB chuẩn ISale -->
+  <app-fab-trio mainIcon="add" mainLabel="Tạo phiếu kiểm kê" (mainAction)="openNew()" />
 </ion-content>

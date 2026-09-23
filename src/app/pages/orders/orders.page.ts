@@ -35,6 +35,7 @@ import {
   fileTrayOutline,
   checkmarkCircleOutline,
 } from 'ionicons/icons';
+import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 import { OrdersService } from '../../core/services/orders.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { Order } from '../../core/models/models';
@@ -64,6 +65,7 @@ interface MonthTab {
     IonSpinner,
     IonMenuButton,
     IonBadge,
+      FabTrioComponent,
   ],
 })
 export class OrdersPage implements OnInit {

@@ -20,10 +20,10 @@ import {
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
-  homeOutline,
-  barcodeOutline,
-  addCircleOutline,
-  appsOutline,
+  home,
+  barcodeSharp,
+  addCircleSharp,
+  apps,
   funnelOutline,
   searchOutline,
   checkboxOutline,
@@ -38,6 +38,7 @@ import {
   addOutline,
   checkmarkCircleOutline,
 } from 'ionicons/icons';
+import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';;
 import { ProductsService } from '../../core/services/products.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { Product } from '../../core/models/models';
@@ -61,6 +62,7 @@ import { Product } from '../../core/models/models';
     IonSpinner,
     IonMenuButton,
     IonToggle,
+    FabTrioComponent,
   ],
 })
 export class ProductsPage implements OnInit {
@@ -83,10 +85,10 @@ export class ProductsPage implements OnInit {
 
   constructor() {
     addIcons({
-      homeOutline,
-      barcodeOutline,
-      addCircleOutline,
-      appsOutline,
+      home,
+      barcodeSharp,
+      addCircleSharp,
+      apps,
       funnelOutline,
       searchOutline,
       checkboxOutline,

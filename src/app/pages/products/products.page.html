@@ -3,19 +3,19 @@
     <ion-buttons slot="start">
       <ion-menu-button menu="app-menu" auto-hide="false" />
       <ion-button (click)="openHome()">
-        <ion-icon slot="icon-only" name="home-outline" />
+        <ion-icon slot="icon-only" name="home" />
       </ion-button>
     </ion-buttons>
     <ion-title>Sản phẩm</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="openScan()">
-        <ion-icon slot="icon-only" name="barcode-outline" />
+        <ion-icon slot="icon-only" name="barcode-sharp" />
       </ion-button>
       <ion-button (click)="openAdd()">
-        <ion-icon slot="icon-only" name="add-circle-outline" />
+        <ion-icon slot="icon-only" name="add-circle-sharp" />
       </ion-button>
       <ion-button (click)="openSettings()">
-        <ion-icon slot="icon-only" name="apps-outline" />
+        <ion-icon slot="icon-only" name="apps" />
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -26,7 +26,7 @@
     <ion-refresher-content />
   </ion-refresher>
 
-  <div class="app-page-container">
+  <div class="app-page-container products-container">
     <!-- Hàng lọc -->
     <div class="filter-row">
       <div class="filter-item">
@@ -90,12 +90,10 @@
                 </div>
               </div>
               <div class="field-row">
-                @if (item.cost !== null && item.cost !== undefined) {
-                  <div class="field">
-                    <span class="field-label">Giá nhập</span>
-                    <span class="field-value">{{ formatMoney(item.cost) }}</span>
-                  </div>
-                }
+                <div class="field">
+                  <span class="field-label">Giá nhập</span>
+                  <span class="field-value">{{ item.cost !== null && item.cost !== undefined ? formatMoney(item.cost) : '—' }}</span>
+                </div>
                 <div class="field">
                   <span class="field-label">Đơn vị</span>
                   <span class="field-value">{{ item.unit ?? '—' }}</span>
@@ -126,4 +124,7 @@
       </div>
     }
   </div>
+
+  <!-- Bộ 3 FAB chuẩn ISale -->
+  <app-fab-trio mainIcon="add" mainLabel="Thêm sản phẩm" (mainAction)="openAdd()" />
 </ion-content>

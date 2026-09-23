@@ -51,9 +51,6 @@
     }
   </div>
 
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="openAdd()">
-      <ion-icon name="add-outline" />
-    </ion-fab-button>
-  </ion-fab>
+  <!-- Bộ 3 FAB chuẩn ISale -->
+  <app-fab-trio mainIcon="add" mainLabel="Tạo báo giá" (mainAction)="openAdd()" />
 </ion-content>

@@ -19,12 +19,12 @@ import {
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
-  homeOutline,
-  personAddOutline,
-  appsOutline,
-  peopleOutline,
-  starOutline,
-  timeOutline,
+  home,
+  personAdd,
+  apps,
+  people,
+  star,
+  time,
   funnelOutline,
   searchOutline,
   callOutline,
@@ -39,6 +39,7 @@ import {
   addOutline,
   giftOutline,
 } from 'ionicons/icons';
+import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 import { CustomersService } from '../../core/services/customers.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { Customer } from '../../core/models/models';
@@ -62,6 +63,7 @@ import { Customer } from '../../core/models/models';
     IonSpinner,
     IonMenuButton,
     IonToggle,
+    FabTrioComponent,
   ],
 })
 export class CustomersPage implements OnInit {
@@ -97,12 +99,12 @@ export class CustomersPage implements OnInit {
 
   constructor() {
     addIcons({
-      homeOutline,
-      personAddOutline,
-      appsOutline,
-      peopleOutline,
-      starOutline,
-      timeOutline,
+      home,
+      personAdd,
+      apps,
+      people,
+      star,
+      time,
       funnelOutline,
       searchOutline,
       callOutline,

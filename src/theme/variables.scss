@@ -32,12 +32,12 @@
   --ion-color-success-shade: #28bb50;
   --ion-color-success-tint: #42d96b;
 
-  --ion-color-warning: #ffb400;
-  --ion-color-warning-rgb: 255, 180, 0;
+  --ion-color-warning: #ff0ade;
+  --ion-color-warning-rgb: 255, 10, 222;
   --ion-color-warning-contrast: #000000;
   --ion-color-warning-contrast-rgb: 0, 0, 0;
-  --ion-color-warning-shade: #e09e00;
-  --ion-color-warning-tint: #ffbc1a;
+  --ion-color-warning-shade: #e009c3;
+  --ion-color-warning-tint: #ff23e1;
 
   --ion-color-danger: #c5000f;
   --ion-color-danger-rgb: 197, 0, 15;
@@ -146,9 +146,8 @@ html.ion-palette-dark {
   --app-page-max-width: 980px;
   --app-page-max-width-lg: 1120px;
 
-  /* Typography */
-  --ion-font-family: 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont,
-    'Roboto', 'Helvetica Neue', 'Inter', sans-serif;
+  /* Typography — Isale dùng Roboto stack */
+  --ion-font-family: 'Roboto', 'Helvetica Neue', sans-serif;
 
   /* Design system */
   --app-radius: 16px;

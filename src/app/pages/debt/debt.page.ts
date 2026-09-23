@@ -33,6 +33,7 @@ import {
   fileTrayOutline,
   cashOutline,
 } from 'ionicons/icons';
+import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 import { LoansService, Loan } from '../../core/services/loans.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 
@@ -61,6 +62,7 @@ interface MonthTab {
     IonSpinner,
     IonMenuButton,
     IonBadge,
+      FabTrioComponent,
   ],
 })
 export class DebtPage implements OnInit {

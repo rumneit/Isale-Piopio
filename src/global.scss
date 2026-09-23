@@ -9,9 +9,12 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Roboto — font family chuẩn ISale */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800&display=swap');
+
 body {
   background: var(--app-page-bg);
-  font-feature-settings: 'cv02', 'cv03';
+  font-family: var(--ion-font-family);
 }
 
 /* ---------- Toolbars / headers ---------- */
@@ -26,9 +29,11 @@ ion-header ion-toolbar {
 }
 
 ion-title {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  font-size: 17px;
+  /* Isale: title chữ tím, đậm vừa phải, cỡ 15.2px */
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  font-size: 15.2px;
+  color: var(--ion-color-primary);
 }
 
 /* ---------- Page background ---------- */
@@ -180,14 +185,21 @@ ion-button {
 }
 
 ion-fab-button {
-  --border-radius: 18px;
-  --box-shadow: var(--app-shadow-primary);
-  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
+  /* Isale: FAB tròn đặc màu primary */
+  --border-radius: 50%;
+  --box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.4);
+  background: var(--ion-color-primary);
 }
 
 /* ---------- Segment ---------- */
 ion-segment {
   --background: transparent;
+}
+
+/* Isale: segment button viết thường (không uppercase) */
+ion-segment-button {
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .app-home-segment {

@@ -12,7 +12,7 @@
         <ion-icon slot="icon-only" name="text-outline" />
       </ion-button>
       <ion-button (click)="openPath('/notifications')">
-        <ion-icon slot="icon-only" name="notifications-outline" />
+        <ion-icon slot="icon-only" name="notifications" />
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -43,7 +43,7 @@
     <div class="app-actions-grid home-actions-grid">
       @for (action of currentTab.actions; track action.id) {
         <div class="app-action" (click)="openAction(action)">
-          <div class="app-action-icon" [style.background]="action.color + '1a'">
+          <div class="app-action-icon">
             <ion-icon [name]="action.icon" [style.color]="action.color" />
             @if (action.isNew) {
               <span class="action-new-badge">Mới</span>
@@ -92,6 +92,23 @@
         </button>
       </div>
     }
+
+    <!-- Liên hệ/Báo lỗi (giống ISale) -->
+    <div class="home-card support-card">
+      <div class="home-card-head">
+        <ion-icon name="chatbubble-ellipses-outline" class="home-card-icon" />
+        <h4>Liên hệ/Báo lỗi</h4>
+      </div>
+      <p class="home-card-desc">Nếu bạn muốn báo lỗi/đặt câu hỏi/hoặc yêu cầu tính năng, hãy gửi chúng tôi yêu cầu của bạn bằng cách click nút bên dưới.</p>
+      <button class="wallet-create-btn" (click)="openPath('/help')">
+        <ion-icon name="help-circle-outline" />
+        Báo lỗi/Yêu cầu hỗ trợ
+      </button>
+      <div class="support-contacts">
+        <span><ion-icon name="call-outline" /> Hotline/Zalo/Telegram: 0938.212.188</span>
+        <span><ion-icon name="mail-outline" /> Email: dlv.isale.app@gmail.com</span>
+      </div>
+    </div>
 
   </div>
 

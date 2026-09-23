@@ -67,25 +67,37 @@ ion-content {
   margin-left: 4px;
 }
 
-/* ---------- Danh sách sản phẩm ---------- */
+/* ---------- Danh sách sản phẩm (ISale: grid card responsive) ---------- */
 .page-loading {
   display: flex;
   justify-content: center;
   padding: 40px 0;
 }
 
+/* ISale dùng full-width cho trang danh sách (app-page-wide) */
+:host ::ng-deep .app-page-container.products-container,
+.app-page-container.products-container {
+  max-width: none;
+}
+
 .product-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .product-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .product-card {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: var(--app-radius);
-  box-shadow: var(--app-shadow-sm);
-  padding: 14px 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 3px 1px rgba(0, 0, 0, 0.04);
+  padding: 14px 16px 12px;
   cursor: pointer;
   transition: transform 0.14s ease, box-shadow 0.14s ease;
 
@@ -99,10 +111,12 @@ ion-content {
 
   .product-name {
     margin: 0 0 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--app-border);
     font-size: 15.5px;
     font-weight: 800;
     letter-spacing: -0.01em;
-    color: var(--app-text);
+    color: #1f2a5a;
   }
 }
 
@@ -112,11 +126,12 @@ ion-content {
   gap: 8px;
 }
 
+/* ISale: field 2 cột chia đều */
 .field-row {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+  align-items: end;
 }
 
 .field {
@@ -142,7 +157,10 @@ ion-content {
 }
 
 .serial-row {
+  grid-column: 1 / -1;
+  display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 8px;
   border-top: 1px solid var(--app-border);
   padding-top: 8px;
