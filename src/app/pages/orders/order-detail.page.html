@@ -36,6 +36,15 @@
         </div>
 
         <ion-list lines="full">
+          @if (hasPaymentMethod) {
+            <ion-item>
+              <ion-icon slot="start" name="card-outline" />
+              <ion-label>
+                <h3>{{ o.payment_method ?? '—' }}</h3>
+                <p>Hình thức thanh toán</p>
+              </ion-label>
+            </ion-item>
+          }
           <ion-item>
             <ion-icon slot="start" name="person-outline" />
             <ion-label>

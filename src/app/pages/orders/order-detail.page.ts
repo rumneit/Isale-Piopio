@@ -85,8 +85,11 @@ export class OrderDetailPage implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.hasPaymentMethod = await this.ordersService.detectPaymentMethod().catch(() => false);
     await this.load();
   }
+
+  hasPaymentMethod = false;
 
   private async load() {
     const id = this.route.snapshot.paramMap.get('id');

@@ -79,6 +79,12 @@ export class CustomersPage implements OnInit {
   readonly page = signal(1);
   readonly pageSize = 20;
   search = '';
+  /** ISale: grid icon — đổi view card ↔ list */
+  readonly viewMode = signal<'card' | 'list'>('card');
+
+  toggleView() {
+    this.viewMode.update((v) => (v === 'card' ? 'list' : 'card'));
+  }
 
   readonly filtered = computed(() => {
     let list = this.items();

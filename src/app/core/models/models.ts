@@ -69,6 +69,8 @@ export interface Order {
   paid: boolean;
   note: string | null;
   channel_id?: string | null;
+  /** Migration v17 (additive) */
+  payment_method?: string | null;
   created_at: string;
 }
 

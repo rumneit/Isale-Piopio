@@ -91,6 +91,11 @@ export class ProductsPage implements OnInit {
   /** Chế độ chọn nhiều (ISale: "Chọn nhiều") */
   readonly selectMode = signal(false);
   readonly selected = signal<Set<string>>(new Set());
+  /** ISale: grid icon — đổi view card ↔ list */
+  readonly viewMode = signal<'card' | 'list'>('card');
+  /** ISale: gear icon — tùy chọn hiển thị */
+  readonly showCost = signal(true);
+  readonly showSerial = signal(true);
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
 
@@ -215,6 +220,10 @@ export class ProductsPage implements OnInit {
     });
   }
 
+  selectedProducts(): Product[] {
+    return this.items().filter((p) => this.selected().has(p.id));
+  }
+
   /** ISale: xuất CSV các sản phẩm đang chọn */
   async bulkExport() {
     const ids = this.selected();
@@ -277,6 +286,123 @@ export class ProductsPage implements OnInit {
     this.selectMode.set(false);
     this.toast(`Đã xóa ${ok}/${ids.length} sản phẩm`);
     await this.load();
+  }
+
+  /** ISale: grid icon — đổi view card ↔ list */
+  toggleView() {
+    this.viewMode.update((v) => (v === 'card' ? 'list' : 'card'));
+  }
+
+  /** ISale: gear icon — tùy chọn hiển thị + cấu hình chung */
+  async openDisplaySettings() {
+    const sheet = await this.actionSheetCtrl.create({
+      header: 'Tùy chọn hiển thị',
+      buttons: [
+        {
+          text: `${this.showCost() ? 'Ẩn' : 'Hiện'} Giá nhập ✓`,
+          handler: () => this.showCost.update((v) => !v),
+        },
+        {
+          text: `${this.showSerial() ? 'Ẩn' : 'Hiện'} toggle Serial/IMEI ✓`,
+          handler: () => this.showSerial.update((v) => !v),
+        },
+        {
+          text: 'Cấu hình chung…',
+          handler: () => this.router.navigateByUrl('/config'),
+        },
+        { text: 'Hủy', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
+  /** ISale: pen icon — sửa hàng loạt sản phẩm đã chọn */
+  async bulkEdit() {
+    if (!this.selected().size) {
+      this.toast('Bạn chưa chọn sản phẩm nào', 'warning');
+      return;
+    }
+    const sheet = await this.actionSheetCtrl.create({
+      header: `Sửa ${this.selected().size} sản phẩm đã chọn`,
+      buttons: [
+        { text: 'Sửa giá bán', handler: () => this.bulkEditField('price') },
+        { text: 'Sửa giá nhập', handler: () => this.bulkEditField('cost') },
+        { text: 'Đổi Nhóm hàng', handler: () => this.bulkEditCategory() },
+        { text: 'Hủy', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
+  private async bulkEditField(field: 'price' | 'cost') {
+    const alert = await this.alertCtrl.create({
+      header: field === 'price' ? 'Sửa giá bán' : 'Sửa giá nhập',
+      message: `Nhập giá mới (₫) cho ${this.selected().size} sản phẩm đã chọn. Giá hiện tại sẽ bị ghi đè.`,
+      inputs: [{ name: 'value', type: 'number', placeholder: 'VD: 25000', min: 0 }],
+      buttons: [
+        { text: 'Hủy', role: 'cancel' },
+        {
+          text: 'Lưu',
+          handler: async (data) => {
+            const value = Number(data?.value);
+            if (Number.isNaN(value) || value < 0) {
+              this.toast('Giá không hợp lệ', 'danger');
+              return;
+            }
+            let ok = 0;
+            for (const p of this.selectedProducts()) {
+              try {
+                await this.productsService.update(p.id, { [field]: value });
+                ok++;
+              } catch {
+                /* tiếp tục */
+              }
+            }
+            this.toast(`Đã cập nhật ${ok} sản phẩm`);
+            await this.load();
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async bulkEditCategory() {
+    let categories: { id: string; name: string }[] = [];
+    try {
+      categories = await this.productsService.listCategories();
+    } catch {
+      /* để trống */
+    }
+    const alert = await this.alertCtrl.create({
+      header: 'Đổi Nhóm hàng',
+      message: `Chọn nhóm hàng mới cho ${this.selected().size} sản phẩm đã chọn.`,
+      inputs: [
+        { name: 'cat', type: 'radio', label: '— Không thuộc nhóm —', value: '' },
+        ...categories.slice(0, 20).map((c) => ({ name: 'cat', type: 'radio' as const, label: c.name, value: c.id })),
+      ],
+      buttons: [
+        { text: 'Hủy', role: 'cancel' },
+        {
+          text: 'Lưu',
+          handler: async (data) => {
+            const categoryId = (data as string) || null;
+            let ok = 0;
+            for (const p of this.selectedProducts()) {
+              try {
+                await this.productsService.update(p.id, { category_id: categoryId });
+                ok++;
+              } catch {
+                /* tiếp tục */
+              }
+            }
+            this.toast(`Đã cập nhật nhóm cho ${ok} sản phẩm`);
+            await this.load();
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   openAdd() {

@@ -64,6 +64,16 @@
               <ion-icon name="person-outline" /> {{ staffName() }}
             </button>
           </div>
+          @if (hasPaymentMethodColumn) {
+            <div class="sale-row">
+              <span class="sale-label">Hình thức thanh toán</span>
+              <div class="pay-methods">
+                @for (m of paymentMethods; track m) {
+                  <button class="pay-method" [class.active]="paymentMethod === m" (click)="paymentMethod = m">{{ m }}</button>
+                }
+              </div>
+            </div>
+          }
         </div>
 
         <!-- Sản phẩm -->

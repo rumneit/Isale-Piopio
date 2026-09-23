@@ -53,6 +53,9 @@
         <span class="toolbar-total">Tổng: {{ filtered().length }} khách/đối tác</span>
       </div>
       <div class="toolbar-actions">
+        <ion-button fill="clear" size="small" (click)="toggleView()" [class.active-btn]="viewMode() === 'list'">
+          <ion-icon slot="icon-only" name="grid-outline" />
+        </ion-button>
         <ion-button fill="clear" size="small" (click)="exportCsv()">
           <ion-icon slot="icon-only" name="download-outline" />
         </ion-button>
@@ -70,55 +73,70 @@
         Chưa có khách hàng nào. Bấm nút + để thêm khách hàng đầu tiên.
       </div>
     } @else {
-      <div class="customer-list">
-        @for (item of pagedItems(); track item.id) {
-          <div class="customer-card" (click)="openDetail(item)">
-            <h2 class="customer-name">{{ item.name }}</h2>
-            <div class="customer-fields">
-              <div class="field-row">
-                <div class="field">
-                  <span class="field-label">Điện thoại</span>
-                  <span class="field-value phone-value">
-                    {{ item.phone ?? '—' }}
-                    @if (item.phone) {
-                      <button class="icon-action" (click)="callCustomer($event, item)">
-                        <ion-icon name="call-outline" />
-                      </button>
-                      <button class="icon-action" (click)="chatCustomer($event, item)">
-                        <ion-icon name="chatbox-outline" />
-                      </button>
-                    }
-                  </span>
+      @if (viewMode() === 'card') {
+        <div class="customer-list">
+          @for (item of pagedItems(); track item.id) {
+            <div class="customer-card" (click)="openDetail(item)">
+              <h2 class="customer-name">{{ item.name }}</h2>
+              <div class="customer-fields">
+                <div class="field-row">
+                  <div class="field">
+                    <span class="field-label">Điện thoại</span>
+                    <span class="field-value phone-value">
+                      {{ item.phone ?? '—' }}
+                      @if (item.phone) {
+                        <button class="icon-action" (click)="callCustomer($event, item)">
+                          <ion-icon name="call-outline" />
+                        </button>
+                        <button class="icon-action" (click)="chatCustomer($event, item)">
+                          <ion-icon name="chatbox-outline" />
+                        </button>
+                      }
+                    </span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Giới tính</span>
+                    <span class="field-value">{{ item.gender ?? '—' }}</span>
+                  </div>
                 </div>
-                <div class="field">
-                  <span class="field-label">Giới tính</span>
-                  <span class="field-value">{{ item.gender ?? '—' }}</span>
+                <div class="field-row">
+                  <div class="field grow">
+                    <span class="field-label">Địa chỉ</span>
+                    <span class="field-value">{{ item.address ?? '—' }}</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Quan trọng</span>
+                    <ion-toggle
+                      [checked]="!!item.important"
+                      (ionChange)="toggleImportant(item, $any($event))"
+                      (click)="$event.stopPropagation()"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div class="field-row">
-                <div class="field grow">
-                  <span class="field-label">Địa chỉ</span>
-                  <span class="field-value">{{ item.address ?? '—' }}</span>
-                </div>
-                <div class="field">
-                  <span class="field-label">Quan trọng</span>
-                  <ion-toggle
-                    [checked]="!!item.important"
-                    (ionChange)="toggleImportant(item, $any($event))"
-                    (click)="$event.stopPropagation()"
-                  />
-                </div>
-              </div>
-              <div class="field-row">
-                <div class="field">
-                  <span class="field-label">Hoạt động cuối</span>
-                  <span class="field-value">{{ formatDateTime(item.last_activity ?? item.created_at) }}</span>
+                <div class="field-row">
+                  <div class="field">
+                    <span class="field-label">Hoạt động cuối</span>
+                    <span class="field-value">{{ formatDateTime(item.last_activity ?? item.created_at) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        }
-      </div>
+          }
+        </div>
+      } @else {
+        <!-- ISale grid icon: danh sách gọn -->
+        <div class="customer-rows">
+          @for (item of pagedItems(); track item.id) {
+            <div class="customer-row" (click)="openDetail(item)">
+              <div class="row-main">
+                <span class="row-name">{{ item.name }}</span>
+                <span class="row-sub">{{ item.phone ?? '—' }}{{ item.gender ? ' · ' + item.gender : '' }}</span>
+              </div>
+              <span class="row-side">{{ formatDateTime(item.last_activity ?? item.created_at) }}</span>
+            </div>
+          }
+        </div>
+      }
 
       <!-- Phân trang -->
       <div class="pagination">

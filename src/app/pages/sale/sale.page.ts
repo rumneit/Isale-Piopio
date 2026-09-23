@@ -124,6 +124,10 @@ export class SalePage implements OnInit {
   discountPercent: number | null = 0;
   taxPercent: number | null = 0;
   customerPaid: number | null = 0;
+  /** Hình thức thanh toán (ISale) — lưu khi cột payment_method có trong DB (v17) */
+  paymentMethod = 'Tiền mặt';
+  hasPaymentMethodColumn = false;
+  readonly paymentMethods = ['Tiền mặt', 'Chuyển khoản', 'Thẻ', 'Ví điện tử'];
   note = '';
   shippingNote = '';
   barcodeInput = '';
@@ -171,6 +175,7 @@ export class SalePage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.orderCode = this.ordersService.newCode();
+    this.hasPaymentMethodColumn = await this.ordersService.detectPaymentMethod().catch(() => false);
     this.loading.set(true);
     try {
       const [products, customers, accounts] = await Promise.all([
@@ -357,6 +362,7 @@ export class SalePage implements OnInit {
           discount: this.discountAmount(),
           paid: true,
           note: this.note.trim() || null,
+          ...(this.hasPaymentMethodColumn ? { payment_method: this.paymentMethod } : {}),
         },
         this.items().map((i) => ({ product_id: i.product_id, name: i.name, price: i.price, qty: i.qty }))
       );

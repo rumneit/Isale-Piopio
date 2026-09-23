@@ -487,3 +487,28 @@ ion-content {
     color: var(--app-text);
   }
 }
+
+/* ISale: Hinh thuc thanh toan */
+.pay-methods {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pay-method {
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text);
+  cursor: pointer;
+
+  &.active {
+    background: var(--ion-color-primary);
+    border-color: var(--ion-color-primary);
+    color: #fff;
+  }
+}

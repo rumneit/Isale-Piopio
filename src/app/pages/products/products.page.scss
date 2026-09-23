@@ -80,6 +80,75 @@ ion-button.active-btn {
   }
 }
 
+/* ISale grid icon: danh sách gọn */
+.product-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.product-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  cursor: pointer;
+
+  &.selected {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 2px rgba(96, 48, 255, 0.25);
+  }
+
+  .row-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .row-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1f2a5a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .row-sub {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+  }
+
+  .row-side {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  .row-qty {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--app-text);
+
+    &.negative {
+      color: var(--ion-color-danger);
+    }
+  }
+
+  .row-price {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    min-width: 76px;
+    text-align: end;
+  }
+}
+
 .filter-item {
   display: flex;
   align-items: center;

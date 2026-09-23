@@ -55,6 +55,13 @@ export class OrdersService {
     return (data ?? []) as Order[];
   }
 
+  /** Cột payment_method có sau migration v17 (additive) */
+  async detectPaymentMethod(): Promise<boolean> {
+    if (!this.sb.isConfigured || !this.shopId) return false;
+    const { error } = await this.sb.from('orders').select('id, payment_method').limit(1);
+    return !error;
+  }
+
   static readonly orderStatuses = [
     { value: 'pending', label: 'Chờ xử lý' },
     { value: 'shipping', label: 'Đang giao' },

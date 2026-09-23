@@ -193,3 +193,48 @@ ion-toggle {
     color: var(--app-text);
   }
 }
+
+/* ISale grid icon: danh sach gon */
+.customer-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.customer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  cursor: pointer;
+
+  .row-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .row-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1f2a5a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .row-sub {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+  }
+
+  .row-side {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+    flex-shrink: 0;
+  }
+}

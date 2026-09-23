@@ -66,11 +66,20 @@
         <ion-button fill="clear" size="small" (click)="toggleSelectMode()" [class.active-btn]="selectMode()">
           <ion-icon slot="icon-only" name="checkbox-outline" />
         </ion-button>
+        <ion-button fill="clear" size="small" (click)="bulkEdit()">
+          <ion-icon slot="icon-only" name="create-outline" />
+        </ion-button>
         <ion-button fill="clear" size="small" (click)="exportCsv()">
           <ion-icon slot="icon-only" name="download-outline" />
         </ion-button>
         <ion-button fill="clear" size="small" (click)="openImport()">
           <ion-icon slot="icon-only" name="cloud-upload-outline" />
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="toggleView()" [class.active-btn]="viewMode() === 'list'">
+          <ion-icon slot="icon-only" name="grid-outline" />
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="openDisplaySettings()">
+          <ion-icon slot="icon-only" name="settings-outline" />
         </ion-button>
       </div>
     </div>
@@ -99,46 +108,68 @@
         Chưa có sản phẩm nào. Bấm nút + để thêm sản phẩm đầu tiên.
       </div>
     } @else {
-      <div class="product-list">
-        @for (item of items(); track item.id) {
-          <div class="product-card" [class.selectable]="selectMode()" [class.selected]="selectMode() && selected().has(item.id)" (click)="openDetail(item)">
-            @if (selectMode()) {
-              <ion-icon class="check-badge" name="checkmark-circle-outline" />
-            }
-            <h2 class="product-name">{{ item.name }}</h2>
-            <div class="product-fields">
-              <div class="field-row">
-                <div class="field">
-                  <span class="field-label">Số lượng</span>
-                  <span class="field-value" [class.negative]="item.stock < 0">{{ formatQty(item.stock) }}</span>
+      @if (viewMode() === 'card') {
+        <div class="product-list">
+          @for (item of items(); track item.id) {
+            <div class="product-card" [class.selectable]="selectMode()" [class.selected]="selectMode() && selected().has(item.id)" (click)="openDetail(item)">
+              @if (selectMode()) {
+                <ion-icon class="check-badge" name="checkmark-circle-outline" />
+              }
+              <h2 class="product-name">{{ item.name }}</h2>
+              <div class="product-fields">
+                <div class="field-row">
+                  <div class="field">
+                    <span class="field-label">Số lượng</span>
+                    <span class="field-value" [class.negative]="item.stock < 0">{{ formatQty(item.stock) }}</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Đơn giá</span>
+                    <span class="field-value">{{ formatMoney(item.price) }}</span>
+                  </div>
                 </div>
-                <div class="field">
-                  <span class="field-label">Đơn giá</span>
-                  <span class="field-value">{{ formatMoney(item.price) }}</span>
-                </div>
-              </div>
-              <div class="field-row">
-                <div class="field">
-                  <span class="field-label">Giá nhập</span>
-                  <span class="field-value">{{ item.cost !== null && item.cost !== undefined ? formatMoney(item.cost) : '—' }}</span>
-                </div>
-                <div class="field">
-                  <span class="field-label">Đơn vị</span>
-                  <span class="field-value">{{ item.unit ?? '—' }}</span>
-                </div>
-              </div>
-              <div class="field-row serial-row">
-                <span class="field-label">Quản lý Serial/IMEI?</span>
-                <ion-toggle
-                  [checked]="!!item.serial_managed"
-                  (ionChange)="toggleSerial(item, $any($event))"
-                  (click)="$event.stopPropagation()"
-                />
+                @if (showCost()) {
+                  <div class="field-row">
+                    <div class="field">
+                      <span class="field-label">Giá nhập</span>
+                      <span class="field-value">{{ item.cost !== null && item.cost !== undefined ? formatMoney(item.cost) : '—' }}</span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">Đơn vị</span>
+                      <span class="field-value">{{ item.unit ?? '—' }}</span>
+                    </div>
+                  </div>
+                }
+                @if (showSerial()) {
+                  <div class="field-row serial-row">
+                    <span class="field-label">Quản lý Serial/IMEI?</span>
+                    <ion-toggle
+                      [checked]="!!item.serial_managed"
+                      (ionChange)="toggleSerial(item, $any($event))"
+                      (click)="$event.stopPropagation()"
+                    />
+                  </div>
+                }
               </div>
             </div>
-          </div>
-        }
-      </div>
+          }
+        </div>
+      } @else {
+        <!-- ISale grid icon: danh sách gọn -->
+        <div class="product-rows">
+          @for (item of items(); track item.id) {
+            <div class="product-row" [class.selected]="selectMode() && selected().has(item.id)" (click)="openDetail(item)">
+              <div class="row-main">
+                <span class="row-name">{{ item.name }}</span>
+                <span class="row-sub">{{ item.sku ?? '—' }} · {{ item.unit ?? '—' }}</span>
+              </div>
+              <div class="row-side">
+                <span class="row-qty" [class.negative]="item.stock < 0">{{ formatQty(item.stock) }}</span>
+                <span class="row-price">{{ formatMoney(item.price) }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
 
       <!-- Phân trang -->
       <div class="pagination">
