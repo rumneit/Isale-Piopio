@@ -1,0 +1,469 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="arrow-back-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="pd-title">Chi tiết sản phẩm</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openSettings()" class="ic-gray" aria-label="Cấu hình">
+        <ion-icon slot="icon-only" name="settings-outline" />
+      </ion-button>
+      <ion-button (click)="openEdit()" [disabled]="busy()" class="ic-purple" aria-label="Sửa">
+        <ion-icon slot="icon-only" name="create-outline" />
+      </ion-button>
+      <ion-button (click)="openMore()" class="ic-purple" aria-label="Thêm">
+        <ion-icon slot="icon-only" name="ellipsis-vertical" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pd-page app-page">
+  @if (loading()) {
+    <div class="page-loading"><ion-spinner name="crescent" /></div>
+  } @else if (product(); as p) {
+    <div class="app-page-container">
+      <div class="pd-wrap">
+        <!-- ISale: segment 6 tab CHỮ, pill tím khi active (mode ios = indicator pill như mẫu) -->
+        <ion-segment
+          class="pd-tabs"
+          mode="ios"
+          [scrollable]="true"
+          [value]="tab()"
+          (ionChange)="onTabChange($event)">
+          <ion-segment-button value="info"><ion-label>Chi tiết</ion-label></ion-segment-button>
+          <ion-segment-button value="units"><ion-label>Đơn vị khác</ion-label></ion-segment-button>
+          <ion-segment-button value="history"><ion-label>Lịch sử Nhập/Xuất</ion-label></ion-segment-button>
+          <ion-segment-button value="images"><ion-label>Ảnh</ion-label></ion-segment-button>
+          <ion-segment-button value="prices"><ion-label>Giá khách &amp; CTV</ion-label></ion-segment-button>
+          <ion-segment-button value="discounts"><ion-label>Chiết khấu</ion-label></ion-segment-button>
+        </ion-segment>
+
+        <!-- ============ TAB: CHI TIẾT ============ -->
+        @if (tab() === 'info') {
+          <!-- ISale: 3 chip màu — Phân loại (tím) / Nhiều mã vạch (xanh lá) / Trường tùy chỉnh (teal) -->
+          <div class="pd-chips">
+            <button type="button" class="pd-chip chip-classify" (click)="openClassify()">
+              <ion-icon name="options-outline" /> Phân loại
+            </button>
+            <button type="button" class="pd-chip chip-barcodes" (click)="barcodesOpen.set(true)">
+              <ion-icon name="add" /> Nhiều mã vạch
+            </button>
+            <button type="button" class="pd-chip chip-custom" (click)="customOpen.set(true)">
+              <ion-icon name="add" /> Trường tùy chỉnh
+            </button>
+          </div>
+
+          <!-- Lưới trường 2 cột (≥768px) — bấm vào trường để sửa nhanh -->
+          <div class="pd-grid">
+            <div class="pd-field" (click)="editField('sku')" role="button" tabindex="0">
+              <span class="pd-label">Mã SP</span>
+              <span class="pd-val">{{ p.sku || '—' }}</span>
+            </div>
+            <div class="pd-field" (click)="editField('name')" role="button" tabindex="0">
+              <span class="pd-label">Tiêu đề sản phẩm</span>
+              <span class="pd-val">{{ p.name }}</span>
+            </div>
+            <div class="pd-field" (click)="editField('stock')" role="button" tabindex="0">
+              <span class="pd-label">Số lượng</span>
+              <span class="pd-val">{{ p.stock }}</span>
+            </div>
+            <div class="pd-field" (click)="editField('price')" role="button" tabindex="0">
+              <span class="pd-label">Giá bán</span>
+              <span class="pd-val money-field">{{ formatMoney(p.price) }}</span>
+            </div>
+            <div class="pd-field" (click)="editField('cost')" role="button" tabindex="0">
+              <span class="pd-label">Giá nhập</span>
+              <span class="pd-val money-field">{{ p.cost != null ? formatMoney(p.cost) : '—' }}</span>
+            </div>
+            <div class="pd-field" (click)="editField('unit')" role="button" tabindex="0">
+              <span class="pd-label">Đơn vị</span>
+              <span class="pd-val">{{ p.unit || '—' }}</span>
+            </div>
+            <div class="pd-field" (click)="editField('expiry_date')" role="button" tabindex="0">
+              <span class="pd-label">Ngày hết hạn</span>
+              <span class="pd-val">{{ p.expiry_date ? fmtDate(p.expiry_date) : '—' }}</span>
+            </div>
+            <div class="pd-field">
+              <span class="pd-label">Đang kinh doanh</span>
+              <span class="pd-val toggle-field">
+                <ion-toggle class="flag-toggle" [checked]="p.active" (ionChange)="toggleFlag('active', $event)" (click)="$event.stopPropagation()" />
+              </span>
+            </div>
+            <div class="pd-field">
+              <span class="pd-label">Dịch vụ</span>
+              <span class="pd-val toggle-field">
+                <ion-toggle class="flag-toggle" [checked]="!!p.dich_vu" (ionChange)="toggleFlag('dich_vu', $event)" (click)="$event.stopPropagation()" />
+              </span>
+            </div>
+            <div class="pd-field">
+              <span class="pd-label">Quản lý Serial/IMEI?</span>
+              <span class="pd-val toggle-field">
+                <ion-toggle class="flag-toggle" [checked]="!!p.serial_managed" (ionChange)="toggleFlag('serial_managed', $event)" (click)="$event.stopPropagation()" />
+              </span>
+            </div>
+            <div class="pd-field">
+              <span class="pd-label">Ngoại tệ</span>
+              <span class="pd-val toggle-field">
+                <ion-toggle class="flag-toggle" [checked]="!!p.ngoai_te" (ionChange)="toggleFlag('ngoai_te', $event)" (click)="$event.stopPropagation()" />
+              </span>
+            </div>
+            <div class="pd-field" (click)="editField('gia_nhap_nt')" role="button" tabindex="0">
+              <span class="pd-label">Giá nhập (ngoại tệ)</span>
+              <span class="pd-val">{{ p.gia_nhap_nt != null ? p.gia_nhap_nt : '—' }}</span>
+            </div>
+            <div class="pd-field">
+              <span class="pd-label">Hiện trên web</span>
+              <span class="pd-val toggle-field">
+                <ion-toggle class="flag-toggle" [checked]="p.hien_tren_web !== false" (ionChange)="toggleFlag('hien_tren_web', $event)" (click)="$event.stopPropagation()" />
+              </span>
+            </div>
+            <div class="pd-field">
+              <span class="pd-label">Bán chạy</span>
+              <span class="pd-val toggle-field">
+                <ion-toggle class="flag-toggle" [checked]="!!p.ban_chay" (ionChange)="toggleFlag('ban_chay', $event)" (click)="$event.stopPropagation()" />
+              </span>
+            </div>
+            <div class="pd-field">
+              <span class="pd-label">Mới</span>
+              <span class="pd-val toggle-field">
+                <ion-toggle class="flag-toggle" [checked]="!!p.moi" (ionChange)="toggleFlag('moi', $event)" (click)="$event.stopPropagation()" />
+              </span>
+            </div>
+            <div class="pd-field">
+              <span class="pd-label">Hiện giá trên web</span>
+              <span class="pd-val toggle-field">
+                <ion-toggle class="flag-toggle" [checked]="!!p.hien_gia_web" (ionChange)="toggleFlag('hien_gia_web', $event)" (click)="$event.stopPropagation()" />
+              </span>
+            </div>
+            <div class="pd-field">
+              <span class="pd-label">Khuyến mại</span>
+              <span class="pd-val toggle-field">
+                <ion-toggle class="flag-toggle" [checked]="!!p.khuyen_mai" (ionChange)="toggleFlag('khuyen_mai', $event)" (click)="$event.stopPropagation()" />
+              </span>
+            </div>
+            <div class="pd-field" (click)="editField('mo_ta')" role="button" tabindex="0">
+              <span class="pd-label">Mô tả</span>
+              <span class="pd-val">{{ p.mo_ta || '—' }}</span>
+            </div>
+            <div class="pd-field" (click)="openImagesTab()" role="button" tabindex="0">
+              <span class="pd-label">Ảnh</span>
+              <span class="pd-val img-field">
+                @if (p.image) {
+                  <img class="pd-thumb" [src]="p.image" [alt]="p.name" (error)="hideImg($event)" />
+                } @else {
+                  <span class="pd-thumb ph"><ion-icon name="cube-outline" /></span>
+                }
+              </span>
+            </div>
+            <div class="pd-field" (click)="aiProcess()" role="button" tabindex="0">
+              <span class="pd-label">Xử lý ảnh với AI</span>
+              <span class="pd-val"><ion-icon name="sparkles-outline" class="ai-ic" /></span>
+            </div>
+            @for (cf of customFields; track $index) {
+              <div class="pd-field" (click)="customOpen.set(true)" role="button" tabindex="0">
+                <span class="pd-label">{{ cf.key }}</span>
+                <span class="pd-val">{{ cf.value || '—' }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Panel mã vạch (menu ⋮ → Xem mã vạch) — canvas Code128 như ISale -->
+          @if (barcodePanelOpen()) {
+            <div class="pd-barcode">
+              <div class="pd-barcode-head">
+                <h3>Mã vạch</h3>
+                <button type="button" class="pd-barcode-close" (click)="barcodePanelOpen.set(false)" aria-label="Đóng">
+                  <ion-icon name="close-outline" />
+                </button>
+              </div>
+              <div class="pd-barcode-body">
+                <canvas #bcv></canvas>
+                <ion-button fill="outline" size="small" (click)="printBarcode()">
+                  <ion-icon slot="start" name="print-outline" /> In mã vạch
+                </ion-button>
+              </div>
+            </div>
+          }
+        }
+
+        <!-- ============ TAB: ĐƠN VỊ KHÁC ============ -->
+        @if (tab() === 'units') {
+          <div class="pd-card pd-intro">
+            Quản lý các đơn vị khác cho sản phẩm này ({{ units.length + 1 }} đơn vị có sẵn)
+          </div>
+
+          <!-- Đơn vị cơ bản -->
+          <div class="pd-card">
+            <div class="pd-card-head"><ion-icon name="home-outline" /> Đơn vị cơ bản</div>
+            <div class="pd-card-rows">
+              <div class="pd-row"><span>Đơn vị</span><b>{{ p.unit || '—' }}</b></div>
+              <div class="pd-row"><span>Giá bán</span><b class="money">{{ formatMoney(p.price) }}</b></div>
+              <div class="pd-row"><span>Giá nhập</span><b class="money">{{ p.cost != null ? formatMoney(p.cost) : '—' }}</b></div>
+              <div class="pd-row"><span>Tỷ lệ quy đổi</span><b>1 {{ p.unit || 'SP' }} = 1 {{ p.unit || 'SP' }}</b></div>
+            </div>
+          </div>
+
+          <!-- Đơn vị thay thế -->
+          @for (u of units; track $index) {
+            <div class="pd-card">
+              <div class="pd-card-head alt">
+                <span><ion-icon name="layers-outline" /> Đơn vị thay thế {{ $index + 1 }}</span>
+                <button type="button" class="pd-del" (click)="removeUnit($index)" aria-label="Xóa đơn vị">
+                  <ion-icon name="trash-outline" />
+                </button>
+              </div>
+              <div class="pd-card-rows">
+                <div class="pd-row"><span>Đơn vị</span><b>{{ u.name }}</b></div>
+                <div class="pd-row"><span>Giá bán</span><b class="money">{{ u.price != null ? formatMoney(u.price) : '—' }}</b></div>
+                <div class="pd-row"><span>Giá nhập</span><b class="money">{{ u.cost != null ? formatMoney(u.cost) : '—' }}</b></div>
+                <div class="pd-row"><span>Tỷ lệ quy đổi</span><b>1 {{ u.name }} = {{ u.conversion }} {{ p.unit || 'SP' }}</b></div>
+              </div>
+              <p class="pd-note">Mỗi {{ u.name }} tương đương {{ u.conversion }} {{ p.unit || 'SP' }}</p>
+              @if (unitPerBase(u.price, u.conversion) != null) {
+                <p class="pd-calc">
+                  <ion-icon name="calculator-outline" />
+                  Giá trên đơn vị cơ bản: {{ formatNum(unitPerBase(u.price, u.conversion)!) }} ₫ mỗi {{ p.unit || 'SP' }},
+                  {{ formatNum(u.price!) }} ÷ {{ u.conversion }} = {{ formatNum(unitPerBase(u.price, u.conversion)!) }} ₫/{{ p.unit || 'SP' }}
+                </p>
+              }
+            </div>
+          }
+          @if (units.length === 0) {
+            <p class="pd-empty">Chưa có đơn vị thay thế nào. Bấm (+) trên thanh công cụ để thêm (VD: Thùng = 40 Bao).</p>
+          }
+        }
+
+        <!-- ============ TAB: LỊCH SỬ NHẬP/XUẤT ============ -->
+        @if (tab() === 'history') {
+          <div class="pd-card pd-histcard">
+            <div class="pd-hist-range">
+              <span>Từ</span>
+              <input class="pd-date" type="date" [value]="histFrom()" (change)="histFrom.set($any($event).target.value)" />
+              <span>đến</span>
+              <input class="pd-date" type="date" [value]="histTo()" (change)="histTo.set($any($event).target.value)" />
+            </div>
+            <div class="pd-hist-total-row">
+              <span class="pd-hist-total">Tổng: {{ formatSigned(historyTotal()) }}</span>
+              <button type="button" class="pd-funnel" (click)="refreshHistory()" aria-label="Làm mới">
+                <ion-icon name="funnel-outline" />
+              </button>
+            </div>
+          </div>
+
+          @if (historyLoading()) {
+            <p class="pd-empty">Đang tải lịch sử…</p>
+          } @else if (historyFiltered().length === 0) {
+            <p class="pd-empty">Chưa có lịch sử nhập/xuất trong khoảng này.</p>
+          } @else {
+            <div class="pd-hist-list">
+              @for (h of historyFiltered(); track $index) {
+                <div class="pd-hist">
+                  <ion-icon
+                    [name]="h.kind === 'in' ? 'arrow-down-outline' : 'arrow-up-outline'"
+                    [class.in]="h.kind === 'in'"
+                    [class.out]="h.kind === 'out'" />
+                  <div class="pd-hist-main">
+                    <span class="code">{{ h.code || (h.kind === 'in' ? 'Phiếu nhập' : 'Đơn bán') }}</span>
+                    <span class="date">{{ fmtDateTime(h.date) }}</span>
+                  </div>
+                  <div class="pd-hist-nums">
+                    <span class="qty" [class.in]="h.kind === 'in'" [class.out]="h.kind === 'out'">
+                      {{ h.kind === 'in' ? '+' : '−' }}{{ h.qty }}
+                    </span>
+                    <span class="amount">{{ formatMoney(h.amount) }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+
+        <!-- ============ TAB: ẢNH ============ -->
+        @if (tab() === 'images') {
+          <input #imgInput type="file" accept="image/*" multiple hidden (change)="onPickImages($event)" />
+          <ion-button expand="block" class="pd-ai-btn" (click)="aiProcess()">
+            <ion-icon slot="start" name="sparkles-outline" /> XỬ LÝ ẢNH VỚI AI
+          </ion-button>
+          <div class="pd-gallery">
+            @if (p.image) {
+              <div class="pd-gallery-item" (click)="imageActions(-1)">
+                <img [src]="p.image" [alt]="p.name" (error)="hideImg($event)" />
+                <span class="pd-badge-main">Chính</span>
+              </div>
+            }
+            @for (url of gallery; track $index) {
+              <div class="pd-gallery-item" (click)="imageActions($index)">
+                <img [src]="url" [alt]="p.name" loading="lazy" (error)="hideImg($event)" />
+              </div>
+            }
+            <button type="button" class="pd-gallery-add" (click)="pickImages()">
+              <ion-icon name="add-outline" />
+            </button>
+          </div>
+          <p class="pd-empty pd-hint">Bấm vào ảnh để đặt làm ảnh chính hoặc xóa. Bấm (+) trên thanh công cụ để tải ảnh lên.</p>
+        }
+
+        <!-- ============ TAB: GIÁ KHÁCH & CTV ============ -->
+        @if (tab() === 'prices') {
+          <div class="pd-card pd-summary">
+            <span class="pd-summary-total">Tổng: {{ priceSettings.length }}</span>
+            <button type="button" class="pd-plus" (click)="addPrice()" aria-label="Thêm giá">
+              <ion-icon name="add-outline" />
+            </button>
+          </div>
+          @if (priceSettings.length === 0) {
+            <div class="pd-emptybox">Chưa có thiết lập giá nào cả, hãy ấn nút (+) để thêm mới.</div>
+          } @else {
+            <div class="pd-card pd-itemcard">
+              @for (s of priceSettings; track $index) {
+                <div class="pd-itemrow">
+                  <div class="pd-item-main">
+                    <span class="name">
+                      <span class="pd-type" [class.ctv]="s.type === 'CTV'">{{ s.type }}</span>
+                      {{ s.name || 'Khách hàng' }}
+                    </span>
+                  </div>
+                  <span class="money">{{ formatMoney(s.price) }}</span>
+                  <button type="button" class="pd-del" (click)="removePrice($index)" aria-label="Xóa giá">
+                    <ion-icon name="trash-outline" />
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        }
+
+        <!-- ============ TAB: CHIẾT KHẤU ============ -->
+        @if (tab() === 'discounts') {
+          <div class="pd-card pd-summary">
+            <span class="pd-summary-total">Tổng: {{ discounts.length }}</span>
+            <button type="button" class="pd-plus" (click)="addDiscount()" aria-label="Thêm chiết khấu">
+              <ion-icon name="add-outline" />
+            </button>
+          </div>
+          @if (discounts.length === 0) {
+            <div class="pd-emptybox">Chưa có chiết khấu của khách nào cả, hãy ấn nút (+) để thêm mới.</div>
+          } @else {
+            <div class="pd-card pd-itemcard">
+              @for (d of discounts; track $index) {
+                <div class="pd-itemrow">
+                  <div class="pd-item-main">
+                    <span class="name">{{ d.name || 'Khách hàng' }}</span>
+                    <span class="sub">Mua từ {{ d.min_qty }} {{ p.unit || 'SP' }} trở lên</span>
+                  </div>
+                  <span class="money">−{{ d.percent }}%</span>
+                  <button type="button" class="pd-del" (click)="removeDiscount($index)" aria-label="Xóa chiết khấu">
+                    <ion-icon name="trash-outline" />
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        }
+
+        <!-- ============ MODAL: PHÂN LOẠI ============ -->
+        <ion-modal class="pd-modal" [isOpen]="classifyOpen()" (didDismiss)="closeClassify()">
+          <ng-template>
+            <div class="pd-modal-body">
+              <div class="pd-modal-head">
+                <span>Phân loại</span>
+                <ion-button fill="clear" (click)="closeClassify()"><ion-icon slot="icon-only" name="close-outline" /></ion-button>
+              </div>
+              <div class="pd-modal-sec">Nhóm hàng</div>
+              <ion-item lines="none" class="pd-cat-item">
+                <ion-select
+                  [value]="p.category_id ?? ''"
+                  (ionChange)="onCategoryChange($event)"
+                  interface="action-sheet"
+                  placeholder="Chọn nhóm hàng"
+                  cancelText="Hủy">
+                  <ion-select-option value="">— Không —</ion-select-option>
+                  @for (c of categories(); track c.id) {
+                    <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+              <div class="pd-modal-sec">
+                Thẻ phân loại
+                <button type="button" class="pd-add-mini" (click)="addTags()"><ion-icon name="add-outline" /> Thêm</button>
+              </div>
+              <div class="pd-tags">
+                @for (t of tags; track $index) {
+                  <ion-chip>
+                    <ion-label>{{ t }}</ion-label>
+                    <ion-icon name="close-outline" (click)="removeTag($index)" />
+                  </ion-chip>
+                }
+              </div>
+              @if (tags.length === 0) {
+                <p class="pd-empty">Chưa có thẻ nào. Bấm "Thêm" để gắn thẻ (VD: bán chạy, mới về).</p>
+              }
+            </div>
+          </ng-template>
+        </ion-modal>
+
+        <!-- ============ MODAL: NHIỀU MÃ VẠCH ============ -->
+        <ion-modal class="pd-modal" [isOpen]="barcodesOpen()" (didDismiss)="barcodesOpen.set(false)">
+          <ng-template>
+            <div class="pd-modal-body">
+              <div class="pd-modal-head">
+                <span>Nhiều mã vạch</span>
+                <ion-button fill="clear" (click)="barcodesOpen.set(false)"><ion-icon slot="icon-only" name="close-outline" /></ion-button>
+              </div>
+              @if (p.barcode) {
+                <div class="pd-itemrow">
+                  <div class="pd-item-main"><span class="name">{{ p.barcode }}</span><span class="sub">Mã vạch chính</span></div>
+                  <button type="button" class="pd-del" (click)="editField('barcode')" aria-label="Sửa mã vạch chính"><ion-icon name="create-outline" /></button>
+                </div>
+              }
+              @for (b of barcodeList; track $index) {
+                <div class="pd-itemrow">
+                  <div class="pd-item-main"><span class="name">{{ b }}</span></div>
+                  <button type="button" class="pd-del" (click)="removeBarcode($index)" aria-label="Xóa mã vạch"><ion-icon name="trash-outline" /></button>
+                </div>
+              }
+              @if (barcodeList.length === 0) {
+                <p class="pd-empty">Chưa có mã vạch bổ sung nào.</p>
+              }
+              <ion-button expand="block" class="pd-modal-add" (click)="addBarcode()">
+                <ion-icon slot="start" name="add-outline" /> Thêm mã vạch
+              </ion-button>
+            </div>
+          </ng-template>
+        </ion-modal>
+
+        <!-- ============ MODAL: TRƯỜNG TÙY CHỈNH ============ -->
+        <ion-modal class="pd-modal" [isOpen]="customOpen()" (didDismiss)="customOpen.set(false)">
+          <ng-template>
+            <div class="pd-modal-body">
+              <div class="pd-modal-head">
+                <span>Trường tùy chỉnh</span>
+                <ion-button fill="clear" (click)="customOpen.set(false)"><ion-icon slot="icon-only" name="close-outline" /></ion-button>
+              </div>
+              @for (cf of customFields; track $index) {
+                <div class="pd-itemrow">
+                  <div class="pd-item-main">
+                    <span class="name">{{ cf.key }}</span>
+                    <span class="sub">{{ cf.value || '—' }}</span>
+                  </div>
+                  <button type="button" class="pd-del" (click)="removeCustomField($index)" aria-label="Xóa trường"><ion-icon name="trash-outline" /></button>
+                </div>
+              }
+              @if (customFields.length === 0) {
+                <p class="pd-empty">Chưa có trường tùy chỉnh nào. Thêm các trường riêng như "Xuất xứ", "Quy cách"…</p>
+              }
+              <ion-button expand="block" class="pd-modal-add" (click)="addCustomField()">
+                <ion-icon slot="start" name="add-outline" /> Thêm trường
+              </ion-button>
+            </div>
+          </ng-template>
+        </ion-modal>
+      </div>
+    </div>
+  } @else {
+    <div class="app-empty">Không tìm thấy sản phẩm</div>
+  }
+</ion-content>

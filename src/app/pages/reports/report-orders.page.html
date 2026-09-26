@@ -1,0 +1,81 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/report" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Tổng hợp theo đơn hàng</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="exportCsv()">
+        <ion-icon slot="icon-only" name="download-outline" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="range()" (ionChange)="onRange($any($event))">
+      @for (r of ranges; track r.value) {
+        <ion-segment-button [value]="r.value">
+          <ion-label>{{ r.label }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else {
+      <div class="summary-hero">
+        <span>Tổng doanh thu kỳ này</span>
+        <strong>{{ formatMoney(totalRevenue) }}</strong>
+      </div>
+
+      <div class="app-stats-row">
+        <div class="app-stat">
+          <div class="app-stat-label">Số đơn hàng</div>
+          <div class="app-stat-value">{{ orders().length }}</div>
+        </div>
+        <div class="app-stat">
+          <div class="app-stat-label">Đã thanh toán</div>
+          <div class="app-stat-value" style="color: var(--ion-color-success)">{{ paidCount }} đơn</div>
+        </div>
+        <div class="app-stat">
+          <div class="app-stat-label">Còn nợ</div>
+          <div class="app-stat-value" style="color: var(--ion-color-warning)">{{ debtCount }} đơn</div>
+        </div>
+        <div class="app-stat">
+          <div class="app-stat-label">Trung bình / đơn</div>
+          <div class="app-stat-value">{{ formatMoney(orders().length ? totalRevenue / orders().length : 0) }}</div>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="receipt-outline" /> Danh sách đơn hàng</h4></div>
+        @if (orders().length === 0) {
+          <div class="app-empty">Chưa có đơn hàng trong kỳ</div>
+        } @else {
+          <ion-list lines="full">
+            @for (o of orders(); track o.id) {
+              <ion-item>
+                <ion-icon slot="start" name="cart-outline" color="primary" />
+                <ion-label>
+                  <h3>{{ o.code }} — {{ o.customer_name ?? 'Khách lẻ' }}</h3>
+                  <p>{{ o.created_at | date: 'HH:mm dd/MM' }} · {{ statusLabel(o.status) }}</p>
+                </ion-label>
+                <ion-badge slot="end" [color]="o.paid ? 'success' : 'warning'">{{ formatMoney(o.total) }}</ion-badge>
+              </ion-item>
+            }
+          </ion-list>
+        }
+      </div>
+    }
+  </div>
+</ion-content>

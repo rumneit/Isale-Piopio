@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="app-menu" auto-hide="false" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Báo cáo, biểu đồ</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="app-page-container">
+    <div class="report-list">
+      @for (item of mainReports; track item.id) {
+        <div class="report-card" (click)="open(item)">
+          <div class="report-icon" [style.background]="item.color + '1a'">
+            <ion-icon [name]="item.icon" [style.color]="item.color" />
+          </div>
+          <span class="report-label">{{ item.label }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="report-list">
+      @for (item of exportReports; track item.id) {
+        <div class="report-card" (click)="open(item)">
+          <div class="report-icon" [style.background]="item.color + '1a'">
+            <ion-icon [name]="item.icon" [style.color]="item.color" />
+          </div>
+          <span class="report-label">{{ item.label }}</span>
+        </div>
+      }
+    </div>
+  </div>
+</ion-content>

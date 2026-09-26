@@ -1,0 +1,82 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="close-outline" />
+      </ion-button>
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ isEdit ? 'Sửa khách hàng' : 'Thêm khách hàng' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="busy()">
+        @if (busy()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          <ion-icon slot="icon-only" name="save-outline" />
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="app-page-container">
+    @if (error) {
+      <div class="form-error">{{ error }}</div>
+    }
+
+    <div class="app-card">
+      <ion-list lines="full">
+        <ion-item>
+          <ion-input label="Tên khách hàng *" labelPlacement="stacked" placeholder="Nguyễn Văn A" [(ngModel)]="name" />
+        </ion-item>
+        <ion-item>
+          <ion-input label="Mã khách hàng" labelPlacement="stacked" placeholder="VD: KH001" [(ngModel)]="code" />
+        </ion-item>
+        <ion-item>
+          <ion-input label="Số điện thoại" labelPlacement="stacked" type="tel" placeholder="09xx xxx xxx" [(ngModel)]="phone" />
+        </ion-item>
+        <ion-item>
+          <ion-select label="Giới tính" labelPlacement="stacked" [(ngModel)]="gender" interface="action-sheet" cancelText="Hủy">
+            <ion-select-option [value]="null">Không phân biệt</ion-select-option>
+            <ion-select-option value="Nam">Nam</ion-select-option>
+            <ion-select-option value="Nữ">Nữ</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-input label="Email" labelPlacement="stacked" type="email" placeholder="email@example.com" [(ngModel)]="email" />
+        </ion-item>
+        <ion-item>
+          <ion-textarea label="Địa chỉ" labelPlacement="stacked" placeholder="Số nhà, đường, phường/xã..." [autoGrow]="true" [(ngModel)]="address" />
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Công nợ (₫)"
+            labelPlacement="stacked"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            [(ngModel)]="debt"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-select label="Tuyến bán hàng" labelPlacement="stacked" placeholder="Chưa gán" [(ngModel)]="routeId">
+            <ion-select-option [value]="null">— Chưa gán —</ion-select-option>
+            @for (r of routes(); track r.id) {
+              <ion-select-option [value]="r.id">{{ r.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    @if (isEdit) {
+      <ion-button expand="block" color="danger" fill="outline" (click)="confirmDelete()" [disabled]="deleting()">
+        <ion-icon slot="start" name="trash-outline" />
+        {{ deleting() ? 'Đang xóa...' : 'Xóa khách hàng' }}
+      </ion-button>
+    }
+  </div>
+</ion-content>

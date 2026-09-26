@@ -1,0 +1,428 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" class="pe-close">
+        <ion-icon slot="start" name="close-outline" /> Đóng
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="pe-title">{{ pageTitle }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openOptions()" class="ic-gray" aria-label="Tùy chọn">
+        <ion-icon slot="icon-only" name="options-outline" />
+      </ion-button>
+      <ion-button (click)="save()" class="pe-save" [disabled]="busy()">
+        <ion-icon slot="start" name="checkmark-outline" /> Lưu
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pe-page app-page">
+  @if (busy() && !name) {
+    <div class="page-loading"><ion-spinner name="crescent" /></div>
+  } @else {
+    <div class="app-page-container">
+      <div class="pe-wrap">
+        @if (error) {
+          <div class="pe-error">{{ error }}</div>
+        }
+
+        <!-- ISale: 2 tab chữ pill — Cơ bản | Trường tùy chỉnh -->
+        <ion-segment class="pe-tabs" mode="ios" [value]="tab()" (ionChange)="tab.set($any($event).detail.value)">
+          <ion-segment-button value="basic"><ion-label>Cơ bản</ion-label></ion-segment-button>
+          <ion-segment-button value="custom"><ion-label>Trường tùy chỉnh</ion-label></ion-segment-button>
+        </ion-segment>
+
+        <!-- ================= TAB: CƠ BẢN ================= -->
+        @if (tab() === 'basic') {
+          <!-- Card Mã vạch -->
+          <div class="pe-card pe-bc-card">
+            <label class="pe-label">Mã vạch</label>
+            <input
+              #bcInput
+              class="pe-input bordered"
+              type="text"
+              aria-label="Mã vạch"
+              placeholder="Chọn ô này, sử dụng đầu đọc hoặc nhập tay"
+              [(ngModel)]="barcode" />
+            <div class="pe-bc-actions">
+              <button type="button" class="pe-btn-outline sm" (click)="focusBarcode(bcInput)">
+                <ion-icon name="barcode-outline" /> Mã vạch
+              </button>
+              <button type="button" class="pe-btn-outline sm" (click)="sinhMa()">
+                <ion-icon name="barcode-outline" /> Sinh mã
+              </button>
+              <button type="button" class="pe-btn-outline sm" (click)="barcodesOpen.set(true)">
+                <ion-icon name="add-outline" /> Nhiều mã vạch
+              </button>
+            </div>
+          </div>
+
+          <!-- Mã/SKU | Tên sản phẩm -->
+          <div class="pe-grid2">
+            <div class="pe-field">
+              <label class="pe-label">Mã/SKU</label>
+              <input class="pe-input" type="text" aria-label="Mã/SKU" placeholder="Nhập mã" [(ngModel)]="sku" />
+            </div>
+            <div class="pe-field">
+              <label class="pe-label">Tên sản phẩm</label>
+              <div class="pe-input-wrap">
+                <input class="pe-input" type="text" aria-label="Tên sản phẩm" [(ngModel)]="name" />
+                @if (name) {
+                  <button type="button" class="pe-clear" (click)="name = ''" aria-label="Xóa tên">
+                    <ion-icon name="close-outline" />
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Mục (nhóm hàng) -->
+          <div class="pe-card">
+            <div class="pe-card-head">
+              <span>Mục</span>
+              <button type="button" class="pe-link" (click)="pickCategory()">+ Thêm</button>
+            </div>
+            @if (categoryName) {
+              <div class="pe-muc-row">
+                <span>{{ categoryName }}</span>
+                <button type="button" class="pe-clear" (click)="removeCategory()" aria-label="Bỏ nhóm hàng">
+                  <ion-icon name="close-outline" />
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- Đơn vị cơ bản | Giá nhập | Giá bán | Số lượng -->
+          <div class="pe-grid4">
+            <div class="pe-field">
+              <label class="pe-label">Đơn vị cơ bản</label>
+              <div class="pe-input-wrap">
+                <input class="pe-input" type="text" aria-label="Đơn vị cơ bản" [(ngModel)]="unit" />
+                @if (unit) {
+                  <button type="button" class="pe-clear" (click)="unit = ''" aria-label="Xóa đơn vị">
+                    <ion-icon name="close-outline" />
+                  </button>
+                }
+              </div>
+              <p class="pe-hint-red">Đơn vị nhỏ nhất, vd: Chiếc, cái..</p>
+            </div>
+            <div class="pe-field">
+              <label class="pe-label">Giá nhập <span class="pe-label-sub">( - )</span></label>
+              <input class="pe-input" type="text" inputmode="decimal" aria-label="Giá nhập" [(ngModel)]="costStr" />
+              <div class="pe-decimals">
+                <button type="button" class="pe-mini" (click)="appendDecimals('cost', '.00')">.00</button>
+                <button type="button" class="pe-mini" (click)="appendDecimals('cost', '.000')">.000</button>
+              </div>
+            </div>
+            <div class="pe-field">
+              <label class="pe-label">Giá bán</label>
+              <input class="pe-input" type="text" inputmode="decimal" aria-label="Giá bán" [(ngModel)]="priceStr" />
+              <div class="pe-decimals">
+                <button type="button" class="pe-mini" (click)="appendDecimals('price', '.00')">.00</button>
+                <button type="button" class="pe-mini" (click)="appendDecimals('price', '.000')">.000</button>
+              </div>
+            </div>
+            <div class="pe-field">
+              <label class="pe-label">Số lượng</label>
+              <div class="pe-input-wrap">
+                <input class="pe-input num" type="text" inputmode="decimal" aria-label="Số lượng" [(ngModel)]="stockStr" />
+                @if (stockStr) {
+                  <button type="button" class="pe-clear" (click)="stockStr = ''" aria-label="Xóa số lượng">
+                    <ion-icon name="close-outline" />
+                  </button>
+                }
+              </div>
+              <div class="pe-decimals">
+                <button type="button" class="pe-mini" (click)="stepStock(-1)">−</button>
+                <button type="button" class="pe-mini" (click)="stepStock(1)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thêm đơn vị (đơn vị thay thế) -->
+          <div class="pe-card">
+            <button type="button" class="pe-btn-outline" (click)="addUnitRow()">
+              <ion-icon name="add-outline" /> Thêm đơn vị
+            </button>
+            @for (u of units(); track $index) {
+              <div class="pe-unitrow">
+                <div class="pe-unit-main">
+                  <div class="pe-field">
+                    <label class="pe-label">Đơn vị</label>
+                    <input class="pe-input" type="text" aria-label="Tên đơn vị thay thế" placeholder="VD: Thùng (40 Bao)" [(ngModel)]="u.name" />
+                  </div>
+                  <label class="pe-def">
+                    <ion-checkbox
+                      [checked]="!!u.is_default"
+                      (ionChange)="markDefaultUnit($index)" />
+                    Mặc định
+                  </label>
+                </div>
+                <div class="pe-unit-grid">
+                  <div class="pe-field">
+                    <label class="pe-label">Giá bán</label>
+                    <input class="pe-input" type="text" inputmode="decimal" aria-label="Giá bán đơn vị" [ngModel]="u.price ?? ''" (ngModelChange)="u.price = $any(toNumPublic($event))" />
+                    <div class="pe-decimals">
+                      <button type="button" class="pe-mini" (click)="unitAppendDecimals(u, 'price', '.00')">.00</button>
+                      <button type="button" class="pe-mini" (click)="unitAppendDecimals(u, 'price', '.000')">.000</button>
+                    </div>
+                  </div>
+                  <div class="pe-field">
+                    <label class="pe-label">Giá nhập</label>
+                    <input class="pe-input" type="text" inputmode="decimal" aria-label="Giá nhập đơn vị" [ngModel]="u.cost ?? ''" (ngModelChange)="u.cost = $any(toNumPublic($event))" />
+                  </div>
+                  <div class="pe-field">
+                    <label class="pe-label">Quy đổi</label>
+                    <input class="pe-input" type="number" min="0" aria-label="Quy đổi đơn vị" [ngModel]="u.conversion" (ngModelChange)="u.conversion = $any(toNumPublic($event)) || 1" />
+                  </div>
+                  <button type="button" class="pe-unit-del" (click)="removeUnitRow($index)" aria-label="Xóa đơn vị">
+                    <ion-icon name="close-outline" />
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- 4 card toggle: combo / tự trừ NVL / dịch vụ / Serial -->
+          <div class="pe-tcard">
+            <div class="pe-trow"><ion-toggle [(ngModel)]="laCombo" /></div>
+            <h3>Là sản phẩm combo?</h3>
+            <p>Combo là sản phẩm kết hợp nhiều mặt hàng với tổng giá thành có thể nhỏ hơn</p>
+          </div>
+          <div class="pe-tcard">
+            <div class="pe-trow"><ion-toggle [(ngModel)]="tuTruNvl" /></div>
+            <h3>Tự trừ nguyên vật liệu?</h3>
+            <p>Chọn các thành phần nguyên vật liệu, tự trừ số lượng khi lên đơn</p>
+          </div>
+          <div class="pe-tcard">
+            <div class="pe-trow"><ion-toggle [(ngModel)]="dichVu" /></div>
+            <h3>Là một dịch vụ?</h3>
+            <p>Dịch vụ không phải sản phẩm, nó sẽ không có số lượng cụ thể</p>
+          </div>
+          <div class="pe-tcard">
+            <div class="pe-trow"><ion-toggle [(ngModel)]="serialManaged" /></div>
+            <h3>Quản lý Serial/IMEI?</h3>
+            <p>Bật quản lý Serial/IMEI cho sản phẩm này. Bạn sẽ cần nhập Serial/IMEI khi nhập hàng và chọn Serial/IMEI khi bán hàng.</p>
+          </div>
+
+          <!-- Hạn sử dụng | Ngoại tệ -->
+          <div class="pe-grid2">
+            <div class="pe-field">
+              <label class="pe-label">Hạn sử dụng</label>
+              <input class="pe-input" type="date" aria-label="Hạn sử dụng" [(ngModel)]="expiryDate" />
+            </div>
+            <div class="pe-field">
+              <label class="pe-label">Ngoại tệ</label>
+              <ion-select
+                class="pe-select"
+                aria-label="Ngoại tệ"
+                placeholder="Ngoại tệ"
+                interface="action-sheet"
+                cancelText="Hủy"
+                [(ngModel)]="ngoaiTeMa">
+                <ion-select-option value="">Không</ion-select-option>
+                @for (c of CURRENCIES; track c) {
+                  <ion-select-option [value]="c">{{ c }}</ion-select-option>
+                }
+              </ion-select>
+            </div>
+          </div>
+
+          <!-- Giá nhập (ng ngoại tệ) | Mô tả sản phẩm -->
+          <div class="pe-grid2">
+            <div class="pe-field">
+              <label class="pe-label">Giá nhập (ng ngoại tệ)</label>
+              <input class="pe-input" type="text" inputmode="decimal" aria-label="Giá nhập ngoại tệ" placeholder="Giá nhập (ng ngoại tệ)" [(ngModel)]="giaNhapNtStr" />
+            </div>
+            <div class="pe-field">
+              <label class="pe-label">Mô tả sản phẩm</label>
+              <textarea class="pe-input area" rows="3" aria-label="Mô tả sản phẩm" placeholder="Nhập mô tả về sản phẩm" [(ngModel)]="moTa"></textarea>
+            </div>
+          </div>
+
+          <!-- Ảnh -->
+          <div class="pe-card">
+            <div class="pe-card-head">
+              <span class="pe-img-head"><ion-icon name="image-outline" /> Ảnh</span>
+              <span class="pe-img-actions">
+                <button type="button" class="pe-btn-outline sm" (click)="aiProcess()">
+                  <ion-icon name="sparkles-outline" /> Xử lý ảnh với AI
+                </button>
+                <button type="button" class="pe-link" (click)="imgInput.click()">[Chọn nhiều]</button>
+              </span>
+            </div>
+            <input #imgInput type="file" accept="image/*" multiple hidden (change)="onPickImages($event)" />
+            @if (uploading()) {
+              <p class="pe-empty-sm">Đang tải ảnh lên…</p>
+            } @else if (images().length === 0) {
+              <div class="pe-img-empty" (click)="imgInput.click()">
+                <ion-icon name="images-outline" />
+                <b>Chưa có ảnh nào</b>
+                <span>Thêm ảnh để khách hàng có thể xem sản phẩm tốt hơn</span>
+              </div>
+            } @else {
+              <div class="pe-img-grid">
+                @for (url of images(); track $index) {
+                  <div class="pe-img-item">
+                    <img [src]="url" [alt]="name" loading="lazy" (error)="$any($event.target).style.display = 'none'" />
+                    @if (image === url) {
+                      <span class="pe-badge-main">Chính</span>
+                    }
+                    <button type="button" class="pe-img-del" (click)="removeImage($index)" aria-label="Xóa ảnh">
+                      <ion-icon name="close-outline" />
+                    </button>
+                  </div>
+                }
+                <button type="button" class="pe-img-add" (click)="imgInput.click()">
+                  <ion-icon name="add-outline" />
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- Cấu hình Website -->
+          <div class="pe-card pe-web">
+            <h3 class="pe-web-title">Cấu hình Website</h3>
+            <div class="pe-web-grid">
+              <div class="pe-web-item">
+                <ion-toggle [(ngModel)]="hienTrenWeb" />
+                <span>Hiện trên web</span>
+              </div>
+              <div class="pe-web-item">
+                <ion-toggle [(ngModel)]="banChay" />
+                <span>Là SP Bán chạy</span>
+              </div>
+              <div class="pe-web-item">
+                <ion-toggle [(ngModel)]="moi" />
+                <span>Là SP Mới</span>
+              </div>
+              <div class="pe-web-item">
+                <ion-toggle [(ngModel)]="hienGiaWeb" />
+                <span>Hiện giá trên web</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Khuyến mại -->
+          <div class="pe-tcard">
+            <div class="pe-trow"><ion-toggle [(ngModel)]="khuyenMai" /></div>
+            <h3>Khuyến mại?</h3>
+          </div>
+
+          <!-- Phân loại -->
+          <button type="button" class="pe-btn-outline wide" (click)="classifyOpen.set(true)">
+            <ion-icon name="options-outline" /> Phân loại
+          </button>
+        }
+
+        <!-- ================= TAB: TRƯỜNG TÙY CHỈNH ================= -->
+        @if (tab() === 'custom') {
+          <div class="pe-card pe-custom">
+            @if (customFields().length === 0) {
+              <div class="pe-custom-empty">
+                <ion-icon name="options-outline" />
+                <b>Chưa có trường tùy chỉnh</b>
+                <span>Thêm các trường tùy chỉnh để mở rộng thông tin sản phẩm</span>
+                <button type="button" class="pe-btn-outline big" (click)="addCustomField()">
+                  <ion-icon name="add-outline" /> THÊM TRƯỜNG TÙY CHỈNH
+                </button>
+              </div>
+            } @else {
+              @for (cf of customFields(); track $index) {
+                <div class="pe-cf-row">
+                  <div class="pe-cf-main">
+                    <b>{{ cf.key }}</b>
+                    <span>{{ cf.value || '—' }}</span>
+                  </div>
+                  <button type="button" class="pe-unit-del" (click)="removeCustomField($index)" aria-label="Xóa trường">
+                    <ion-icon name="trash-outline" />
+                  </button>
+                </div>
+              }
+              <button type="button" class="pe-btn-outline" (click)="addCustomField()">
+                <ion-icon name="add-outline" /> THÊM TRƯỜNG TÙY CHỈNH
+              </button>
+            }
+          </div>
+        }
+
+        <!-- ============ MODAL: NHIỀU MÃ VẠCH ============ -->
+        <ion-modal class="pe-modal" [isOpen]="barcodesOpen()" (didDismiss)="barcodesOpen.set(false)">
+          <ng-template>
+            <div class="pe-modal-body">
+              <div class="pe-modal-head">
+                <span>Nhiều mã vạch</span>
+                <ion-button fill="clear" (click)="barcodesOpen.set(false)"><ion-icon slot="icon-only" name="close-outline" /></ion-button>
+              </div>
+              @if (barcode) {
+                <div class="pe-itemrow">
+                  <div class="pe-item-main"><b>{{ barcode }}</b><span>Mã vạch chính</span></div>
+                  <button type="button" class="pe-unit-del" (click)="barcode = ''" aria-label="Xóa mã vạch chính">
+                    <ion-icon name="trash-outline" />
+                  </button>
+                </div>
+              }
+              @for (b of barcodes(); track $index) {
+                <div class="pe-itemrow">
+                  <div class="pe-item-main"><b>{{ b }}</b></div>
+                  <button type="button" class="pe-unit-del" (click)="removeBarcode($index)" aria-label="Xóa mã vạch">
+                    <ion-icon name="trash-outline" />
+                  </button>
+                </div>
+              }
+              @if (barcodes().length === 0) {
+                <p class="pe-empty-sm">Chưa có mã vạch bổ sung nào.</p>
+              }
+              <ion-button expand="block" class="pe-modal-add" (click)="addBarcode()">
+                <ion-icon slot="start" name="add-outline" /> Thêm mã vạch
+              </ion-button>
+            </div>
+          </ng-template>
+        </ion-modal>
+
+        <!-- ============ MODAL: PHÂN LOẠI ============ -->
+        <ion-modal class="pe-modal" [isOpen]="classifyOpen()" (didDismiss)="classifyOpen.set(false)">
+          <ng-template>
+            <div class="pe-modal-body">
+              <div class="pe-modal-head">
+                <span>Phân loại</span>
+                <ion-button fill="clear" (click)="classifyOpen.set(false)"><ion-icon slot="icon-only" name="close-outline" /></ion-button>
+              </div>
+              <div class="pe-modal-sec">Nhóm hàng</div>
+              <ion-item lines="none" class="pe-cat-item">
+                <ion-select
+                  [ngModel]="categoryId ?? ''"
+                  (ngModelChange)="categoryId = $event === '' ? null : $event"
+                  aria-label="Chọn nhóm hàng"
+                  interface="action-sheet"
+                  placeholder="Chọn nhóm hàng"
+                  cancelText="Hủy">
+                  <ion-select-option value="">— Không —</ion-select-option>
+                  @for (c of categories(); track c.id) {
+                    <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+              <div class="pe-modal-sec">
+                Thẻ phân loại
+                <button type="button" class="pe-link" (click)="addTags()">+ Thêm</button>
+              </div>
+              <div class="pe-tags">
+                @for (t of tags(); track $index) {
+                  <ion-chip>
+                    <ion-label>{{ t }}</ion-label>
+                    <ion-icon name="close-outline" (click)="removeTag($index)" />
+                  </ion-chip>
+                }
+              </div>
+              @if (tags().length === 0) {
+                <p class="pe-empty-sm">Chưa có thẻ nào.</p>
+              }
+            </div>
+          </ng-template>
+        </ion-modal>
+      </div>
+    </div>
+  }
+</ion-content>

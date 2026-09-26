@@ -1,0 +1,115 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="app-menu" auto-hide="false" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Quản lý công nợ</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAdd()">
+        <ion-icon slot="icon-only" name="add-circle-outline" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    <!-- Tab tháng -->
+    <div class="month-tabs">
+      @for (m of monthTabs; track m.label; let i = $index) {
+        <button class="month-tab" [class.active]="selectedMonth() === i" (click)="selectMonth(i)">
+          {{ m.label }}
+        </button>
+      }
+    </div>
+
+    @if (searchVisible()) {
+      <ion-searchbar placeholder="Tìm theo đối tác hoặc ghi chú" [debounce]="300" (ionInput)="onSearch($any($event))" />
+    }
+
+    <!-- Toolbar -->
+    <div class="list-toolbar">
+      <div class="toolbar-left">
+        <ion-button fill="clear" size="small" (click)="toggleSearch()">
+          <ion-icon slot="icon-only" name="search-outline" />
+        </ion-button>
+        <span class="toolbar-total">Tổng: {{ items().length }} công nợ</span>
+        <span class="toolbar-money">/ Tổng giá trị: {{ formatMoney(totalAmount()) }}</span>
+      </div>
+      <div class="toolbar-actions">
+        <ion-button fill="clear" size="small" (click)="exportCsv()">
+          <ion-icon slot="icon-only" name="download-outline" />
+        </ion-button>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty debt-empty">
+        <div><ion-icon name="file-tray-outline" /></div>
+        <span>
+          Chưa có khoản Vay/Nợ nào. Bấm biểu tượng + để thêm mới. Với mỗi khoản vay/nợ, bạn có thể:
+          cập nhật thông tin (tiền, đối tác, ghi chú), cập nhật trạng thái 'Đã trả' và ngược lại,
+          xem ảnh hưởng của nó lên các báo cáo Vay/Nợ.
+        </span>
+      </div>
+    } @else {
+      <div class="summary-row">
+        <div class="summary-item">
+          <span>Còn phải thu</span>
+          <strong class="receivable">{{ formatMoney(unpaidAmount()) }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Tổng giá trị</span>
+          <strong>{{ formatMoney(totalAmount()) }}</strong>
+        </div>
+      </div>
+
+      <div class="loan-list">
+        @for (loan of pagedItems(); track loan.id) {
+          <div class="loan-card" (click)="editLoan(loan, $event)">
+            <div class="loan-head">
+              <ion-icon name="cash-outline" [color]="loan.paid ? 'success' : 'warning'" />
+              <div class="loan-main">
+                <h2>{{ loan.party_name }}</h2>
+                <span class="loan-type">{{ loansService.typeLabel(loan.type) }}</span>
+              </div>
+              <div class="loan-end" (click)="$event.stopPropagation()">
+                <ion-badge [color]="loan.paid ? 'success' : 'warning'">{{ formatMoney(loan.amount) }}</ion-badge>
+                <ion-badge color="medium" class="paid-toggle" (click)="togglePaid(loan, $event)">
+                  {{ loan.paid ? 'Đã trả' : 'Chưa trả' }}
+                </ion-badge>
+              </div>
+            </div>
+            @if (loan.note) {
+              <div class="loan-note">{{ loan.note }}</div>
+            }
+            <div class="loan-date">{{ loan.occurred_at | date: 'HH:mm dd/MM/yyyy' }}</div>
+          </div>
+        }
+      </div>
+
+      <!-- Phân trang -->
+      <div class="pagination">
+        <ion-button fill="clear" size="small" (click)="prevPage()" [disabled]="page() <= 1">
+          <ion-icon slot="icon-only" name="chevron-back-outline" />
+        </ion-button>
+        <span>Trang {{ page() }}/{{ totalPages() }}</span>
+        <ion-button fill="clear" size="small" (click)="nextPage()" [disabled]="page() >= totalPages()">
+          <ion-icon slot="icon-only" name="chevron-forward-outline" />
+        </ion-button>
+      </div>
+    }
+  </div>
+
+  <!-- Bộ 3 FAB chuẩn ISale -->
+  <app-fab-trio mainIcon="add" mainLabel="Thêm công nợ" (mainAction)="openAdd()" />
+</ion-content>

@@ -1,0 +1,51 @@
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.report-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  box-shadow: var(--app-shadow-sm);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+
+  &:hover {
+    box-shadow: var(--app-shadow-md);
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  .report-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    ion-icon {
+      font-size: 23px;
+    }
+  }
+
+  .report-label {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--app-text);
+  }
+}

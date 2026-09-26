@@ -1,0 +1,211 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="app-menu" auto-hide="false" />
+      <ion-button (click)="openHome()" class="ic-purple">
+        <ion-icon slot="icon-only" name="home" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="title-purple">Sản phẩm</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openScan()" class="ic-green" aria-label="Quét barcode">
+        <ion-icon slot="icon-only" name="barcode-sharp" />
+      </ion-button>
+      <ion-button (click)="openAdd()" fill="solid" shape="round" class="add-round" aria-label="Thêm sản phẩm">
+        <ion-icon slot="icon-only" name="add" />
+      </ion-button>
+      <ion-button (click)="openSettings()" class="ic-purple">
+        <ion-icon slot="icon-only" name="apps" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container products-container">
+    <!-- ISale: "Lọc theo" (dropdown Gần đây) + "Danh mục" (CHỌN NHÓM HÀNG) -->
+    <div class="filter-row">
+      <div class="filter-group">
+        <span class="filter-label">Lọc theo</span>
+        <ion-select
+          class="sort-select"
+          [value]="chip()"
+          (ionChange)="selectChip($any($event).detail.value)"
+          interface="popover"
+          cancelText="Hủy">
+          <ion-select-option value="all">Tất cả</ion-select-option>
+          @if (hasExpiry()) {
+            <ion-select-option value="notexpired">Còn Hạn SD</ion-select-option>
+          }
+          <ion-select-option value="recent">Gần đây</ion-select-option>
+          <ion-select-option value="instock">Còn số lượng</ion-select-option>
+        </ion-select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Danh mục</span>
+        <button class="cat-btn" (click)="openCategoryMenu()">
+          {{ categoryId() ? 'Đã chọn nhóm' : 'Chọn Nhóm hàng' }}
+        </button>
+      </div>
+    </div>
+
+    @if (searchVisible()) {
+      <ion-searchbar placeholder="Tìm theo tên hoặc mã SP" [debounce]="300" (ionInput)="onSearch($any($event))" />
+    }
+
+    <!-- ISale: tổng bên trái — hành động đa sắc + phân trang inline bên phải -->
+    <div class="list-toolbar">
+      <div class="toolbar-left">
+        <ion-button fill="clear" size="small" (click)="openCategoryMenu()" class="ic-purple">
+          <ion-icon slot="icon-only" name="funnel" />
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="toggleSearch()" class="ic-purple">
+          <ion-icon slot="icon-only" name="search" />
+        </ion-button>
+        <span class="toolbar-total">Tổng: {{ total() }} sản phẩm</span>
+      </div>
+      <div class="toolbar-actions">
+        <ion-button fill="clear" size="small" (click)="toggleSelectMode()" class="ic-green" [class.active-btn]="selectMode()" aria-label="Chọn nhiều">
+          <ion-icon slot="icon-only" name="checkbox" />
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="bulkEdit()" class="ic-orange" aria-label="Sửa hàng loạt">
+          <ion-icon slot="icon-only" name="create" />
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="exportCsv()" class="ic-green" aria-label="Xuất Excel">
+          <ion-icon slot="icon-only" name="download" />
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="openImport()" class="ic-purple" aria-label="Nhập từ Excel">
+          <ion-icon slot="icon-only" name="cloud-upload" />
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="toggleView()" class="ic-purple" [class.active-btn]="viewMode() === 'list'" aria-label="Đổi chế độ xem">
+          <ion-icon slot="icon-only" name="grid" />
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="openDisplaySettings()" class="ic-gray" aria-label="Cấu hình">
+          <ion-icon slot="icon-only" name="settings" />
+        </ion-button>
+        <div class="pager">
+          @if (page() > 1) {
+            <ion-button fill="clear" size="small" (click)="prevPage()" class="ic-purple" aria-label="Trang trước">
+              <ion-icon slot="icon-only" name="chevron-back" />
+            </ion-button>
+          }
+          <span class="pager-label">Trang {{ page() }}/{{ totalPages() }}</span>
+          @if (page() < totalPages()) {
+            <ion-button fill="clear" size="small" (click)="nextPage()" class="ic-purple" aria-label="Trang sau">
+              <ion-icon slot="icon-only" name="chevron-forward" />
+            </ion-button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Thanh hành động khi đang chọn nhiều -->
+    @if (selectMode()) {
+      <div class="select-bar">
+        <span class="select-count">Đã chọn {{ selected().size }}</span>
+        <ion-button size="small" fill="outline" (click)="bulkExport()" [disabled]="selected().size === 0">
+          <ion-icon slot="start" name="download" />
+          Xuất
+        </ion-button>
+        <ion-button size="small" fill="outline" color="danger" (click)="bulkDelete()" [disabled]="selected().size === 0">
+          <ion-icon slot="start" name="trash-outline" />
+          Xóa
+        </ion-button>
+        <ion-button size="small" fill="clear" (click)="toggleSelectMode()">Đóng</ion-button>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="grid-outline" /></div>
+        Chưa có sản phẩm nào. Bấm nút + để thêm sản phẩm đầu tiên.
+      </div>
+    } @else {
+      @if (viewMode() === 'card') {
+        <div class="product-list">
+          @for (item of items(); track item.id) {
+            <div class="product-card" [class.selectable]="selectMode()" [class.selected]="selectMode() && selected().has(item.id)" (click)="openDetail(item)">
+              @if (selectMode()) {
+                <ion-icon class="check-badge" name="checkmark-circle-outline" />
+              }
+              <h2 class="product-name">{{ item.name }}</h2>
+              <!-- ISale: lưới trường 2 cột tự dồn — Số lượng | Đơn giá / Giá nhập? | Đơn vị / Serial -->
+              <div class="product-fields">
+                <div class="field">
+                  <span class="field-label">Số lượng</span>
+                  <span class="field-value">{{ formatQty(item.stock) }}</span>
+                </div>
+                <div class="field">
+                  <span class="field-label">Đơn giá</span>
+                  <span class="field-value">{{ formatMoney(item.price) }}</span>
+                </div>
+                @if (item.cost !== null && item.cost !== undefined) {
+                  <div class="field">
+                    <span class="field-label">Giá nhập</span>
+                    <span class="field-value">{{ formatMoney(item.cost) }}</span>
+                  </div>
+                }
+                <div class="field">
+                  <span class="field-label">Đơn vị</span>
+                  <span class="field-value">{{ item.unit ?? '—' }}</span>
+                </div>
+                <div class="field serial">
+                  <span class="field-label">Quản lý Serial/IMEI?</span>
+                  <ion-toggle
+                    [checked]="!!item.serial_managed"
+                    (ionChange)="toggleSerial(item, $any($event))"
+                    (click)="$event.stopPropagation()"
+                  />
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- ISale grid icon: danh sách gọn -->
+        <div class="product-rows">
+          @for (item of items(); track item.id) {
+            <div class="product-row" [class.selected]="selectMode() && selected().has(item.id)" (click)="openDetail(item)">
+              <div class="row-main">
+                <span class="row-name">{{ item.name }}</span>
+                <span class="row-sub">{{ item.sku ?? '—' }} · {{ item.unit ?? '—' }}</span>
+              </div>
+              <div class="row-side">
+                <span class="row-qty">{{ formatQty(item.stock) }}</span>
+                <span class="row-price">{{ formatMoney(item.price) }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Phân trang lặp lại cuối trang (ISale: "Trang x/y" xuất hiện 2 nơi) -->
+      <div class="pagination">
+        @if (page() > 1) {
+          <ion-button fill="clear" size="small" (click)="prevPage()" class="ic-purple">
+            <ion-icon slot="icon-only" name="chevron-back" />
+          </ion-button>
+        }
+        <span>Trang {{ page() }}/{{ totalPages() }}</span>
+        @if (page() < totalPages()) {
+          <ion-button fill="clear" size="small" (click)="nextPage()" class="ic-purple">
+            <ion-icon slot="icon-only" name="chevron-forward" />
+          </ion-button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ISale: FAB "+" tròn tím, đáy giữa màn hình -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="center" class="add-fab">
+    <ion-fab-button (click)="openAdd()" aria-label="Thêm sản phẩm">
+      <ion-icon name="add" />
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

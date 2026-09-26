@@ -1,0 +1,101 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/report" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Biểu đồ doanh thu</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="range()" (ionChange)="onRange($any($event))">
+      @for (r of ranges; track r.value) {
+        <ion-segment-button [value]="r.value">
+          <ion-label>{{ r.label }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (report(); as r) {
+      <div class="report-hero">
+        <div class="report-hero-label">
+          <ion-icon name="bar-chart-outline" />
+          Doanh thu {{ reportsService.rangeLabel(range()) }}
+        </div>
+        <div class="report-hero-value">{{ formatMoney(r.revenue) }}</div>
+        <div class="report-hero-sub">{{ r.ordersCount }} đơn hàng</div>
+      </div>
+
+      <div class="app-stats-row">
+        <div class="app-stat">
+          <div class="app-stat-label"><ion-icon name="trending-up-outline" color="success" /> Tổng thu</div>
+          <div class="app-stat-value report-income">{{ formatMoney(r.income) }}</div>
+        </div>
+        <div class="app-stat">
+          <div class="app-stat-label"><ion-icon name="trending-down-outline" color="danger" /> Tổng chi</div>
+          <div class="app-stat-value report-expense">{{ formatMoney(r.expense) }}</div>
+        </div>
+        <div class="app-stat">
+          <div class="app-stat-label">Lợi nhuận (thu - chi)</div>
+          <div class="app-stat-value" [class.report-income]="r.income - r.expense >= 0" [class.report-expense]="r.income - r.expense < 0">
+            {{ formatMoney(r.income - r.expense) }}
+          </div>
+        </div>
+        <div class="app-stat">
+          <div class="app-stat-label">Lợi nhuận gộp (đơn)</div>
+          <div class="app-stat-value">{{ formatMoney(r.profit) }}</div>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="podium-outline" /> Sản phẩm bán chạy</h4></div>
+        @if (r.topProducts.length === 0) {
+          <div class="app-empty">Chưa có dữ liệu bán hàng</div>
+        } @else {
+          <ion-list lines="full">
+            @for (p of r.topProducts.slice(0, 5); track p.name; let i = $index) {
+              <ion-item>
+                <ion-badge slot="start" [color]="i === 0 ? 'warning' : 'light'">{{ i + 1 }}</ion-badge>
+                <ion-label>
+                  <h3>{{ p.name }}</h3>
+                  <p>{{ p.qty }} đã bán</p>
+                </ion-label>
+                <ion-note slot="end">{{ formatMoney(p.total) }}</ion-note>
+              </ion-item>
+            }
+          </ion-list>
+        }
+      </div>
+
+      <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="cart-outline" /> Theo ngày</h4></div>
+        @if (r.daily.length === 0) {
+          <div class="app-empty">Chưa có dữ liệu</div>
+        } @else {
+          <div class="daily-list">
+            @for (d of r.daily; track d.date) {
+              <div class="daily-row">
+                <span class="daily-date">{{ formatDay(d.date) }}</span>
+                <div class="daily-bar-wrap">
+                  <div class="daily-bar" [style.width.%]="(d.revenue / maxDailyRevenue()) * 100"></div>
+                </div>
+                <span class="daily-value">{{ formatMoney(d.revenue) }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</ion-content>

@@ -1,0 +1,63 @@
+{
+  "name": "piopio",
+  "version": "1.0.0",
+  "author": "ISale",
+  "homepage": "https://isale.online",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "lint": "ng lint",
+    "check:icons": "node check-icons.mjs",
+    "test:ci": "ng test --configuration ci",
+    "audit": "node audit.mjs",
+    "verify:home": "node verify-home-button.mjs"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/common": "22.0.1",
+    "@angular/compiler": "22.0.1",
+    "@angular/core": "22.0.1",
+    "@angular/forms": "22.0.1",
+    "@angular/platform-browser": "22.0.1",
+    "@angular/router": "22.0.1",
+    "@capacitor/app": "8.1.1",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/haptics": "8.0.2",
+    "@capacitor/keyboard": "8.0.5",
+    "@capacitor/status-bar": "8.0.3",
+    "@ionic/angular": "^9.0.0",
+    "@supabase/supabase-js": "2.116.0",
+    "@types/jsbarcode": "^3.11.4",
+    "ionicons": "^8.1.0",
+    "jsbarcode": "^3.12.3",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "^0.16.3"
+  },
+  "devDependencies": {
+    "@angular/build": "22.0.1",
+    "@angular/cli": "22.0.1",
+    "@angular/compiler-cli": "22.0.1",
+    "@angular/language-service": "22.0.1",
+    "@capacitor/cli": "8.5.2",
+    "@ionic/angular-toolkit": "^13.0.0",
+    "angular-eslint": "22.0.0",
+    "eslint": "^9.16.0",
+    "jsdom": "^26.0.0",
+    "playwright": "^1.63.0",
+    "typescript": "~6.0.0",
+    "typescript-eslint": "^8.61.0",
+    "vitest": "^4.0.8"
+  },
+  "description": "An Ionic project",
+  "engines": {
+    "node": ">=22.22.3"
+  },
+  "allowScripts": {
+    "esbuild@0.27.7": true,
+    "esbuild@0.28.0": true
+  }
+}

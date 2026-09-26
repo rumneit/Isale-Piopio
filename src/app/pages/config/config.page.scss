@@ -1,0 +1,254 @@
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+ion-segment {
+  --background: transparent;
+}
+
+ion-segment-button {
+  ion-icon {
+    font-size: 15px;
+    margin-inline-end: 4px;
+  }
+
+  ion-label {
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+}
+
+ion-list {
+  background: transparent;
+
+  ion-item {
+    --background: transparent;
+
+    ion-note {
+      font-size: 11px;
+      color: var(--app-text-muted);
+    }
+  }
+}
+
+.readonly-value {
+  font-weight: 700;
+  color: var(--app-text);
+  font-size: 14px;
+}
+
+.logo-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--app-text-muted);
+}
+
+.form-error {
+  background: var(--app-danger-soft-bg);
+  color: var(--app-danger-soft-text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.config-hint {
+  display: block;
+  padding: 8px 14px 2px;
+  font-size: 11.5px;
+  color: var(--app-text-muted);
+}
+
+.pw-btn {
+  margin: 10px 14px 14px;
+}
+
+/* Website tab */
+.website-desc {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--app-text-muted);
+}
+
+.website-url {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+
+  ion-icon {
+    font-size: 20px;
+    color: var(--ion-color-primary);
+    flex-shrink: 0;
+  }
+
+  a {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    word-break: break-all;
+    text-decoration: none;
+  }
+}
+
+.website-hint {
+  display: block;
+  padding: 10px 2px 0;
+  font-size: 11.5px;
+  color: var(--app-text-muted);
+  line-height: 1.45;
+}
+
+/* Template tab */
+.template-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------- Tab Template hóa đơn ---------- */
+.template-toolbar {
+  --background: transparent;
+  --border-width: 0;
+  margin-bottom: 10px;
+}
+
+.template-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.template-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  color: var(--ion-color-primary);
+  cursor: pointer;
+  box-shadow: var(--app-shadow-sm);
+
+  ion-icon {
+    font-size: 19px;
+  }
+
+  &:active {
+    background: var(--app-surface-alt);
+  }
+}
+
+.template-editor {
+  --background: var(--app-surface-alt);
+  --color: var(--app-text);
+  border-radius: 10px;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.var-group {
+  margin-bottom: 12px;
+
+  h5 {
+    margin: 0 0 6px;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--app-text);
+  }
+}
+
+.var-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  code {
+    font-size: 11px;
+    background: var(--app-surface-alt);
+    border: 1px solid var(--app-border);
+    border-radius: 6px;
+    padding: 3px 7px;
+    color: var(--ion-color-primary);
+  }
+}
+
+.template-preview {
+  background: #fff;
+  color: #000;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 12px;
+
+  .preview-title {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .preview-shop {
+    text-align: center;
+    font-weight: 700;
+    font-size: 13.5px;
+  }
+
+  .preview-line {
+    text-align: center;
+    font-size: 11.5px;
+    color: #333;
+  }
+
+  .preview-sep {
+    border-top: 1px dashed #000;
+    margin: 8px 0;
+  }
+
+  .preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6px 0;
+
+    th, td {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      font-size: 11.5px;
+    }
+
+    th {
+      text-align: center;
+      background: #f2f2f2;
+    }
+  }
+
+  .preview-note {
+    font-style: italic;
+    font-size: 11.5px;
+    margin-top: 6px;
+  }
+
+  .preview-sign {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 14px;
+    font-weight: 700;
+    font-size: 11.5px;
+  }
+}
+
+.setting-label {
+  font-size: 13.5px;
+  white-space: normal;
+  line-height: 1.4;
+}

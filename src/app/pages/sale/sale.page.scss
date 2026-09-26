@@ -1,0 +1,758 @@
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+.sale-container {
+  padding-bottom: 90px;
+}
+
+/* ---------- Tab đơn hàng ---------- */
+.order-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.order-tab {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--app-text-muted);
+  cursor: pointer;
+
+  &.active {
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    border-color: var(--ion-color-primary);
+    color: var(--ion-color-primary);
+  }
+}
+
+.order-tab-add {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px dashed var(--ion-color-primary);
+  background: transparent;
+  color: var(--ion-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ---------- Rows ---------- */
+.page-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.sale-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--app-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .sale-label {
+    min-width: 108px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--app-text-muted);
+    flex-shrink: 0;
+  }
+
+  .sale-input {
+    flex: 1;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --background: var(--app-surface-alt);
+    --color: var(--app-text);
+    border-radius: 8px;
+    font-size: 13.5px;
+  }
+
+  .sale-input.full {
+    flex: 1;
+    width: 100%;
+  }
+}
+
+.total-row {
+  justify-content: space-between;
+
+  strong {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--app-text);
+  }
+
+  &.big strong.due {
+    font-size: 19px;
+    color: var(--ion-color-primary);
+  }
+}
+
+.sale-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 15px;
+  }
+
+  &:active {
+    background: var(--app-surface-alt);
+  }
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--ion-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &.danger {
+    color: var(--ion-color-danger);
+    border-color: transparent;
+    background: transparent;
+  }
+}
+
+/* ---------- Sản phẩm ---------- */
+.sale-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+
+  h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--app-text);
+  }
+}
+
+.sale-section-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.barcode-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+
+  .barcode-input {
+    flex: 1;
+    --padding-start: 10px;
+    --padding-end: 10px;
+    --background: var(--app-surface-alt);
+    --color: var(--app-text);
+    border-radius: 8px;
+    font-size: 13px;
+  }
+}
+
+.sale-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  line-height: 1.5;
+  padding: 18px 10px;
+
+  ion-icon {
+    font-size: 16px;
+    vertical-align: -3px;
+  }
+}
+
+.sale-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.sale-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--app-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .sale-item-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sale-item-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--app-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sale-item-meta {
+    font-size: 12px;
+    color: var(--app-text-muted);
+  }
+
+  .sale-item-total {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--app-text);
+    min-width: 74px;
+    text-align: right;
+  }
+}
+
+.qty-ctrl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.qty-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--ion-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 15px;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+.qty-val {
+  min-width: 26px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+/* ---------- Phần trăm / checkbox ---------- */
+.pct-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+
+  ion-input {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --background: var(--app-surface-alt);
+    --color: var(--app-text);
+    border-radius: 8px;
+    font-size: 13.5px;
+    max-width: 90px;
+  }
+
+  span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--app-text-muted);
+  }
+}
+
+.sale-check {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--ion-color-primary);
+}
+
+.currency-note {
+  text-align: right;
+  font-size: 11.5px;
+  color: var(--app-text-muted);
+  padding: 6px 0 10px;
+}
+
+.qr-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-primary);
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  color: var(--ion-color-primary);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+/* ---------- Bố cục chia đôi: đơn hàng (trái) + chọn sản phẩm (phải) — như Isale ---------- */
+.sale-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'top'
+    'aside'
+    'bottom';
+}
+
+.sale-split-top {
+  grid-area: top;
+  min-width: 0;
+}
+
+.sale-split-bottom {
+  grid-area: bottom;
+  min-width: 0;
+}
+
+.sale-split-aside {
+  grid-area: aside;
+  min-width: 0;
+}
+
+@media (min-width: 992px) {
+  .sale-container {
+    max-width: 1380px;
+  }
+
+  .sale-split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'top aside'
+      'bottom aside';
+    column-gap: 16px;
+    align-items: start;
+  }
+
+  /* Cột phải dính theo cuộn — luôn thấy lưới sản phẩm khi đang nhập đơn */
+  .sale-split-aside {
+    position: sticky;
+    top: 10px;
+  }
+
+  .catalog-card {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 170px);
+    margin-bottom: 0;
+  }
+
+  .catalog-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+
+/* ---------- Cột phải: chọn sản phẩm (giống Isale product-selector) ---------- */
+.catalog-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.catalog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  h5 {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--app-text);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .catalog-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--app-text-muted);
+  }
+}
+
+/* Lưới thẻ sản phẩm: 3 cột mobile, 4 cột trong pane desktop (như maxCardsPerRow=4 của Isale) */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 2px 0 4px;
+
+  @media (min-width: 640px) and (max-width: 991.98px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+.catalog-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+
+  &:active {
+    transform: scale(0.97);
+    border-color: var(--ion-color-primary);
+  }
+}
+
+/* Ảnh cố định chiều cao (Isale: 120/132px), tên nổi dạng badge trên ảnh */
+.tile-img {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 120px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: rgba(var(--ion-color-primary-rgb), 0.07);
+
+  @media (min-width: 768px) {
+    height: 132px;
+  }
+
+  ion-icon {
+    font-size: 26px;
+    color: var(--app-text-muted);
+  }
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.tile-name {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  max-width: calc(100% - 12px);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.08);
+  background: rgba(var(--ion-background-color-rgb, 255, 255, 255), 0.92);
+  color: var(--ion-text-color, var(--app-text));
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Nút + tròn gọn, nổi góc dưới phải ảnh (Isale psi-actions) */
+.tile-add {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade, var(--ion-color-primary)));
+  color: var(--ion-color-primary-contrast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.4);
+
+  ion-icon {
+    font-size: 16px;
+  }
+}
+
+.tile-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 1px 3px 2px;
+}
+
+/* ---------- Nút + tròn nổi giữa đáy màn hình (như FAB trong product-selector của Isale) ---------- */
+ion-fab.sale-fab {
+  ion-fab-button {
+    --border-radius: 50%;
+    width: 46px;
+    height: 46px;
+    --background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade, var(--ion-color-primary)));
+    --box-shadow: 0 6px 18px rgba(var(--ion-color-primary-rgb), 0.45);
+    font-size: 26px;
+    transition: transform 0.15s ease;
+  }
+
+  ion-fab-button:active {
+    transform: scale(0.92);
+  }
+
+  /* Desktop: khung chọn sản phẩm luôn hiển thị bên phải rồi — ẩn như Isale (display:none) */
+  @media (min-width: 992px) {
+    display: none;
+  }
+}
+
+.tile-price {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--ion-color-primary);
+}
+
+.tile-stock {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--app-text-muted);
+
+  &.out {
+    color: var(--ion-color-danger);
+    font-weight: 700;
+  }
+}
+
+/* ---------- Panel chọn sản phẩm ---------- */
+.picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+}
+
+.picker-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 72vh;
+  background: var(--app-surface);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 8px;
+
+  h4 {
+    margin: 0;
+    font-size: 15.5px;
+    font-weight: 800;
+    color: var(--app-text);
+  }
+}
+
+.picker-filters {
+  display: flex;
+  gap: 16px;
+  padding: 0 16px 10px;
+  flex-wrap: wrap;
+}
+
+.picker-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  span {
+    font-size: 12.5px;
+    color: var(--app-text-muted);
+    font-weight: 600;
+  }
+}
+
+.picker-chip {
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+  cursor: pointer;
+
+  &.muted {
+    color: var(--app-text-muted);
+    font-weight: 600;
+  }
+}
+
+.picker-search {
+  position: relative;
+  padding: 0 16px 10px;
+
+  ion-input {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --background: var(--app-surface-alt);
+    --color: var(--app-text);
+    border-radius: 10px;
+    font-size: 13.5px;
+  }
+
+  ion-icon {
+    position: absolute;
+    right: 28px;
+    top: 12px;
+    font-size: 17px;
+    color: var(--app-text-muted);
+  }
+}
+
+.picker-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px;
+}
+
+.picker-item {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--app-border);
+  cursor: pointer;
+
+  &:active {
+    background: var(--app-surface-alt);
+  }
+
+  .picker-item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--app-text);
+  }
+
+  .picker-item-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--app-text-muted);
+    margin-top: 2px;
+
+    .picker-stock.out {
+      color: var(--ion-color-danger);
+    }
+  }
+}
+
+.picker-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px 16px;
+
+  span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--app-text);
+  }
+}
+
+/* ISale: Hinh thuc thanh toan */
+.pay-methods {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pay-method {
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text);
+  cursor: pointer;
+
+  &.active {
+    background: var(--ion-color-primary);
+    border-color: var(--ion-color-primary);
+    color: #fff;
+  }
+}

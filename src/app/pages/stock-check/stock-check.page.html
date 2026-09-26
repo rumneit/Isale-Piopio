@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Kiểm kho</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Tìm theo mã phiếu" [debounce]="300" (ionInput)="onSearch($any($event))" />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="clipboard-outline" /></div>
+        Chưa có phiếu kiểm kê nào. Nhấn + để tạo phiếu đếm thực tế.
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (count of items(); track count.id) {
+            <ion-item button (click)="openDetail(count)">
+              <ion-icon slot="start" [name]="statusIcon(count.status)" [color]="statusColor(count.status)" />
+              <ion-label>
+                <h3>{{ count.code }}</h3>
+                <p>
+                  {{ count.items.length }} SP ·
+                  <span [class.sc-pos]="count.total_diff > 0" [class.sc-neg]="count.total_diff < 0">
+                    lệch {{ count.total_diff > 0 ? '+' : '' }}{{ count.total_diff }}
+                  </span>
+                  · {{ count.created_at | date: 'dd/MM HH:mm' }}
+                </p>
+              </ion-label>
+              <ion-badge slot="end" [color]="statusColor(count.status)">{{ statusLabel(count.status) }}</ion-badge>
+              @if (count.status === 'draft') {
+                <ion-button slot="end" fill="clear" color="danger" (click)="confirmRemove(count, $event)">
+                  <ion-icon slot="icon-only" name="trash-outline" />
+                </ion-button>
+              }
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">
+        <ion-icon name="checkmark-done-outline" />
+        Mở phiếu để nhập số lượng đếm; chốt phiếu mới cập nhật tồn kho
+      </ion-note>
+    }
+  </div>
+
+  <!-- Bộ 3 FAB chuẩn ISale -->
+  <app-fab-trio mainIcon="add" mainLabel="Tạo phiếu kiểm kê" (mainAction)="openNew()" />
+</ion-content>

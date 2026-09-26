@@ -1,0 +1,111 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/order" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ order()?.code ?? 'Đơn hàng' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="printInvoice()" [disabled]="busy()">
+        <ion-icon slot="icon-only" name="print-outline" />
+      </ion-button>
+      <ion-button (click)="goReturn()" [disabled]="busy()">
+        <ion-icon slot="icon-only" name="return-down-back-outline" color="warning" />
+      </ion-button>
+      <ion-button (click)="confirmDelete()" [disabled]="busy()">
+        <ion-icon slot="icon-only" name="trash-outline" color="danger" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  @if (loading()) {
+    <div class="page-loading"><ion-spinner name="crescent" /></div>
+  } @else if (order(); as o) {
+    <div class="app-page-container">
+      <div class="app-card">
+        <div class="detail-head">
+          <div>
+            <div class="detail-code">{{ o.code }}</div>
+            <div class="detail-date">{{ o.created_at | date: 'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+          <ion-badge [color]="o.paid ? 'success' : 'warning'">{{ o.paid ? 'Đã thanh toán' : 'Còn nợ' }}</ion-badge>
+        </div>
+
+        <ion-list lines="full">
+          @if (hasPaymentMethod) {
+            <ion-item>
+              <ion-icon slot="start" name="card-outline" />
+              <ion-label>
+                <h3>{{ o.payment_method ?? '—' }}</h3>
+                <p>Hình thức thanh toán</p>
+              </ion-label>
+            </ion-item>
+          }
+          <ion-item>
+            <ion-icon slot="start" name="person-outline" />
+            <ion-label>
+              <h3>{{ o.customer_name ?? 'Khách lẻ' }}</h3>
+              <p>Khách hàng</p>
+            </ion-label>
+          </ion-item>
+          @if (o.note) {
+            <ion-item>
+              <ion-icon slot="start" name="ellipse-outline" />
+              <ion-label>
+                <h3>{{ o.note }}</h3>
+                <p>Ghi chú</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+
+      <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="receipt-outline" /> Sản phẩm ({{ items().length }})</h4></div>
+        <ion-list lines="full">
+          @for (item of items(); track item.id) {
+            <ion-item>
+              <ion-label>
+                <h3>{{ item.name }}</h3>
+                <p>{{ item.qty }} × {{ formatMoney(item.price) }}</p>
+              </ion-label>
+              <ion-badge slot="end" color="light">{{ formatMoney(item.total) }}</ion-badge>
+            </ion-item>
+          }
+        </ion-list>
+
+        <div class="detail-sums">
+          <div class="detail-sum-row">
+            <span>Tổng số lượng</span>
+            <span>{{ totalQty() }}</span>
+          </div>
+          <div class="detail-sum-row">
+            <span>Tổng tiền hàng</span>
+            <span>{{ formatMoney(o.total + (o.discount ?? 0)) }}</span>
+          </div>
+          @if ((o.discount ?? 0) > 0) {
+            <div class="detail-sum-row">
+              <span>Giảm giá</span>
+              <span>-{{ formatMoney(o.discount) }}</span>
+            </div>
+          }
+          <div class="detail-sum-row detail-sum-total">
+            <span>Tổng cộng</span>
+            <span>{{ formatMoney(o.total) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <ion-button expand="block" fill="outline" [color]="o.paid ? 'warning' : 'success'" (click)="togglePaid()" [disabled]="busy()">
+        <ion-icon slot="start" [name]="o.paid ? 'ellipse-outline' : 'checkmark-circle-outline'" />
+        {{ o.paid ? 'Đánh dấu còn nợ' : 'Đánh dấu đã thanh toán' }}
+      </ion-button>
+    </div>
+  } @else {
+    <div class="app-empty">Không tìm thấy đơn hàng</div>
+  }
+</ion-content>

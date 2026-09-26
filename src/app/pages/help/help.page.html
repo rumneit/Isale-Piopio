@@ -1,0 +1,39 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Trợ giúp</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="app-page-container">
+    <div class="help-hero">
+      <ion-icon name="help-circle-outline" />
+      <div>
+        <h4>Cách dùng PioPio</h4>
+        <p>Chọn chủ đề bên dưới để xem hướng dẫn nhanh</p>
+      </div>
+    </div>
+
+    <div class="app-card">
+      <ion-list lines="full">
+        @for (item of items; track item.title) {
+          <ion-item button (click)="open(item.path)" detail="true">
+            <div class="help-icon" slot="start">
+              <ion-icon [name]="item.icon" />
+            </div>
+            <ion-label>
+              <h3>{{ item.title }}</h3>
+              <p>{{ item.desc }}</p>
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    </div>
+  </div>
+</ion-content>

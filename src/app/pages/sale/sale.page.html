@@ -1,0 +1,301 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="arrow-back-outline" />
+      </ion-button>
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Bán hàng</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="busy()">
+        @if (busy()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          <ion-icon slot="icon-only" name="checkmark-outline" />
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Tab đơn hàng -->
+  <ion-toolbar>
+    <div class="order-tabs">
+      <button class="order-tab active">Đơn hàng 1</button>
+      <button class="order-tab-add">
+        <ion-icon name="add-outline" />
+      </button>
+    </div>
+  </ion-toolbar>
+
+  <!-- 4 tab chính -->
+  <ion-toolbar>
+    <ion-segment [value]="tab()" (ionChange)="selectTab($any($event.detail.value))" [scrollable]="true">
+      <ion-segment-button value="payment"><ion-label>Thanh toán</ion-label></ion-segment-button>
+      <ion-segment-button value="customer"><ion-label>Khách hàng</ion-label></ion-segment-button>
+      <ion-segment-button value="note"><ion-label>Ghi chú</ion-label></ion-segment-button>
+      <ion-segment-button value="shipping"><ion-label>Vận chuyển</ion-label></ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  @if (loading()) {
+    <div class="page-loading"><ion-spinner name="crescent" /></div>
+  } @else {
+    <div class="app-page-container sale-container">
+      <!-- TAB THANH TOÁN -->
+      @if (tab() === 'payment') {
+        <div class="sale-split">
+        <!-- CỘT TRÁI: ĐƠN HÀNG -->
+        <div class="sale-split-top">
+        <div class="app-card">
+          <div class="sale-row">
+            <span class="sale-label">Mã đơn</span>
+            <ion-input [(ngModel)]="orderCode" class="sale-input" />
+            <button class="icon-btn" (click)="resetCode()"><ion-icon name="refresh-outline" /></button>
+          </div>
+          <div class="sale-row">
+            <span class="sale-label">Ngày</span>
+            <ion-input type="datetime-local" [(ngModel)]="orderDate" class="sale-input" />
+          </div>
+          <div class="sale-row">
+            <span class="sale-label">Nhân viên/CTV</span>
+            <button class="sale-btn" (click)="selectStaff()">
+              <ion-icon name="person-outline" /> {{ staffName() }}
+            </button>
+          </div>
+          @if (hasPaymentMethodColumn) {
+            <div class="sale-row">
+              <span class="sale-label">Hình thức thanh toán</span>
+              <div class="pay-methods">
+                @for (m of paymentMethods; track m) {
+                  <button class="pay-method" [class.active]="paymentMethod === m" (click)="paymentMethod = m">{{ m }}</button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Sản phẩm -->
+        <div class="app-card">
+          <div class="sale-section-head">
+            <h4>Sản phẩm</h4>
+            <div class="sale-section-actions">
+              <button class="sale-btn" (click)="focusBarcode(barcodeField)">
+                <ion-icon name="barcode-outline" /> Quét mã
+              </button>
+              <button class="sale-btn" (click)="openQuotes()">
+                <ion-icon name="reader-outline" /> Từ báo giá
+              </button>
+            </div>
+          </div>
+
+          <div class="barcode-row">
+            <ion-input
+              #barcodeField
+              [(ngModel)]="barcodeInput"
+              (keyup.enter)="addByBarcode()"
+              aria-label="Mã vạch"
+              placeholder="Mã vạch: chọn ô này, dùng đầu đọc hoặc nhập tay"
+              class="barcode-input"
+            />
+            <button class="icon-btn" (click)="addByBarcode()"><ion-icon name="barcode-outline" /></button>
+          </div>
+
+          @if (items().length === 0) {
+            <div class="app-empty sale-empty">
+              Chưa có sản phẩm nào trong đơn. Bấm vào sản phẩm ở danh sách bên dưới để thêm,
+              hoặc dùng ô "Mã vạch" với thiết bị đọc mã.
+            </div>
+          } @else {
+            <div class="sale-items">
+              @for (item of items(); track $index; let i = $index) {
+                <div class="sale-item">
+                  <div class="sale-item-main">
+                    <div class="sale-item-name">{{ item.name }}</div>
+                    <div class="sale-item-meta">{{ item.unit ?? '—' }} · {{ formatMoney(item.price) }}</div>
+                  </div>
+                  <div class="qty-ctrl">
+                    <button class="qty-btn" (click)="decQty(i)"><ion-icon name="remove-outline" /></button>
+                    <span class="qty-val">{{ item.qty }}</span>
+                    <button class="qty-btn" (click)="incQty(i)"><ion-icon name="add-outline" /></button>
+                  </div>
+                  <span class="sale-item-total">{{ formatMoney(item.price * item.qty) }}</span>
+                  <button class="icon-btn danger" (click)="removeItem(i)"><ion-icon name="trash-outline" /></button>
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+        </div>
+        <!-- /sale-split-top -->
+
+        <!-- CỘT PHẢI: CHỌN SẢN PHẨM (giống Isale product-selector) -->
+        <aside class="sale-split-aside">
+          <div class="app-card catalog-card" #catalogCard>
+            <div class="catalog-head">
+              <h5>Chọn sản phẩm</h5>
+              <span class="catalog-count">{{ pickerFiltered().length }} sản phẩm</span>
+            </div>
+            <div class="picker-search">
+              <ion-input
+                #catalogSearch
+                [ngModel]="pickerSearch()"
+                (ionInput)="onPickerSearch($any($event))"
+                aria-label="Tìm sản phẩm"
+                placeholder="Tìm sản phẩm theo tên hoặc mã..."
+              />
+              <ion-icon name="search-outline" />
+            </div>
+
+            <div class="catalog-scroll">
+              @if (pickerFiltered().length === 0) {
+                <div class="app-empty sale-empty">
+                  @if (products().length === 0) {
+                    Chưa có sản phẩm nào trong kho. Vào mục <b>Sản phẩm</b> để thêm sản phẩm trước.
+                  } @else {
+                    Không tìm thấy sản phẩm khớp "{{ pickerSearch() }}".
+                  }
+                </div>
+              } @else {
+                <!-- Thẻ kiểu Isale: ảnh + tên nổi trên ảnh + nút thêm + giá/tồn dưới ảnh -->
+                <div class="catalog-grid">
+                  @for (p of pickerPaged(); track p.id) {
+                    <button class="catalog-tile" (click)="addProduct(p)">
+                      <span class="tile-img">
+                        <ion-icon name="cube-outline" />
+                        @if (p.image) {
+                          <img [src]="p.image" [alt]="p.name" loading="lazy" (error)="hideImg($event)" />
+                        }
+                        <span class="tile-name">{{ p.name }}</span>
+                        <span class="tile-add" (click)="quickAdd($event, p)" title="Thêm nhanh vào đơn"><ion-icon name="add-outline" /></span>
+                      </span>
+                      <span class="tile-meta">
+                        <span class="tile-price">{{ formatMoney(p.price) }}</span>
+                        <span class="tile-stock" [class.out]="p.stock <= 0">Tồn {{ p.stock }}</span>
+                      </span>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+            @if (pickerFiltered().length > 0) {
+              <div class="picker-pager">
+                <button class="qty-btn" (click)="prevPickerPage()" [disabled]="pickerPage() <= 1">
+                  <ion-icon name="chevron-back-outline" />
+                </button>
+                <span>Trang {{ pickerPage() }} / {{ pickerTotalPages() }}</span>
+                <button class="qty-btn" (click)="nextPickerPage()" [disabled]="pickerPage() >= pickerTotalPages()">
+                  <ion-icon name="chevron-forward-outline" />
+                </button>
+              </div>
+            }
+          </div>
+        </aside>
+
+        <!-- TỔNG TIỀN & THANH TOÁN -->
+        <div class="sale-split-bottom">
+        <div class="app-card">
+          <div class="sale-row">
+            <span class="sale-label">Tài khoản</span>
+            <button class="sale-btn" (click)="selectAccount()">
+              <ion-icon name="wallet-outline" /> {{ accountName() }}
+            </button>
+          </div>
+          <div class="sale-row">
+            <span class="sale-label">Trạng thái</span>
+            <ion-select [(ngModel)]="status" interface="action-sheet" cancelText="Đóng" class="sale-input">
+              <ion-select-option value="completed">Hoàn thành</ion-select-option>
+              <ion-select-option value="pending">Chờ xử lý</ion-select-option>
+              <ion-select-option value="shipping">Đang giao</ion-select-option>
+            </ion-select>
+          </div>
+          <div class="sale-row">
+            <span class="sale-label">Khách trả ship?</span>
+            <input type="checkbox" [(ngModel)]="customerShipPaid" class="sale-check" />
+          </div>
+          <div class="sale-row">
+            <span class="sale-label">Chiết khấu</span>
+            <div class="pct-input">
+              <ion-input type="number" min="0" max="100" [(ngModel)]="discountPercent" />
+              <span>%</span>
+            </div>
+          </div>
+          <div class="sale-row total-row">
+            <span class="sale-label">Tổng tạm tính</span>
+            <strong>{{ formatMoney(subtotal()) }}</strong>
+          </div>
+          <div class="sale-row">
+            <span class="sale-label">Thuế</span>
+            <div class="pct-input">
+              <ion-input type="number" min="0" [(ngModel)]="taxPercent" />
+              <span>%</span>
+            </div>
+          </div>
+          <div class="sale-row total-row big">
+            <span class="sale-label">Tổng phải trả</span>
+            <strong class="due">{{ formatMoney(totalDue()) }}</strong>
+          </div>
+          <div class="sale-row">
+            <span class="sale-label">Khách đưa</span>
+            <ion-input type="number" min="0" [(ngModel)]="customerPaid" class="sale-input" />
+          </div>
+          <div class="sale-row total-row">
+            <span class="sale-label">Tiền thừa</span>
+            <strong>{{ formatMoney(changeDue()) }}</strong>
+          </div>
+          <div class="currency-note">* Đơn vị tiền: VND</div>
+          <button class="qr-btn" (click)="showQr()">
+            <ion-icon name="qr-code-outline" /> Hiện QR Code thanh toán
+          </button>
+        </div>
+        </div>
+        </div>
+        <!-- /sale-split -->
+      }
+
+      <!-- TAB KHÁCH HÀNG -->
+      @if (tab() === 'customer') {
+        <div class="app-card">
+          <div class="app-card-title"><h4>Khách hàng</h4></div>
+          <div class="sale-row">
+            <span class="sale-label">Khách hàng</span>
+            <button class="sale-btn" (click)="selectCustomer()">
+              <ion-icon name="person-outline" /> {{ selectedCustomerName || 'Khách lẻ' }}
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- TAB GHI CHÚ -->
+      @if (tab() === 'note') {
+        <div class="app-card">
+          <div class="app-card-title"><h4>Ghi chú</h4></div>
+          <ion-input [(ngModel)]="note" aria-label="Ghi chú cho đơn hàng" placeholder="Ghi chú cho đơn hàng..." class="sale-input full" />
+        </div>
+      }
+
+      <!-- TAB VẬN CHUYỂN -->
+      @if (tab() === 'shipping') {
+        <div class="app-card">
+          <div class="app-card-title"><h4>Vận chuyển</h4></div>
+          <ion-input [(ngModel)]="shippingNote" aria-label="Thông tin vận chuyển" placeholder="Thông tin vận chuyển / đối tác giao hàng..." class="sale-input full" />
+        </div>
+      }
+
+      <!-- Nút + tròn nổi giữa đáy màn hình: luôn hiện khi cuộn, bấm để tới khung chọn sản phẩm (như Isale) -->
+      @if (tab() === 'payment') {
+        <ion-fab slot="fixed" vertical="bottom" horizontal="center" class="sale-fab">
+          <ion-fab-button (click)="goToCatalog()" aria-label="Thêm sản phẩm">
+            <ion-icon name="add-outline" />
+          </ion-fab-button>
+        </ion-fab>
+      }
+    </div>
+  }
+</ion-content>

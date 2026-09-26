@@ -1,0 +1,116 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="app-menu" auto-hide="false" />
+    </ion-buttons>
+    <ion-title>PioPio - Đăng nhập</ion-title>
+    <ion-buttons slot="end">
+      <div class="lang-tabs">
+        <button class="lang-tab" [class.active]="lang() === 'vn'" (click)="setLang('vn')">VN</button>
+        <button class="lang-tab" [class.active]="lang() === 'en'" (click)="setLang('en')">EN</button>
+      </div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="login-wrapper">
+    <!-- Logo + tagline -->
+    <div class="login-logo">
+      <div class="login-logo-badge">
+        <ion-icon name="storefront-outline" />
+      </div>
+      <h1>PioPio</h1>
+      <p>Quản lý bán hàng chuyên nghiệp</p>
+    </div>
+
+    @if (!supabaseMissing && info()) {
+      <div class="login-success">{{ info() }}</div>
+    }
+
+    @if (supabaseMissing) {
+      <div class="app-banner-warning">
+        <ion-icon name="lock-closed-outline" />
+        <span>Chưa cấu hình Supabase. Hãy điền <b>supabaseUrl</b> và <b>supabaseAnonKey</b> vào <code>environment.ts</code>.</span>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="login-error">{{ error() }}</div>
+    }
+
+    <div class="login-form">
+      @if (mode() === 'register') {
+        <ion-input
+          class="login-input"
+          label="Tên của bạn"
+          labelPlacement="floating"
+          fill="outline"
+          [(ngModel)]="fullName"
+          placeholder="e.g. Nguyễn Văn A"
+        >
+          <ion-icon slot="start" name="person-outline" />
+        </ion-input>
+      }
+
+      <ion-input
+        class="login-input"
+        label="Email/Phone"
+        labelPlacement="floating"
+        fill="outline"
+        type="text"
+        [(ngModel)]="email"
+        placeholder="e.g. abc@gmail.com"
+      >
+        <ion-icon slot="start" name="mail-outline" />
+      </ion-input>
+
+      <ion-input
+        class="login-input"
+        label="Mật khẩu"
+        labelPlacement="floating"
+        fill="outline"
+        type="password"
+        [(ngModel)]="password"
+        placeholder="e.g. 123456"
+      >
+        <ion-icon slot="start" name="lock-closed-outline" />
+      </ion-input>
+
+      <ion-checkbox class="login-remember" [(ngModel)]="remember">
+        Ghi nhớ, không cần đăng nhập lại
+      </ion-checkbox>
+
+      <ion-button expand="block" class="login-submit" (click)="submit()" [disabled]="busy()">
+        @if (busy()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          {{ mode() === 'login' ? 'Đăng nhập' : 'Tạo tài khoản' }}
+          <ion-icon slot="end" name="log-in-outline" />
+        }
+      </ion-button>
+
+      @if (mode() === 'login') {
+        <ion-button expand="block" fill="outline" class="login-register" (click)="switchMode('register')">
+          <ion-icon slot="start" name="person-add-outline" />
+          Tạo tài khoản truy cập
+        </ion-button>
+      } @else {
+        <ion-button expand="block" fill="outline" class="login-register" (click)="switchMode('login')">
+          Quay lại đăng nhập
+        </ion-button>
+      }
+
+      @if (mode() === 'login') {
+        <p class="login-forgot" (click)="forgotPassword()">Quên mật khẩu?</p>
+        <p class="login-hint">Nếu bạn cần hỗ trợ khôi phục mật khẩu, vui lòng liên hệ email hoặc Zalo.</p>
+      }
+      <p class="login-note">
+        Chú ý: Để thiết lập đơn vị tiền tệ sử dụng trong ứng dụng, bạn hãy vào menu 'Cấu hình'.
+        Đơn vị tiền tệ mặc định là 'VNĐ'.
+      </p>
+    </div>
+
+    <p class="login-version">Phiên bản: 1.0.0 — PioPio</p>
+  </div>
+</ion-content>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>PioPio - Sales Management</title>
+
+  <base href="/" />
+
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="msapplication-tap-highlight" content="no" />
+
+  <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
+
+  <!-- add to homescreen for ios -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+  <script>
+    (function () {
+      function applyDarkTheme(isDark) {
+        var root = document.documentElement;
+        root.classList.toggle('ion-palette-dark', isDark);
+        root.style.colorScheme = isDark ? 'dark' : 'light';
+        if (document.body) {
+          root.classList.toggle('dark-theme', isDark);
+          document.body.classList.toggle('dark-theme', isDark);
+        }
+      }
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      applyDarkTheme(mq.matches);
+      if (mq.addEventListener) {
+        mq.addEventListener('change', function (e) { applyDarkTheme(e.matches); });
+      } else if (mq.addListener) {
+        mq.addListener(function (e) { applyDarkTheme(e.matches); });
+      }
+      document.addEventListener('DOMContentLoaded', function () { applyDarkTheme(mq.matches); });
+    })();
+  </script>
+</head>
+
+<body>
+  <app-root></app-root>
+</body>
+
+</html>

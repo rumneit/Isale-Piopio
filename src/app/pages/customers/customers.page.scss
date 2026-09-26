@@ -1,0 +1,240 @@
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+/* ---------- Tab phân loại ---------- */
+/* ---------- Tab phân loại (ISale: 3 khối lớn, active nền tím đặc) ---------- */
+.customer-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  background: rgba(var(--ion-color-primary-rgb), 0.06);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 10px;
+}
+
+.customer-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  padding: 9px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &.active {
+    background: var(--ion-color-primary);
+    color: #ffffff;
+    font-weight: 700;
+  }
+}
+
+/* ---------- Toolbar ---------- */
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-left,
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--app-text);
+  margin-left: 4px;
+}
+
+/* ---------- Danh sách ---------- */
+.page-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+/* Danh sách khách (ISale: grid card responsive full-width) */
+.customers-container {
+  max-width: none;
+}
+
+.customer-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .customer-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.customer-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 3px 1px rgba(0, 0, 0, 0.04);
+  padding: 14px 16px 12px;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  .customer-name {
+    margin: 0 0 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--app-border);
+    font-size: 15.5px;
+    font-weight: 800;
+    color: #1f2a5a;
+    letter-spacing: -0.01em;
+    color: var(--app-text);
+  }
+}
+
+.customer-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+  align-items: end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+
+  &.grow {
+    grid-column: 1 / -1;
+  }
+
+  .field-label {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+    font-weight: 600;
+  }
+
+  .field-value {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--app-text);
+    line-height: 1.4;
+  }
+}
+
+.phone-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon-action {
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  border: none;
+  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ion-color-primary);
+  padding: 0;
+
+  ion-icon {
+    font-size: 15px;
+  }
+
+  &:active {
+    background: rgba(var(--ion-color-primary-rgb), 0.2);
+  }
+}
+
+ion-toggle {
+  --track-background-checked: rgba(var(--ion-color-primary-rgb), 0.4);
+}
+
+/* ---------- Phân trang ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 0 4px;
+
+  span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--app-text);
+  }
+}
+
+/* ISale grid icon: danh sach gon */
+.customer-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.customer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  cursor: pointer;
+
+  .row-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .row-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1f2a5a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .row-sub {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+  }
+
+  .row-side {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+    flex-shrink: 0;
+  }
+}

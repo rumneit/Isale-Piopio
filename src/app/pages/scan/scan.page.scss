@@ -1,0 +1,125 @@
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+.scan-camera-card {
+  .scan-camera-wrap {
+    position: relative;
+    height: 220px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--app-surface-alt);
+    border: 1px dashed var(--app-border);
+    margin-bottom: 12px;
+
+    &.active {
+      border-style: solid;
+      border-color: var(--ion-color-primary);
+    }
+  }
+
+  .scan-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+
+    &.hidden {
+      display: none;
+    }
+  }
+
+  .scan-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--app-text-muted);
+
+    ion-icon {
+      font-size: 44px;
+      opacity: 0.5;
+    }
+
+    p {
+      font-size: 13px;
+      margin: 0;
+    }
+  }
+}
+
+.scan-note {
+  display: block;
+  font-size: 12px;
+  padding: 8px 2px 0;
+  color: var(--app-text-muted);
+}
+
+.scan-input {
+  margin-bottom: 10px;
+}
+
+.scan-lookup-btn {
+  margin-top: 4px;
+}
+
+.scan-result {
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.4);
+
+  .scan-result-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--app-text);
+    }
+
+    .scan-sku {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--app-text-muted);
+    }
+  }
+
+  .scan-result-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    color: var(--ion-color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+
+  .scan-result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--app-border);
+    font-size: 14px;
+
+    span {
+      color: var(--app-text-muted);
+    }
+
+    strong {
+      color: var(--app-text);
+    }
+
+    &:last-of-type {
+      margin-bottom: 12px;
+    }
+  }
+}

@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+      <ion-button (click)="goHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ label }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="coming-wrapper">
+    <div class="coming-icon">
+      <ion-icon name="construct-outline" />
+    </div>
+    <h2>{{ label }}</h2>
+    <p>Module này sẽ được xây dựng ở phiên tiếp theo.</p>
+    <ion-button (click)="goHome()">
+      <ion-icon slot="start" name="home-outline" />
+      Về trang chủ
+    </ion-button>
+  </div>
+</ion-content>

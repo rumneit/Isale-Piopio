@@ -1,0 +1,21 @@
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+
+  ion-note {
+    font-size: 11px;
+    color: var(--app-text-muted);
+  }
+}
+
+.form-error {
+  background: var(--app-danger-soft-bg);
+  color: var(--app-danger-soft-text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}

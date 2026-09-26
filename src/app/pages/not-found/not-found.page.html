@@ -1,0 +1,20 @@
+<ion-content class="nf-page">
+  <div class="nf-wrap">
+    <div class="nf-card">
+      <div class="nf-code">404</div>
+      <h1>Không tìm thấy trang</h1>
+      <p>
+        Đường dẫn <b>{{ currentPath }}</b> không tồn tại hoặc đã bị di chuyển.
+        Bạn có thể về trang chủ hoặc tiếp tục bán hàng.
+      </p>
+      <div class="nf-actions">
+        <ion-button routerLink="/home" class="nf-btn-main">
+          <ion-icon slot="start" name="home-outline" /> Về Trang chủ
+        </ion-button>
+        <ion-button routerLink="/sale" fill="outline" class="nf-btn-outline">
+          <ion-icon slot="start" name="cart-outline" /> Đi đến Bán hàng
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

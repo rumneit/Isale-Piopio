@@ -1,0 +1,89 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="close-outline" />
+      </ion-button>
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ isEdit ? 'Sửa lead' : 'Thêm lead' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="busy()">
+        @if (busy()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          <ion-icon slot="icon-only" name="save-outline" />
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="app-page-container">
+    @if (error) {
+      <div class="form-error">{{ error }}</div>
+    }
+
+    <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="person-outline" /> Thông tin lead</h4></div>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-input label="Tên *" labelPlacement="stacked" placeholder="Nguyễn Văn B" [(ngModel)]="name" />
+        </ion-item>
+        <ion-item>
+          <ion-input label="Số điện thoại" labelPlacement="stacked" type="tel" [(ngModel)]="phone" />
+        </ion-item>
+        <ion-item>
+          <ion-input label="Email" labelPlacement="stacked" type="email" [(ngModel)]="email" />
+        </ion-item>
+        <ion-item>
+          <ion-select label="Nguồn" labelPlacement="floating" [(ngModel)]="source" interface="action-sheet" cancelText="Đóng">
+            @for (s of crmService.sources; track s) {
+              <ion-select-option [value]="s">{{ s }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="analytics-outline" /> Pipeline</h4></div>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-select label="Giai đoạn" labelPlacement="floating" [(ngModel)]="stage" interface="action-sheet" cancelText="Đóng">
+            @for (s of crmService.stages; track s.value) {
+              <ion-select-option [value]="s.value">{{ s.label }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Giá trị tiềm năng (₫)"
+            labelPlacement="stacked"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            [(ngModel)]="value"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-textarea label="Ghi chú" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="note" />
+        </ion-item>
+      </ion-list>
+      <ion-note class="form-hint">
+        <ion-icon name="call-outline" />
+        Mẹo: gọi tư vấn đều đặn và cập nhật stage để không bỏ lỡ khách
+      </ion-note>
+    </div>
+
+    @if (isEdit) {
+      <ion-button expand="block" color="danger" fill="outline" (click)="confirmDelete()" [disabled]="deleting()">
+        <ion-icon slot="start" name="trash-outline" />
+        {{ deleting() ? 'Đang xóa...' : 'Xóa lead' }}
+      </ion-button>
+    }
+  </div>
+</ion-content>

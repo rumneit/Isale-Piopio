@@ -1,0 +1,57 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Nguyên liệu</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Tìm nguyên liệu" [debounce]="300" (ionInput)="onSearch($any($event))" />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="nutrition-outline" /></div>
+        Chưa có nguyên liệu nào. Nhấn + để thêm.
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (item of items(); track item.id) {
+            <ion-item button (click)="openEdit(item)" detail="false">
+              <div class="material-icon" slot="start">
+                <ion-icon name="nutrition-outline" />
+              </div>
+              <ion-label>
+                <h3>{{ item.name }}</h3>
+                <p>Giá vốn: {{ formatMoney(item.cost) }}/{{ item.unit ?? 'đơn vị' }}</p>
+              </ion-label>
+              <ion-badge slot="end" [color]="(item.stock ?? 0) > 0 ? 'secondary' : 'danger'">
+                Tồn: {{ item.stock }}
+              </ion-badge>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">Nhấn để sửa / xóa nguyên liệu</ion-note>
+    }
+  </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openAdd()">
+      <ion-icon name="add-outline" />
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

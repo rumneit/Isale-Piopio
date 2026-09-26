@@ -1,0 +1,38 @@
+.shop-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% - 24px);
+  margin: 0 12px 10px;
+  padding: 10px 12px;
+  background: var(--app-surface-alt);
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  color: var(--app-text);
+  transition: background 0.15s ease;
+
+  &:active {
+    background: var(--app-border);
+  }
+
+  ion-icon {
+    font-size: 17px;
+    color: var(--ion-color-primary);
+  }
+
+  .shop-switcher-name {
+    flex: 1;
+    text-align: left;
+    font-weight: 700;
+    font-size: 13.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .shop-switcher-icon {
+    color: var(--app-text-muted);
+  }
+}

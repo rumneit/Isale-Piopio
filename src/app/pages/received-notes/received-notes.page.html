@@ -1,0 +1,51 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Nhập hàng</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Tìm theo mã phiếu hoặc nhà cung cấp" [debounce]="300" (ionInput)="onSearch($any($event))" />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="download-outline" /></div>
+        Chưa có phiếu nhập nào. Nhấn + để nhập hàng.
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (note of items(); track note.id) {
+            <ion-item button (click)="confirmDelete(note)" detail="false">
+              <ion-icon slot="start" [name]="note.paid ? 'checkmark-circle-outline' : 'alert-circle-outline'"
+                [color]="note.paid ? 'success' : 'warning'" />
+              <ion-label>
+                <h3>{{ note.code }}</h3>
+                <p>{{ note.supplier_name ?? 'Không rõ NCC' }} · {{ note.items.length }} SP · {{ note.created_at | date: 'dd/MM HH:mm' }}</p>
+              </ion-label>
+              <ion-badge slot="end" color="tertiary">{{ formatMoney(note.total) }}</ion-badge>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">Nhấn phiếu để xóa (tồn kho được hoàn lại)</ion-note>
+    }
+  </div>
+
+  <!-- Bộ 3 FAB chuẩn ISale -->
+  <app-fab-trio mainIcon="add" mainLabel="Tạo phiếu nhập kho" (mainAction)="openAdd()" />
+</ion-content>

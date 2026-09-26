@@ -1,0 +1,433 @@
+ion-content {
+  --background: var(--app-page-bg);
+}
+
+/* ---------- ISale: hàng lọc "Lọc theo ▾ | Danh mục" ---------- */
+.filter-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 56px;
+  padding: 10px 2px 6px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ion-color-primary);
+}
+
+/* Dropdown "Gần đây" — chữ đen, không khung, caret xám như ISale */
+.sort-select {
+  --padding-start: 0;
+  --padding-end: 0;
+  --placeholder-color: var(--app-text);
+  min-height: 34px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--app-text);
+
+  &::part(icon) {
+    color: var(--app-text-muted);
+  }
+}
+
+/* Nút "CHỌN NHÓM HÀNG" — viền tím, uppercase, radius 4px */
+.cat-btn {
+  align-self: flex-start;
+  background: var(--app-surface);
+  border: 1px solid var(--ion-color-primary);
+  border-radius: 4px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ion-color-primary);
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:active {
+    background: rgba(var(--ion-color-primary-rgb), 0.06);
+  }
+}
+
+/* ISale: chế độ chọn nhiều */
+.select-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 2px 10px;
+
+  .select-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    margin-right: 4px;
+  }
+}
+
+ion-button.active-btn {
+  --color: var(--ion-color-primary);
+  font-weight: 700;
+}
+
+.product-card.selectable {
+  cursor: pointer;
+  position: relative;
+
+  .check-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    color: var(--app-border);
+  }
+
+  &.selected {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 2px rgba(96, 48, 255, 0.25);
+
+    .check-badge {
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+/* ISale grid icon: danh sách gọn */
+.product-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.product-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  cursor: pointer;
+
+  &.selected {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 2px rgba(96, 48, 255, 0.25);
+  }
+
+  .row-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .row-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1f2a5a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .row-sub {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+  }
+
+  .row-side {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  .row-qty {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--app-text);
+  }
+
+  .row-price {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    min-width: 76px;
+    text-align: end;
+  }
+}
+
+/* ISale: icon đa sắc trên toolbar */
+ion-button.ic-green {
+  --color: #2dd55b;
+}
+
+ion-button.ic-orange {
+  --color: #d97706;
+}
+
+ion-button.ic-purple {
+  --color: #6030ff;
+}
+
+ion-button.ic-gray {
+  --color: #6c757d;
+}
+
+/* ISale: title tím + nút + tròn đặc trên toolbar */
+ion-toolbar {
+  ion-title.title-purple {
+    --color: #6030ff;
+    font-weight: 600;
+  }
+}
+
+.add-round {
+  --border-radius: 50%;
+  --background: #6030ff;
+  --background-activated: #4b1fe0;
+  /* tròn đều cả host: cố định 37x37 + cắt tròn host */
+  width: 37px;
+  height: 37px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-inline: 4px;
+}
+
+/* ---------- Toolbar ---------- */
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-left,
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.toolbar-total {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--app-text);
+  margin-left: 4px;
+}
+
+/* ISale: phân trang inline phải ("Trang 1/10") */
+.pager {
+  display: flex;
+  align-items: center;
+
+  .pager-label {
+    font-size: 13.5px;
+    font-weight: 400;
+    color: var(--app-text);
+    padding: 0 2px;
+    white-space: nowrap;
+  }
+}
+
+/* ---------- Danh sách sản phẩm (ISale: grid card responsive) ---------- */
+.page-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+/* ISale dùng full-width cho trang danh sách (app-page-wide) */
+:host ::ng-deep .app-page-container.products-container,
+.app-page-container.products-container {
+  max-width: none;
+}
+
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 22px;
+}
+
+@media (max-width: 640px) {
+  .product-list {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+.product-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+  padding: 16px 18px 14px;
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+
+  &:hover {
+    box-shadow: var(--app-shadow-md);
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  .product-name {
+    margin: 0 0 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--app-border);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #27324a;
+  }
+}
+
+/* ISale: lưới trường 2 cột TỰ DỒN (không cố định hàng) */
+.product-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+
+  .field-label {
+    font-size: 12.5px;
+    color: #6c757d;
+    font-weight: 600;
+  }
+
+  .field-value {
+    font-size: 14px;
+    font-weight: 400;
+    color: #212529;
+    word-break: break-word;
+  }
+
+  /* ISale: nhãn Serial + toggle nằm dưới nhãn, trong luồng lưới */
+  &.serial {
+    gap: 4px;
+
+    ion-toggle {
+      --track-background-checked: rgba(96, 48, 255, 0.45);
+      min-height: 28px;
+      width: 88px;
+      padding: 0;
+    }
+  }
+}
+
+/* ---------- FAB "+" ISale: tròn tím ~68px, đáy GIỮA màn hình ---------- */
+.add-fab {
+  ion-fab-button {
+    --background: #6030ff;
+    --background-activated: #4b1fe0;
+    --background-focused: #4b1fe0;
+    --border-radius: 50%;
+    /* cắt tròn cả HOST (global vẽ nền tím trên host — không cắt sẽ vuông) */
+    border-radius: 50%;
+    overflow: hidden;
+    width: 68px;
+    height: 68px;
+    font-size: 32px;
+    box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14);
+  }
+}
+
+/* ---------- Phân trang ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 0 4px;
+
+  span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--app-text);
+  }
+}
+
+/* ---------- Gói Miễn Phí ---------- */
+.home-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  box-shadow: var(--app-shadow-sm);
+  padding: 16px;
+  margin-top: 14px;
+}
+
+.plan-card {
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.35);
+}
+
+.plan-desc {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--app-text-muted);
+}
+
+.plan-limits {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+
+  li {
+    position: relative;
+    padding: 4px 0 4px 22px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--app-text);
+
+    &::before {
+      content: '✓';
+      position: absolute;
+      left: 2px;
+      color: var(--ion-color-primary);
+      font-weight: 800;
+    }
+  }
+}
+
+.plan-upgrade-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}

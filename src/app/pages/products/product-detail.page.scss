@@ -1,0 +1,748 @@
+/* Chi tiết sản phẩm — clone 100% ISale live (audit 09/2026):
+   segment 6 tab chữ pill tím, chips 3 màu, lưới trường 2 cột,
+   cards đơn vị/tổng, empty nét đứt, panel mã vạch canvas */
+
+.page-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+ion-content.pd-page {
+  --background: #f6f8fc;
+}
+
+/* Title tím như ISale */
+ion-toolbar {
+  ion-title.pd-title {
+    --color: var(--ion-color-primary, #6030ff);
+    font-weight: 600;
+  }
+}
+
+ion-button.ic-purple {
+  --color: var(--ion-color-primary, #6030ff);
+}
+
+ion-button.ic-gray {
+  --color: #6c757d;
+}
+
+.pd-wrap {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding-bottom: 28px;
+}
+
+/* ---------- Segment 6 tab CHỮ (không icon), pill tím ---------- */
+.pd-tabs {
+  margin: 12px auto 6px;
+  --background: #f0f0f0;
+  border-radius: 12px;
+  padding: 5px;
+
+  ion-segment-button {
+    min-height: 42px;
+    min-width: 110px;
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    --color: #27324a;
+    --color-checked: #ffffff;
+    --indicator-color: var(--ion-color-primary, #6030ff);
+    --border-radius: 10px;
+    --ripple-color: var(--ion-color-primary, #6030ff);
+
+    &.segment-button-checked {
+      font-weight: 700;
+    }
+
+    ion-label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+    }
+  }
+}
+
+/* ---------- 3 chip màu (Phân loại / Nhiều mã vạch / Trường tùy chỉnh) ---------- */
+.pd-chips {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 4px;
+}
+
+.pd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.05);
+  }
+
+  &:active {
+    filter: brightness(0.95);
+  }
+
+  ion-icon {
+    font-size: 16px;
+  }
+
+  &.chip-classify {
+    background: var(--ion-color-primary, #6030ff);
+  }
+
+  &.chip-barcodes {
+    background: #2dd55b;
+  }
+
+  &.chip-custom {
+    background: #47bbb5;
+  }
+}
+
+/* ---------- Lưới trường 2 cột (≥768px) — bấm trường để sửa ---------- */
+.pd-grid {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  padding: 4px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+  @media (min-width: 768px) {
+    &:nth-child(odd) {
+      border-right: 1px solid rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  /* hàng toggle không cần cảm giác bấm */
+  &:has(.toggle-field) {
+    cursor: default;
+  }
+
+  &[role='button'] {
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(96, 48, 255, 0.035);
+    }
+  }
+
+  .pd-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #6c757d;
+  }
+
+  .pd-val {
+    font-size: 14.5px;
+    font-weight: 500;
+    color: #212529;
+    line-height: 1.45;
+    word-break: break-word;
+
+    &.money-field {
+      color: var(--ion-color-success, #2dd55b);
+      font-weight: 700;
+      font-size: 15.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    &.toggle-field {
+      display: flex;
+      align-items: center;
+    }
+
+    &.img-field {
+      display: flex;
+    }
+  }
+}
+
+/* Công tắc cờ — lưu ngay, xanh lá khi bật (như ISale) */
+.flag-toggle {
+  --background-checked: var(--ion-color-success, #2dd55b);
+  --track-background-checked: var(--ion-color-success, #2dd55b);
+  --handle-background-checked: #ffffff;
+  min-height: 30px;
+  padding: 0;
+  width: 84px;
+}
+
+.pd-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &.ph {
+    background: rgba(96, 48, 255, 0.06);
+    color: #8a8f98;
+    font-size: 20px;
+  }
+}
+
+.ai-ic {
+  font-size: 19px;
+  color: #7c3aed;
+}
+
+/* ---------- Panel mã vạch (canvas Code128) ---------- */
+.pd-barcode {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  margin-top: 14px;
+  padding: 12px 16px;
+
+  .pd-barcode-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h3 {
+      margin: 0;
+      font-size: 15.5px;
+      font-weight: 700;
+      color: #27324a;
+    }
+  }
+
+  .pd-barcode-close {
+    border: none;
+    background: rgba(0, 0, 0, 0.05);
+    color: #6c757d;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .pd-barcode-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0 4px;
+
+    canvas {
+      max-width: 100%;
+    }
+  }
+}
+
+/* ---------- Cards chung (Đơn vị khác / Tổng / danh sách) ---------- */
+.pd-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  padding: 13px 18px;
+  margin: 0 0 12px;
+}
+
+.pd-intro {
+  color: #6c757d;
+  font-size: 13.5px;
+  background: transparent;
+  box-shadow: none;
+  padding: 6px 4px 10px;
+}
+
+.pd-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #27324a;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+  ion-icon {
+    color: var(--ion-color-primary, #6030ff);
+    font-size: 17px;
+  }
+
+  &.alt {
+    justify-content: space-between;
+
+    > span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+}
+
+.pd-card-rows {
+  padding-top: 4px;
+}
+
+.pd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.045);
+  font-size: 14px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  > span {
+    color: #6c757d;
+    font-size: 13.5px;
+  }
+
+  > b {
+    font-weight: 600;
+    color: #212529;
+    text-align: right;
+
+    &.money {
+      color: var(--ion-color-success, #2dd55b);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+}
+
+.pd-note {
+  margin: 8px 0 0;
+  color: #6c757d;
+  font-size: 12.5px;
+}
+
+.pd-calc {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 9px 0 0;
+  background: rgba(96, 48, 255, 0.06);
+  color: var(--ion-color-primary, #6030ff);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 9px 12px;
+
+  ion-icon {
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+}
+
+.pd-del {
+  border: none;
+  background: rgba(var(--ion-color-danger-rgb), 0.1);
+  color: var(--ion-color-danger);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ---------- Lịch sử: card lọc "Từ … đến …" + Tổng ---------- */
+.pd-histcard {
+  .pd-hist-range {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14.5px;
+    color: #212529;
+    flex-wrap: wrap;
+  }
+
+  .pd-date {
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    padding: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pd-hist-total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+
+  .pd-hist-total {
+    color: var(--ion-color-primary, #6030ff);
+    font-weight: 700;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pd-funnel {
+    border: none;
+    background: transparent;
+    color: var(--ion-color-primary, #6030ff);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px 6px;
+    display: inline-flex;
+  }
+}
+
+/* ---------- Lịch sử: danh sách phiếu ---------- */
+.pd-hist-list {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+}
+
+.pd-hist {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.055);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  > ion-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    padding: 7px;
+    flex-shrink: 0;
+
+    &.in {
+      background: rgba(var(--ion-color-success-rgb), 0.12);
+      color: var(--ion-color-success);
+    }
+
+    &.out {
+      background: rgba(var(--ion-color-danger-rgb), 0.1);
+      color: var(--ion-color-danger);
+    }
+  }
+
+  .pd-hist-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+
+    .code {
+      font-weight: 700;
+      font-size: 13.5px;
+      color: var(--ion-text-color);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .date {
+      font-size: 12px;
+      color: #8a8f98;
+    }
+  }
+
+  .pd-hist-nums {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    .qty {
+      font-weight: 800;
+      font-size: 13.5px;
+
+      &.in {
+        color: var(--ion-color-success);
+      }
+
+      &.out {
+        color: var(--ion-color-danger);
+      }
+    }
+
+    .amount {
+      font-size: 12px;
+      color: #8a8f98;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+}
+
+/* ---------- Ảnh: nút AI + thư viện ---------- */
+.pd-ai-btn {
+  --border-radius: 10px;
+  --background: var(--ion-color-primary, #6030ff);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin: 4px 0 14px;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.pd-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+  padding: 0 2px 4px;
+}
+
+.pd-gallery-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .pd-badge-main {
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    background: rgba(96, 48, 255, 0.92);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+}
+
+.pd-gallery-add {
+  aspect-ratio: 1;
+  border: 1.5px dashed rgba(96, 48, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(96, 48, 255, 0.05);
+  color: var(--ion-color-primary, #6030ff);
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.pd-hint {
+  padding-top: 10px;
+}
+
+/* ---------- Giá khách & CTV / Chiết khấu: Tổng + (+) + danh sách ---------- */
+.pd-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .pd-summary-total {
+    color: var(--ion-color-primary, #6030ff);
+    font-weight: 700;
+    font-size: 16.5px;
+  }
+
+  .pd-plus {
+    border: none;
+    background: transparent;
+    color: var(--ion-color-primary, #6030ff);
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 6px;
+    display: inline-flex;
+  }
+}
+
+.pd-emptybox {
+  border: 1.5px dashed #d6d9de;
+  border-radius: 12px;
+  padding: 30px 22px;
+  text-align: center;
+  color: #8a8f98;
+  font-size: 14px;
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.pd-itemcard {
+  padding: 3px 0;
+}
+
+.pd-itemrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.055);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .pd-item-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+
+    .name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #212529;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sub {
+      font-size: 12.5px;
+      color: #8a8f98;
+    }
+  }
+
+  .money {
+    color: var(--ion-color-success, #2dd55b);
+    font-weight: 700;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.pd-type {
+  background: rgba(96, 48, 255, 0.12);
+  color: var(--ion-color-primary, #6030ff);
+  font-size: 10.5px;
+  font-weight: 800;
+  border-radius: 6px;
+  padding: 2px 6px;
+
+  &.ctv {
+    background: rgba(71, 187, 181, 0.16);
+    color: #0d9488;
+  }
+}
+
+/* ---------- Modal (Phân loại / Nhiều mã vạch / Trường tùy chỉnh) ---------- */
+.pd-modal {
+  --border-radius: 14px;
+  --width: 540px;
+  --height: auto;
+  --max-height: 76vh;
+}
+
+.pd-modal-body {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 6px 4px 14px;
+  max-height: 74vh;
+  overflow: auto;
+}
+
+.pd-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 700;
+  color: #27324a;
+  padding: 8px 10px 4px 16px;
+}
+
+.pd-modal-sec {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #212529;
+  padding: 12px 16px 4px;
+}
+
+.pd-modal-add {
+  --border-radius: 10px;
+  margin: 14px 14px 4px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.pd-add-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: none;
+  border-radius: 9px;
+  background: rgba(96, 48, 255, 0.1);
+  color: var(--ion-color-primary, #6030ff);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 11px;
+  cursor: pointer;
+}
+
+.pd-cat-item {
+  --background: transparent;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.055);
+}
+
+.pd-tags {
+  padding: 6px 12px 2px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* ---------- Trạng thái rỗng ---------- */
+.pd-empty {
+  color: #8a8f98;
+  text-align: center;
+  font-size: 13px;
+  padding: 24px 20px;
+  margin: 0;
+}

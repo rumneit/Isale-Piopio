@@ -1,0 +1,81 @@
+/* Trang 404 — đồng bộ nhận diện PioPio (tím #6030FF, nền #f6f8fc, Roboto) */
+
+ion-content.nf-page {
+  --background: #f6f8fc;
+}
+
+.nf-wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px 40px;
+}
+
+.nf-card {
+  background: #ffffff;
+  border: 1px solid #eceef2;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 40px 28px;
+  text-align: center;
+  width: 100%;
+
+  .nf-code {
+    font-size: 64px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--ion-color-primary, #6030ff);
+    line-height: 1;
+  }
+
+  h1 {
+    margin: 14px 0 8px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #27324a;
+  }
+
+  p {
+    margin: 0 0 22px;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: break-word;
+
+    b {
+      color: #374151;
+    }
+  }
+}
+
+.nf-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  ion-button {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 700;
+    --border-radius: 10px;
+  }
+
+  .nf-btn-outline {
+    --border-color: var(--ion-color-primary, #6030ff);
+    --color: var(--ion-color-primary, #6030ff);
+  }
+}
+
+@media (max-width: 599px) {
+  .nf-card {
+    padding: 32px 18px;
+
+    .nf-code {
+      font-size: 52px;
+    }
+  }
+}

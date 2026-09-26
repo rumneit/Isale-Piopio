@@ -1,0 +1,119 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="app-menu" auto-hide="false" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Đơn hàng</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAdd()">
+        <ion-icon slot="icon-only" name="add-circle-outline" />
+      </ion-button>
+      <ion-button (click)="openMoreMenu()">
+        <ion-icon slot="icon-only" name="ellipsis-vertical" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    <!-- Tab tháng -->
+    <div class="month-tabs">
+      @for (m of monthTabs; track m.label; let i = $index) {
+        <button class="month-tab" [class.active]="selectedMonth() === i" (click)="selectMonth(i)">
+          {{ m.label }}
+        </button>
+      }
+    </div>
+
+    <!-- Tab trạng thái -->
+    <div class="status-tabs">
+      <button class="status-tab" [class.active]="statusFilter() === 'all'" (click)="selectStatus('all')">Toàn bộ</button>
+      <button class="status-tab" [class.active]="statusFilter() === 'shipping'" (click)="selectStatus('shipping')">Đang ship</button>
+      <button class="status-tab" [class.active]="statusFilter() === 'completed'" (click)="selectStatus('completed')">Hoàn thành</button>
+      <button class="status-tab" [class.active]="statusFilter() === 'cancelled'" (click)="selectStatus('cancelled')">Hủy</button>
+      <ion-button fill="clear" size="small" (click)="openMoreMenu()">
+        <ion-icon slot="icon-only" name="ellipsis-horizontal" />
+      </ion-button>
+    </div>
+
+    @if (searchVisible()) {
+      <ion-searchbar placeholder="Tìm theo mã đơn hoặc khách hàng" [debounce]="300" (ionInput)="onSearch($any($event))" />
+    }
+
+    <!-- Toolbar -->
+    <div class="list-toolbar">
+      <div class="toolbar-left">
+        <ion-button fill="clear" size="small" (click)="toggleSearch()">
+          <ion-icon slot="icon-only" name="search-outline" />
+        </ion-button>
+        <span class="toolbar-total">Tổng: {{ items().length }} đơn hàng</span>
+        <span class="toolbar-money">/ Tổng tiền: {{ formatMoney(totalAmount()) }}</span>
+      </div>
+      <div class="toolbar-actions">
+        <ion-button fill="clear" size="small" (click)="exportCsv()">
+          <ion-icon slot="icon-only" name="download-outline" />
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="openPath('/import')">
+          <ion-icon slot="icon-only" name="cloud-upload-outline" />
+        </ion-button>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty order-empty">
+        <div><ion-icon name="file-tray-outline" /></div>
+        <span>
+          Không có đơn hàng nào. Bấm biểu tượng + để thêm mới đơn hàng. Với mỗi đơn hàng bạn có thể:
+          cập nhật thông tin, quét mã vạch sản phẩm, tính tổng tự động, xem báo cáo, in đơn hàng,
+          xuất/chia sẻ đơn hàng sang Excel.
+        </span>
+      </div>
+    } @else {
+      <div class="order-list">
+        @for (order of items(); track order.id) {
+          <div class="order-card" (click)="openDetail(order)">
+            <div class="order-head">
+              <h2>{{ order.code }}</h2>
+              <ion-badge [color]="order.paid ? 'success' : 'warning'">{{ order.paid ? 'Đã trả' : 'Còn nợ' }}</ion-badge>
+            </div>
+            <div class="order-fields">
+              <div class="field-row">
+                <div class="field">
+                  <span class="field-label">Khách hàng</span>
+                  <span class="field-value">{{ order.customer_name ?? 'Khách lẻ' }}</span>
+                </div>
+                <div class="field">
+                  <span class="field-label">Tổng tiền</span>
+                  <span class="field-value">{{ formatMoney(order.total) }}</span>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <span class="field-label">Trạng thái</span>
+                  <span class="field-value">{{ statusLabel(order.status) }}</span>
+                </div>
+                <div class="field">
+                  <span class="field-label">Ngày tạo</span>
+                  <span class="field-value">{{ order.created_at | date: 'HH:mm dd/MM/yyyy' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Bộ 3 FAB chuẩn ISale -->
+  <app-fab-trio mainIcon="add" mainLabel="Tạo đơn hàng" (mainAction)="openAdd()" />
+</ion-content>

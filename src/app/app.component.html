@@ -1,0 +1,54 @@
+<ion-app>
+  <!-- Main content PHẢI đứng trước menu để ion-menu tìm thấy content lúc khởi tạo -->
+  <div id="main-content" class="app-main">
+    <router-outlet />
+  </div>
+
+  <ion-menu class="app-menu" contentId="main-content" side="start" type="overlay" id="app-menu" menu-id="app-menu">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ shopName }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <div class="app-menu-profile">
+        <div class="app-menu-avatar">
+          <ion-icon name="person-outline" />
+        </div>
+        <div>
+          <div class="app-menu-name">{{ auth.displayName() }}</div>
+          <div class="app-menu-email">{{ email }}</div>
+        </div>
+      </div>
+
+      @if (auth.shopsOwned().length > 1) {
+        <button class="shop-switcher" (click)="openShopSwitcher()">
+          <ion-icon name="storefront-outline" />
+          <span class="shop-switcher-name">{{ shopName }}</span>
+          <ion-icon name="swap-horizontal-outline" class="shop-switcher-icon" />
+        </button>
+      }
+
+      <ion-list>
+        @for (item of visibleMenuItems(); track item.path) {
+          <ion-menu-toggle auto-hide="false">
+            <ion-item [routerLink]="item.path" routerLinkActive="ion-activatable" detail="true">
+              <ion-icon slot="start" [name]="item.icon" />
+              <ion-label>{{ item.title }}</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+        }
+      </ion-list>
+    </ion-content>
+    <ion-footer>
+      <ion-list>
+        <ion-menu-toggle auto-hide="false">
+          <ion-item button (click)="logout()" detail="false">
+            <ion-icon slot="start" name="log-out-outline" color="danger" />
+            <ion-label color="danger">Đăng xuất</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </ion-list>
+    </ion-footer>
+  </ion-menu>
+</ion-app>

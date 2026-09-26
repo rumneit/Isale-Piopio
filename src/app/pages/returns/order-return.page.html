@@ -1,0 +1,83 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="close-outline" />
+      </ion-button>
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Trả hàng — {{ order()?.code ?? '' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="busy()">
+        @if (busy()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          <ion-icon slot="icon-only" name="save-outline" />
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <div class="app-page-container">
+    @if (error) {
+      <div class="form-error">{{ error }}</div>
+    }
+
+    <div class="app-card">
+      <div class="app-card-title"><h4><ion-icon name="cube-outline" /> Chọn sản phẩm trả</h4></div>
+
+      <ion-item lines="full">
+        <ion-checkbox (ionChange)="toggleAll($any($event))" [checked]="allSelected" labelPlacement="end" justify="start">
+          Chọn tất cả
+        </ion-checkbox>
+      </ion-item>
+
+      @for (draft of drafts(); track draft.item.id; let i = $index) {
+        <div class="return-item">
+          <ion-checkbox [(ngModel)]="drafts()[i].selected" labelPlacement="start" justify="start" />
+          <div class="return-item-main">
+            <div class="return-item-name">{{ draft.item.name }}</div>
+            <div class="return-item-row">
+              <ion-input class="return-qty" type="number" min="1" [max]="draft.item.qty" [(ngModel)]="drafts()[i].qty" />
+              <span class="return-x">/ {{ draft.item.qty }}</span>
+              <ion-badge color="light">{{ formatMoney(draft.item.price * draft.qty) }}</ion-badge>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="app-card">
+      <ion-list lines="full">
+        <ion-item>
+          <ion-toggle [(ngModel)]="refunded">
+            <ion-label>
+              Hoàn tiền cho khách
+              <ion-note>Tự tạo giao dịch chi "Trả hàng" số tiền {{ formatMoney(total) }}</ion-note>
+            </ion-label>
+          </ion-toggle>
+        </ion-item>
+        <ion-item>
+          <ion-input label="Lý do trả hàng" labelPlacement="floating" [(ngModel)]="note" placeholder="VD: Hết hạn, khách đổi ý..." />
+        </ion-item>
+      </ion-list>
+      <ion-note class="return-note-hint">
+        Tồn kho sẽ được hoàn lại tự động. Điểm tích lũy của khách (nếu có) bị trừ tương ứng.
+      </ion-note>
+    </div>
+
+    <div class="total-box">
+      <span>Tổng tiền hoàn ({{ selectedCount }} món)</span>
+      <strong>{{ formatMoney(total) }}</strong>
+    </div>
+
+    <ion-button expand="block" size="large" color="warning" (click)="save()" [disabled]="busy()">
+      <ion-icon slot="start" name="return-down-back-outline" />
+      Xác nhận trả hàng
+    </ion-button>
+  </div>
+</ion-content>
