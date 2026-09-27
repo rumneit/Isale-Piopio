@@ -99,7 +99,21 @@
         </div>
         <ion-list lines="full">
           <ion-item>
-            <ion-input label="Ngân hàng" labelPlacement="stacked" [(ngModel)]="bankName" placeholder="VD: MB bank" />
+            <ion-select
+              label="Ngân hàng (VietQR)"
+              labelPlacement="stacked"
+              [(ngModel)]="bankCode"
+              interface="action-sheet"
+              cancelText="Đóng"
+              placeholder="Chọn ngân hàng để hiện QR thanh toán"
+            >
+              @for (b of vietqrBanks; track b.code) {
+                <ion-select-option [value]="b.code">{{ b.name }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-input label="Tên ngân hàng (hiện trên hóa đơn)" labelPlacement="stacked" [(ngModel)]="bankName" placeholder="VD: MB bank" />
           </ion-item>
           <ion-item>
             <ion-input label="Chủ tài khoản" labelPlacement="stacked" [(ngModel)]="bankOwner" />
@@ -108,6 +122,9 @@
             <ion-input label="Số tài khoản" labelPlacement="stacked" [(ngModel)]="bankAccount" />
           </ion-item>
         </ion-list>
+        <div class="app-hint" style="padding: 0 16px 12px; color: var(--app-text-muted); font-size: 13px">
+          Chọn đúng ngân hàng để nút "Hiện QR Code thanh toán" trong Bán hàng tạo mã QR chuẩn VietQR.
+        </div>
       </div>
     }
 

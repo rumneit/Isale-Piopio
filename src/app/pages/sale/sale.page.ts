@@ -10,6 +10,7 @@ import {
   IonIcon,
   IonContent,
   IonInput,
+  IonTextarea,
   IonSpinner,
   IonSelect,
   IonSelectOption,
@@ -48,7 +49,7 @@ import { CustomersService } from '../../core/services/customers.service';
 import { TransactionsService } from '../../core/services/transactions.service';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Product, Customer, MoneyAccount, Profile } from '../../core/models/models';
+import { Product, Customer, MoneyAccount, Profile, Shop } from '../../core/models/models';
 import { MoneyAccountsService } from '../../core/services/money-accounts.service';
 
 interface SaleItem {
@@ -57,6 +58,32 @@ interface SaleItem {
   unit: string | null;
   price: number;
   qty: number;
+}
+
+/** Trạng thái đầy đủ của 1 đơn trong lượt bán (đồng bộ ISale multi-add) */
+interface SaleOrderSnap {
+  orderCode: string;
+  orderDate: string;
+  selectedCustomerId: string | null;
+  selectedCustomerName: string;
+  selectedAccountId: string | null;
+  selectedStaffId: string | null;
+  status: string;
+  paymentMethod: string;
+  customerShipPaid: boolean;
+  discountPercent: number | null;
+  taxPercent: number | null;
+  customerPaid: number | null;
+  shipFee: number | null;
+  customerPhone: string;
+  customerAddress: string;
+  note: string;
+  shippingCode: string;
+  shippingPartner: string;
+  shipperName: string;
+  shipperPhone: string;
+  shippingAddress: string;
+  items: SaleItem[];
 }
 
 @Component({
@@ -73,6 +100,7 @@ interface SaleItem {
     IonIcon,
     IonContent,
     IonInput,
+    IonTextarea,
     IonSpinner,
     IonSelect,
     IonSelectOption,
@@ -116,6 +144,10 @@ export class SalePage implements OnInit {
   readonly pickerSearch = signal('');
   readonly pickerPageSize = 12;
 
+  // Nhiều đơn song song (ISale multi-add): danh sách + vị trí đang mở
+  readonly orderTabs = signal<SaleOrderSnap[]>([]);
+  readonly activeOrderIdx = signal(0);
+
   // Thông tin đơn
   orderCode = '';
   orderDate = new Date().toISOString();
@@ -128,13 +160,30 @@ export class SalePage implements OnInit {
   discountPercent: number | null = 0;
   taxPercent: number | null = 0;
   customerPaid: number | null = 0;
-  /** Hình thức thanh toán (ISale) — lưu khi cột payment_method có trong DB (v17) */
-  paymentMethod = 'Tiền mặt';
+  /** Phí vận chuyển — cộng vào Tổng phải trả khi "Khách trả ship?" bật */
+  shipFee: number | null = 0;
+  /** Hình thức thanh toán (ISale, 10 hình thức) — lưu mã CASH/BANK-TRANSFER/... khi cột payment_method có (v17) */
+  paymentMethod = 'CASH';
   hasPaymentMethodColumn = false;
-  readonly paymentMethods = ['Tiền mặt', 'Chuyển khoản', 'Thẻ', 'Ví điện tử'];
+  readonly payMethods = OrdersService.paymentMethods;
+  readonly orderStatusList = OrdersService.orderStatuses;
+  /** Khách hàng: SĐT + địa chỉ nhanh trên đơn (v22) */
+  customerPhone = '';
+  customerAddress = '';
+  /** Vận chuyển (ISale: 5 trường, v22) */
+  shippingCode = '';
+  shippingPartner = '';
+  shipperName = '';
+  shipperPhone = '';
+  shippingAddress = '';
+  /** Cột v22 hiện có trong DB (dò lúc mở trang) */
+  readonly hasOrderExtras = signal<Set<string>>(new Set());
   note = '';
-  shippingNote = '';
   barcodeInput = '';
+  /** Overlay QR VietQR thanh toán */
+  readonly qrOpen = signal(false);
+  /** Shop hiện tại (cho QR ngân hàng) */
+  readonly shop = this.auth.shop;
 
   readonly pickerFiltered = computed(() => {
     const raw = this.pickerSearch().trim();
@@ -167,7 +216,10 @@ export class SalePage implements OnInit {
   readonly subtotal = computed(() => this.items().reduce((s, i) => s + i.price * i.qty, 0));
   readonly discountAmount = computed(() => Math.round((this.subtotal() * (Number(this.discountPercent ?? 0))) / 100));
   readonly taxAmount = computed(() => Math.round((this.subtotal() * (Number(this.taxPercent ?? 0))) / 100));
-  readonly totalDue = computed(() => this.subtotal() - this.discountAmount() + this.taxAmount());
+  /** Tổng tạm tính = tiền hàng − chiết khấu + thuế */
+  readonly preTotal = computed(() => this.subtotal() - this.discountAmount() + this.taxAmount());
+  /** Tổng phải trả = tạm tính + phí ship (nếu khách trả ship) */
+  readonly totalDue = computed(() => this.preTotal() + (this.customerShipPaid ? Math.max(0, Number(this.shipFee ?? 0)) : 0));
   readonly changeDue = computed(() => Math.max(0, Number(this.customerPaid ?? 0) - this.totalDue()));
   readonly totalQty = computed(() => this.items().reduce((s, i) => s + i.qty, 0));
 
@@ -196,6 +248,7 @@ export class SalePage implements OnInit {
   async ngOnInit(): Promise<void> {
     this.orderCode = this.ordersService.newCode();
     this.hasPaymentMethodColumn = await this.ordersService.detectPaymentMethod().catch(() => false);
+    this.orderTabs.set([this.currentSnap()]);
     this.loading.set(true);
     try {
       const [products, customers, accounts] = await Promise.all([
@@ -207,6 +260,10 @@ export class SalePage implements OnInit {
       this.customers.set(customers);
       this.accounts.set(accounts);
       if (accounts.length) this.selectedAccountId = accounts[0].id;
+      this.ordersService
+        .detectOrderExtras()
+        .then((cols) => this.hasOrderExtras.set(cols))
+        .catch(() => {});
 
       const shopId = this.auth.shop()?.id;
       if (shopId && this.sb.isConfigured) {
@@ -235,6 +292,125 @@ export class SalePage implements OnInit {
 
   selectTab(tab: 'payment' | 'customer' | 'note' | 'shipping') {
     this.tab.set(tab);
+  }
+
+  // ---------- Nhiều đơn song song (ISale multi-add) ----------
+
+  /** Chốt trạng thái hiện tại thành 1 snapshot */
+  private currentSnap(): SaleOrderSnap {
+    return {
+      orderCode: this.orderCode,
+      orderDate: this.orderDate,
+      selectedCustomerId: this.selectedCustomerId,
+      selectedCustomerName: this.selectedCustomerName,
+      selectedAccountId: this.selectedAccountId,
+      selectedStaffId: this.selectedStaffId,
+      status: this.status,
+      paymentMethod: this.paymentMethod,
+      customerShipPaid: this.customerShipPaid,
+      discountPercent: this.discountPercent,
+      taxPercent: this.taxPercent,
+      customerPaid: this.customerPaid,
+      shipFee: this.shipFee,
+      customerPhone: this.customerPhone,
+      customerAddress: this.customerAddress,
+      note: this.note,
+      shippingCode: this.shippingCode,
+      shippingPartner: this.shippingPartner,
+      shipperName: this.shipperName,
+      shipperPhone: this.shipperPhone,
+      shippingAddress: this.shippingAddress,
+      items: [...this.items()],
+    };
+  }
+
+  /** Nạp snapshot vào các trường đang mở */
+  private applySnap(s: SaleOrderSnap) {
+    this.orderCode = s.orderCode;
+    this.orderDate = s.orderDate;
+    this.selectedCustomerId = s.selectedCustomerId;
+    this.selectedCustomerName = s.selectedCustomerName;
+    this.selectedAccountId = s.selectedAccountId;
+    this.selectedStaffId = s.selectedStaffId;
+    this.status = s.status;
+    this.paymentMethod = s.paymentMethod;
+    this.customerShipPaid = s.customerShipPaid;
+    this.discountPercent = s.discountPercent;
+    this.taxPercent = s.taxPercent;
+    this.customerPaid = s.customerPaid;
+    this.shipFee = s.shipFee;
+    this.customerPhone = s.customerPhone;
+    this.customerAddress = s.customerAddress;
+    this.note = s.note;
+    this.shippingCode = s.shippingCode;
+    this.shippingPartner = s.shippingPartner;
+    this.shipperName = s.shipperName;
+    this.shipperPhone = s.shipperPhone;
+    this.shippingAddress = s.shippingAddress;
+    this.items.set([...s.items]);
+  }
+
+  switchOrderTab(i: number) {
+    if (i === this.activeOrderIdx() || i < 0 || i >= this.orderTabs().length) return;
+    // Lưu đơn đang mở rồi nạp đơn được chọn
+    this.orderTabs.update((list) => list.map((s, idx) => (idx === this.activeOrderIdx() ? this.currentSnap() : s)));
+    this.activeOrderIdx.set(i);
+    this.applySnap(this.orderTabs()[i]);
+  }
+
+  addOrderTab() {
+    if (this.orderTabs().length >= 10) {
+      this.toast('Tối đa 10 đơn mỗi lượt bán', 'danger');
+      return;
+    }
+    this.orderTabs.update((list) => list.map((s, idx) => (idx === this.activeOrderIdx() ? this.currentSnap() : s)));
+    const fresh: SaleOrderSnap = {
+      ...this.currentSnap(),
+      orderCode: this.ordersService.newCode(),
+      selectedCustomerId: null,
+      selectedCustomerName: '',
+      customerPhone: '',
+      customerAddress: '',
+      note: '',
+      shippingCode: '',
+      shippingPartner: '',
+      shipperName: '',
+      shipperPhone: '',
+      shippingAddress: '',
+      items: [],
+      customerPaid: 0,
+      discountPercent: 0,
+      taxPercent: 0,
+      shipFee: 0,
+    };
+    this.orderTabs.update((list) => [...list, fresh]);
+    this.activeOrderIdx.set(this.orderTabs().length - 1);
+    this.applySnap(fresh);
+    this.toast(`Đã thêm Đơn hàng ${this.orderTabs().length}`);
+  }
+
+  removeOrderTab(i: number) {
+    if (this.orderTabs().length <= 1) return;
+    const active = this.activeOrderIdx();
+    if (i === active) {
+      // Xóa đơn đang mở → mở đơn kề sau (hoặc trước nếu đang ở cuối)
+      this.orderTabs.update((list) => list.filter((_, idx) => idx !== i));
+      const next = Math.min(i, this.orderTabs().length - 1);
+      this.activeOrderIdx.set(next);
+      this.applySnap(this.orderTabs()[next]);
+    } else {
+      this.orderTabs.update((list) => list.filter((_, idx) => idx !== i));
+      if (i < active) this.activeOrderIdx.set(active - 1);
+    }
+    this.toast('Đã xóa đơn');
+  }
+
+  /** Tổng phải trả của 1 snapshot (khi lưu cả lượt) */
+  private dueOf(s: SaleOrderSnap): number {
+    const goods = s.items.reduce((sum, i) => sum + i.price * i.qty, 0);
+    const disc = Math.round((goods * Number(s.discountPercent ?? 0)) / 100);
+    const tax = Math.round((goods * Number(s.taxPercent ?? 0)) / 100);
+    return goods - disc + tax + (s.customerShipPaid ? Math.max(0, Number(s.shipFee ?? 0)) : 0);
   }
 
   resetCode() {
@@ -341,11 +517,14 @@ export class SalePage implements OnInit {
       handler: () => {
         this.selectedCustomerId = c.id;
         this.selectedCustomerName = c.name;
+        // Điền nhanh SĐT/địa chỉ (ISale: chọn KH có sẵn)
+        this.customerPhone = c.phone ?? '';
+        this.customerAddress = c.address ?? '';
       },
     }));
     const sheet = await this.actionSheetCtrl.create({
-      header: 'Chọn khách hàng',
-      buttons: [...buttons, { text: 'Khách lẻ', handler: () => { this.selectedCustomerId = null; this.selectedCustomerName = 'Khách lẻ'; } }, { text: 'Hủy', role: 'cancel' }],
+      header: 'Chọn khách hàng có sẵn',
+      buttons: [...buttons, { text: 'Khách lẻ', handler: () => { this.selectedCustomerId = null; this.selectedCustomerName = 'Khách lẻ'; this.customerPhone = ''; this.customerAddress = ''; } }, { text: 'Hủy', role: 'cancel' }],
     });
     await sheet.present();
   }
@@ -386,49 +565,98 @@ export class SalePage implements OnInit {
     return this.accounts().find((a) => a.id === this.selectedAccountId)?.name ?? 'Chọn ví/tài khoản';
   }
 
+  /** QR VietQR từ thông tin ngân hàng shop (Cấu hình) — như "Hiện QR Code thanh toán" của ISale */
+  readonly qrUrl = computed(() => {
+    if (!this.qrOpen()) return '';
+    const shop = this.auth.shop() as (Shop & { bank_code?: string | null }) | null;
+    const bank = (shop?.bank_code ?? '').trim();
+    const acc = (shop?.bank_account ?? '').trim();
+    if (!bank || !acc) return '';
+    const amount = Math.max(0, this.totalDue());
+    const info = encodeURIComponent(this.orderCode || 'Thanh toan');
+    const owner = encodeURIComponent((shop?.bank_owner ?? '').trim());
+    return (
+      `https://img.vietqr.io/image/${bank}-${acc}-compact2.png` +
+      `?amount=${amount}&addInfo=${info}` +
+      (owner ? `&accountName=${owner}` : '')
+    );
+  });
+
+  closeQr() {
+    this.qrOpen.set(false);
+  }
+
   async showQr() {
-    const t = await this.toastCtrl.create({
-      message: 'QR thanh toán sẽ hiển thị khi cấu hình thông tin ngân hàng trong Cấu hình shop.',
-      duration: 2200,
-      color: 'medium',
-      position: 'bottom',
-    });
-    await t.present();
+    const shop = this.auth.shop() as (Shop & { bank_code?: string | null }) | null;
+    if (!(shop?.bank_code ?? '').trim() || !(shop?.bank_account ?? '').trim()) {
+      const t = await this.toastCtrl.create({
+        message: 'Chưa có thông tin ngân hàng. Vào Cấu hình → Thông tin ngân hàng để bật QR thanh toán.',
+        duration: 2600,
+        color: 'medium',
+        position: 'bottom',
+      });
+      await t.present();
+      return;
+    }
+    this.qrOpen.set(true);
   }
 
   async save() {
-    if (!this.items().length) {
+    // Lưu CẢ LƯỢT bán (tất cả tab Đơn hàng) như ISale multi-add
+    this.orderTabs.update((list) => list.map((s, idx) => (idx === this.activeOrderIdx() ? this.currentSnap() : s)));
+    const batch = this.orderTabs();
+    const withItems = batch.filter((s) => s.items.length > 0);
+    if (!withItems.length) {
       this.toast('Chưa có sản phẩm nào trong đơn', 'danger');
       return;
     }
+    const empties = batch.length - withItems.length;
     this.busy.set(true);
     try {
-      const order = await this.ordersService.create(
-        {
-          code: this.orderCode,
-          customer_id: this.selectedCustomerId,
-          customer_name: this.selectedCustomerName || 'Khách lẻ',
-          status: this.status,
-          discount: this.discountAmount(),
-          paid: true,
-          note: this.note.trim() || null,
-          ...(this.hasPaymentMethodColumn ? { payment_method: this.paymentMethod } : {}),
-        },
-        this.items().map((i) => ({ product_id: i.product_id, name: i.name, price: i.price, qty: i.qty }))
-      );
+      const extras = this.hasOrderExtras();
+      let saved = 0;
+      for (const s of withItems) {
+        const order = await this.ordersService.create(
+          {
+            code: s.orderCode || this.ordersService.newCode(),
+            customer_id: s.selectedCustomerId,
+            customer_name: s.selectedCustomerName || 'Khách lẻ',
+            status: s.status,
+            discount: Math.round((s.items.reduce((sum, i) => sum + i.price * i.qty, 0) * Number(s.discountPercent ?? 0)) / 100),
+            paid: true,
+            note: [s.note.trim(), s.shippingCode.trim() ? `Vận đơn: ${s.shippingCode.trim()}` : '', s.shippingPartner.trim() ? `ĐVVC: ${s.shippingPartner.trim()}` : '']
+              .filter(Boolean)
+              .join(' — ') || null,
+            total: this.dueOf(s),
+            ...(this.hasPaymentMethodColumn ? { payment_method: s.paymentMethod } : {}),
+            ...(extras.has('ship_fee') ? { ship_fee: Math.max(0, Number(s.shipFee ?? 0)) } : {}),
+            ...(extras.has('ship_fee_by_customer') ? { ship_fee_by_customer: !!s.customerShipPaid } : {}),
+            ...(extras.has('customer_phone') ? { customer_phone: s.customerPhone.trim() || null } : {}),
+            ...(extras.has('customer_address') ? { customer_address: s.customerAddress.trim() || null } : {}),
+            ...(extras.has('shipping_code') ? { shipping_code: s.shippingCode.trim() || null } : {}),
+            ...(extras.has('shipping_partner') ? { shipping_partner: s.shippingPartner.trim() || null } : {}),
+            ...(extras.has('shipper_name') ? { shipper_name: s.shipperName.trim() || null } : {}),
+            ...(extras.has('shipper_phone') ? { shipper_phone: s.shipperPhone.trim() || null } : {}),
+            ...(extras.has('shipping_address') ? { shipping_address: s.shippingAddress.trim() || null } : {}),
+          },
+          s.items.map((i) => ({ product_id: i.product_id, name: i.name, price: i.price, qty: i.qty }))
+        );
 
-      // Ghi nhận thu tiền vào sổ
-      if (this.totalDue() > 0) {
-        await this.transactionsService.create({
-          type: 'income',
-          category: 'Bán hàng',
-          amount: this.totalDue(),
-          note: `Thu tiền đơn ${order.code}`,
-          occurred_at: new Date().toISOString(),
-        });
+        // Ghi nhận thu tiền vào sổ
+        const due = this.dueOf(s);
+        if (due > 0) {
+          await this.transactionsService.create({
+            type: 'income',
+            category: 'Bán hàng',
+            amount: due,
+            note: `Thu tiền đơn ${order.code}`,
+            occurred_at: new Date().toISOString(),
+          });
+        }
+        saved++;
       }
 
-      this.toast('Đã lưu đơn ' + order.code);
+      this.toast(`Đã lưu ${saved} đơn` + (empties ? ` (bỏ qua ${empties} đơn trống)` : ''));
       this.router.navigateByUrl('/order', { replaceUrl: true });
     } catch (e: any) {
       this.toast(e?.message ?? 'Lưu đơn thất bại', 'danger');

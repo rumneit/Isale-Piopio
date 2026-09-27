@@ -19,6 +19,8 @@ export interface Shop {
   bank_name?: string | null;
   bank_owner?: string | null;
   bank_account?: string | null;
+  /** Migration v22 — mã ngân hàng VietQR (vd: 'mb', 'vietcombank') */
+  bank_code?: string | null;
   created_at?: string;
 }
 
@@ -143,6 +145,16 @@ export interface Order {
   channel_id?: string | null;
   /** Migration v17 (additive) */
   payment_method?: string | null;
+  /** Migration v22 (additive) — thanh toán & vận chuyển đồng bộ ISale */
+  ship_fee?: number | null;
+  ship_fee_by_customer?: boolean | null;
+  customer_phone?: string | null;
+  customer_address?: string | null;
+  shipping_code?: string | null;
+  shipping_partner?: string | null;
+  shipper_name?: string | null;
+  shipper_phone?: string | null;
+  shipping_address?: string | null;
   created_at: string;
 }
 

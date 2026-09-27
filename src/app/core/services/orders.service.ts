@@ -62,13 +62,63 @@ export class OrdersService {
     return !error;
   }
 
+  /** Cột mới của migration v22 (additive): dò từng cột, trả về tập hợp cột tồn tại */
+  async detectOrderExtras(): Promise<Set<string>> {
+    const cols = [
+      'ship_fee',
+      'ship_fee_by_customer',
+      'customer_phone',
+      'customer_address',
+      'shipping_code',
+      'shipping_partner',
+      'shipper_name',
+      'shipper_phone',
+      'shipping_address',
+    ];
+    const found = new Set<string>();
+    if (!this.sb.isConfigured || !this.shopId) return found;
+    // Dò gộp trước (1 request): nếu OK thì có hết
+    const { error } = await this.sb.from('orders').select('id, ' + cols.join(', ')).limit(1);
+    if (!error) {
+      cols.forEach((c) => found.add(c));
+      return found;
+    }
+    // Lỗi → dò từng cột (migration cũ hơn/chưa chạy đủ)
+    await Promise.all(
+      cols.map(async (c) => {
+        const { error: e1 } = await this.sb.from('orders').select('id, ' + c).limit(1);
+        if (!e1) found.add(c);
+      })
+    );
+    return found;
+  }
+
   static readonly orderStatuses = [
+    { value: 'draft', label: 'Nháp' },
     { value: 'pending', label: 'Chờ xử lý' },
+    { value: 'processing', label: 'Đang xử lý' },
     { value: 'shipping', label: 'Đang giao' },
     { value: 'delivered', label: 'Đã giao' },
     { value: 'completed', label: 'Hoàn tất' },
     { value: 'quote', label: 'Báo giá' },
+    { value: 'debt', label: 'Công nợ' },
+    { value: 'ship_debt', label: 'Ship, có nợ' },
+    { value: 'consignment', label: 'Ký gửi' },
     { value: 'cancelled', label: 'Đã hủy' },
+  ];
+
+  /** Phương thức thanh toán — đồng bộ ISale (value code máy đọc được) */
+  static readonly paymentMethods = [
+    { value: 'CASH', label: 'Tiền mặt' },
+    { value: 'BANK-TRANSFER', label: 'Chuyển khoản' },
+    { value: 'CREDIT-CARD', label: 'Thẻ tín dụng' },
+    { value: 'APPLE-PAY', label: 'Apple Pay' },
+    { value: 'BANK-CARD', label: 'Thẻ ngân hàng' },
+    { value: 'DEBIT-CARD', label: 'Thẻ ghi nợ' },
+    { value: 'MOBILE-MONEY', label: 'Mobile Money' },
+    { value: 'CHEQUE', label: 'Séc' },
+    { value: 'BITCOIN', label: 'Bitcoin' },
+    { value: 'OTHER', label: 'Khác' },
   ];
 
   static statusLabel(status: string | null | undefined): string {
@@ -93,7 +143,9 @@ export class OrdersService {
     const shopId = this.shopId;
     if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
 
-    const total = items.reduce((s, i) => s + i.price * i.qty, 0) - (input.discount ?? 0);
+    const total =
+      input.total ??
+      items.reduce((s, i) => s + i.price * i.qty, 0) - (input.discount ?? 0);
     const { data: order, error } = await this.sb
       .from('orders')
       .insert({ ...input, shop_id: shopId, code: input.code ?? this.newCode(), total })

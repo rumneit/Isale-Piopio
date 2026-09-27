@@ -108,6 +108,38 @@ export class ConfigPage implements OnInit {
   bankName = '';
   bankOwner = '';
   bankAccount = '';
+  bankCode = '';
+  /** Danh sách ngân hàng hỗ trợ VietQR (mã dùng cho img.vietqr.io) */
+  readonly vietqrBanks = [
+    { code: 'mb', name: 'MB Bank (Quân Đội)' },
+    { code: 'vietcombank', name: 'Vietcombank' },
+    { code: 'vietinbank', name: 'VietinBank' },
+    { code: 'bidv', name: 'BIDV' },
+    { code: 'techcombank', name: 'Techcombank' },
+    { code: 'acb', name: 'ACB' },
+    { code: 'vpbank', name: 'VPBank' },
+    { code: 'agribank', name: 'Agribank' },
+    { code: 'tpb', name: 'TPBank' },
+    { code: 'sacombank', name: 'Sacombank' },
+    { code: 'vib', name: 'VIB' },
+    { code: 'shb', name: 'SHB' },
+    { code: 'hdbank', name: 'HDBank' },
+    { code: 'msb', name: 'MSB' },
+    { code: 'ocb', name: 'OCB' },
+    { code: 'seabank', name: 'SeABank' },
+    { code: 'eximbank', name: 'Eximbank' },
+    { code: 'lpb', name: 'LPBank' },
+    { code: 'abbank', name: 'ABBank' },
+    { code: 'namabank', name: 'Nam A Bank' },
+    { code: 'ncb', name: 'NCB' },
+    { code: 'pvcombank', name: 'PVcomBank' },
+    { code: 'bacabank', name: 'Bac A Bank' },
+    { code: 'kienlongbank', name: 'KienLongBank' },
+    { code: 'saigonbank', name: 'SaigonBank' },
+    { code: 'vietabank', name: 'VietABank' },
+    { code: 'vietbank', name: 'VietBank' },
+    { code: 'baoviet', name: 'Bảo Việt Bank' },
+  ];
 
   // Tài khoản
   fullName = '';
@@ -282,6 +314,7 @@ export class ConfigPage implements OnInit {
     this.bankName = shop?.bank_name ?? '';
     this.bankOwner = shop?.bank_owner ?? '';
     this.bankAccount = shop?.bank_account ?? '';
+    this.bankCode = (shop as unknown as { bank_code?: string | null })?.bank_code ?? '';
     this.fullName = this.auth.profile()?.full_name ?? '';
 
     await this.settingsService.load();
@@ -327,6 +360,7 @@ export class ConfigPage implements OnInit {
             bank_name: this.bankName.trim() || null,
             bank_owner: this.bankOwner.trim() || null,
             bank_account: this.bankAccount.trim() || null,
+            bank_code: this.bankCode.trim() || null,
           })
           .eq('id', shopId);
       }
