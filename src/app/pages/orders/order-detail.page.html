@@ -87,11 +87,24 @@
         </ion-list>
       </div>
 
-      @if (hasShippingInfo(o)) {
+      @if (shouldShowShippingCard(o)) {
         <div class="app-card">
           <div class="app-card-title"><h4><ion-icon name="cube-outline" /> Vận chuyển</h4></div>
+          @if (shipments().length > 0) {
+            <ion-list lines="full">
+              @for (sp of shipments(); track sp.id) {
+                <ion-item button [detail]="true" (click)="openShipment(sp.id)">
+                  <ion-label>
+                    <h3>{{ sp.tracking_code }}</h3>
+                    <p>{{ sp.partner_name || '' }}{{ sp.order_code ? ' · #' + sp.order_code : '' }}</p>
+                  </ion-label>
+                  <ion-badge slot="end" [color]="shipmentStatusColor(sp.status)">{{ shipmentStatusLabel(sp.status) }}</ion-badge>
+                </ion-item>
+              }
+            </ion-list>
+          }
           <ion-list lines="full">
-            @if (o.shipping_code) {
+            @if (o.shipping_code && shipments().length === 0) {
               <ion-item>
                 <ion-label>
                   <h3>{{ o.shipping_code }}</h3>
@@ -124,6 +137,12 @@
               </ion-item>
             }
           </ion-list>
+          <div class="ship-cta">
+            <ion-button expand="block" fill="outline" size="small" (click)="openCreateShipment()">
+              <ion-icon slot="start" name="cube-outline" />
+              Tạo vận đơn
+            </ion-button>
+          </div>
         </div>
       }
 

@@ -1,0 +1,138 @@
+/* ---------- Bộ lọc (ISale: Đối tác | Trạng thái) ---------- */
+.filter-card {
+  margin-bottom: 12px;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+
+  ion-select {
+    min-height: 52px;
+    border: 1px solid var(--app-border, rgba(0, 0, 0, 0.08));
+    border-radius: 12px;
+    --padding-start: 10px;
+  }
+}
+
+.filter-count {
+  margin-top: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--app-text-muted);
+}
+
+.migration-note {
+  border: 1px solid rgba(var(--ion-color-warning-rgb), 0.5);
+  background: rgba(var(--ion-color-warning-rgb), 0.08);
+  color: var(--app-text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- Danh sách vận đơn ---------- */
+.ship-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ship-card {
+  background: var(--app-surface, #fff);
+  border: 1px solid var(--app-border, rgba(0, 0, 0, 0.06));
+  border-radius: var(--app-radius, 14px);
+  padding: 12px 14px;
+  cursor: pointer;
+
+  &:active {
+    background: var(--app-surface-alt);
+  }
+}
+
+.ship-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ship-main {
+  min-width: 0;
+
+  h2 {
+    font-size: 15.5px;
+    font-weight: 800;
+    color: var(--app-text);
+    margin: 0;
+    word-break: break-all;
+  }
+
+  .ship-sub {
+    display: block;
+    margin-top: 2px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--app-text-muted);
+  }
+}
+
+.ship-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 10px;
+
+  .field {
+    display: flex;
+    flex-direction: column;
+
+    .field-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--app-text-muted);
+    }
+
+    .field-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--app-text);
+
+      &.cod {
+        color: var(--ion-color-danger);
+      }
+    }
+  }
+}
+
+.ship-actions {
+  display: flex;
+  align-items: center;
+  margin: 4px -8px 0;
+
+  .spacer {
+    flex: 1;
+  }
+
+  ion-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+  }
+}
+
+/* ---------- Empty ---------- */
+.ship-empty {
+  padding: 42px 20px;
+
+  div {
+    font-size: 44px;
+    color: var(--app-text-muted);
+    margin-bottom: 10px;
+  }
+
+  span {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--app-text-muted);
+  }
+}

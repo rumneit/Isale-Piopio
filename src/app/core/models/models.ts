@@ -168,6 +168,66 @@ export interface OrderItem {
   total: number;
 }
 
+/** Đơn vận chuyển (migration v25 — đồng bộ ISale /shipping, 11 trạng thái chuẩn 3PL) */
+export type ShipmentStatus =
+  | 'draft'
+  | 'submitted'
+  | 'picking'
+  | 'in_transit'
+  | 'out_for_delivery'
+  | 'delivered'
+  | 'failed'
+  | 'returning'
+  | 'returned'
+  | 'cancelled'
+  | 'exception';
+
+export interface Shipment {
+  id: string;
+  shop_id: string;
+  order_id: string | null;
+  order_code: string | null;
+  partner_id: string | null;
+  partner_name: string | null;
+  /** manual | ghn | ghtk | viettelpost | other */
+  provider: string;
+  tracking_code: string;
+  status: ShipmentStatus;
+  shipping_fee: number;
+  cod_amount: number;
+  /** gram — đúng ISale */
+  weight_g: number | null;
+  length_cm: number | null;
+  width_cm: number | null;
+  height_cm: number | null;
+  from_address: string | null;
+  to_address: string | null;
+  /** PDF hãng cấp; trống = in template A6 tự render */
+  label_url: string | null;
+  expected_delivered_at: string | null;
+  delivered_at: string | null;
+  cancelled_at: string | null;
+  /** lost | damaged | wrong_address | other */
+  fail_reason: string | null;
+  note: string | null;
+  external_ref: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Một sự kiện trên timeline vận đơn (append-only) */
+export interface ShipmentTrackingLog {
+  id: string;
+  shipment_id: string;
+  shop_id: string;
+  status: string | null;
+  description: string | null;
+  location: string | null;
+  event_time: string;
+  created_at?: string;
+}
+
 export interface MoneyAccount {
   id: string;
   shop_id: string;

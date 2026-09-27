@@ -29,6 +29,9 @@ export const routes: Routes = [
   // Transactions (thu chi)
   { path: 'trade', loadComponent: () => import('./pages/trades/trades.page').then((m) => m.TradesPage), canActivate: [authGuard, permissionGuard] },
   { path: 'trade/add', loadComponent: () => import('./pages/trades/trade-add.page').then((m) => m.TradeAddPage), canActivate: [authGuard, permissionGuard] },
+  // Shipments (đơn vận chuyển)
+  { path: 'shipments', loadComponent: () => import('./pages/shipments/shipments.page').then((m) => m.ShipmentsPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'shipments/detail/:id', loadComponent: () => import('./pages/shipments/shipment-detail.page').then((m) => m.ShipmentDetailPage), canActivate: [authGuard, permissionGuard] },
   // Customers
   { path: 'contact', loadComponent: () => import('./pages/customers/customers.page').then((m) => m.CustomersPage), canActivate: [authGuard, permissionGuard] },
   { path: 'contact/add', loadComponent: () => import('./pages/customers/customer-edit.page').then((m) => m.CustomerEditPage), canActivate: [authGuard, permissionGuard] },

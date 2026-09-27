@@ -1,0 +1,181 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/shipments" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Chi tiết vận đơn</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="printLabel()" [disabled]="!shipment()">
+        <ion-icon slot="icon-only" name="print-outline" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  @if (loading()) {
+    <div class="page-loading"><ion-spinner name="crescent" /></div>
+  } @else if (shipment(); as s) {
+    <div class="app-page-container">
+      <!-- Thông tin chung -->
+      <div class="app-card">
+        <div class="detail-head">
+          <div>
+            <div class="detail-code">{{ s.tracking_code }}</div>
+            <div class="detail-date">
+              {{ shipmentsService.providerLabel(s.provider) }}{{ s.partner_name ? ' · ' + s.partner_name : '' }}
+            </div>
+          </div>
+          <div class="head-badges">
+            <ion-badge [color]="statusColor(s.status)" (click)="changeStatus()" [class.status-badge]="true">
+              {{ statusLabel(s.status) }}
+            </ion-badge>
+          </div>
+        </div>
+
+        <!-- Thanh tiến trình 6 mốc (nhánh phụ hiện banner) -->
+        @if (progressIndex(s.status) >= 0) {
+          <div class="progress-bar">
+            @for (step of progressSteps; track step.value; let i = $index) {
+              <div class="progress-step" [class.done]="i <= progressIndex(s.status)" [class.current]="i === progressIndex(s.status)">
+                <div class="dot">
+                  <ion-icon [name]="i <= progressIndex(s.status) ? 'checkmark-circle' : 'ellipse'" />
+                </div>
+                <span class="step-label">{{ step.label }}</span>
+              </div>
+            }
+          </div>
+        } @else if (branchLabel(s.status); as branch) {
+          <div class="branch-banner" [class.bad]="s.status === 'exception' || s.status === 'failed'">
+            {{ branch }}
+            @if ((s.status === 'exception' || s.status === 'failed') && s.fail_reason) {
+              — {{ failReasonLabel(s.fail_reason) }}
+            }
+          </div>
+        }
+
+        <ion-list lines="full">
+          <ion-item>
+            <ion-icon slot="start" name="cube-outline" />
+            <ion-label>
+              <h3>{{ shipmentsService.formatWeight(s.weight_g) }}{{ dimsText(s) }}</h3>
+              <p>Khối lượng &amp; kích thước</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h3>{{ money(s.shipping_fee) }}</h3>
+              <p>Phí vận chuyển</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h3>{{ (s.cod_amount ?? 0) > 0 ? money(s.cod_amount) : 'Không' }}</h3>
+              <p>Tiền thu hộ (COD)</p>
+            </ion-label>
+          </ion-item>
+          @if (s.order_id || s.order_code) {
+            <ion-item button [detail]="true" (click)="openOrder(s.order_id)" [disabled]="!s.order_id">
+              <ion-label>
+                <h3>#{{ s.order_code }}</h3>
+                <p>Đơn hàng</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (s.from_address) {
+            <ion-item>
+              <ion-icon slot="start" name="navigate-outline" />
+              <ion-label>
+                <h3>{{ s.from_address }}</h3>
+                <p>Địa chỉ gửi</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (s.to_address) {
+            <ion-item>
+              <ion-icon slot="start" name="location-outline" />
+              <ion-label>
+                <h3>{{ s.to_address }}</h3>
+                <p>Địa chỉ nhận</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (s.note) {
+            <ion-item>
+              <ion-label>
+                <h3>{{ s.note }}</h3>
+                <p>Ghi chú</p>
+              </ion-label>
+            </ion-item>
+          }
+          <ion-item>
+            <ion-label>
+              <h3>{{ fmtDateTime(s.created_at) }}</h3>
+              <p>Ngày tạo</p>
+            </ion-label>
+          </ion-item>
+          @if (s.delivered_at) {
+            <ion-item>
+              <ion-label>
+                <h3>{{ fmtDateTime(s.delivered_at) }}</h3>
+                <p>Ngày giao</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+
+      <!-- Lịch sử vận chuyển -->
+      <div class="app-card">
+        <div class="app-card-title"><h4><ion-icon name="pulse-outline" /> Lịch sử vận chuyển</h4></div>
+        @if (logs().length === 0) {
+          <div class="timeline-empty">Chưa có sự kiện nào</div>
+        } @else {
+          <div class="timeline">
+            @for (log of logs(); track log.id; let last = $last) {
+              <div class="tl-item" [class.last]="last">
+                <div class="tl-dot" [class.done]="log.status === 'delivered'" [class.bad]="log.status === 'failed' || log.status === 'exception'"></div>
+                <div class="tl-body">
+                  <div class="tl-head">
+                    <span class="tl-status">{{ log.status ? statusLabel(log.status) : 'Sự kiện' }}</span>
+                    <span class="tl-time">{{ log.event_time | date: 'HH:mm dd/MM/yyyy' }}</span>
+                  </div>
+                  @if (log.description) {
+                    <div class="tl-desc">{{ log.description }}</div>
+                  }
+                  @if (log.location) {
+                    <div class="tl-loc"><ion-icon name="location-outline" /> {{ log.location }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <ion-button expand="block" fill="outline" color="primary" (click)="changeStatus()" [disabled]="busy()">
+        <ion-icon slot="start" name="swap-vertical-outline" />
+        Đổi trạng thái
+      </ion-button>
+      <ion-button expand="block" fill="outline" color="primary" (click)="printLabel()">
+        <ion-icon slot="start" name="print-outline" />
+        In vận đơn
+      </ion-button>
+      @if (shipmentsService.canCancel(s.status)) {
+        <ion-button expand="block" fill="outline" color="warning" (click)="confirmCancel()" [disabled]="busy()">
+          <ion-icon slot="start" name="ban-outline" />
+          Hủy vận đơn
+        </ion-button>
+      }
+      <ion-button expand="block" fill="outline" color="danger" (click)="confirmDelete()" [disabled]="busy()">
+        <ion-icon slot="start" name="trash-outline" />
+        Xóa vận đơn
+      </ion-button>
+    </div>
+  } @else {
+    <div class="app-empty">Không tìm thấy vận đơn</div>
+  }
+</ion-content>

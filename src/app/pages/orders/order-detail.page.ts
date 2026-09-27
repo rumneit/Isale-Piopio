@@ -37,8 +37,11 @@ import {
   swapVerticalOutline,
 } from 'ionicons/icons';
 import { OrdersService } from '../../core/services/orders.service';
+import { ShipmentsService } from '../../core/services/shipments.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Order, OrderItem, Shop } from '../../core/models/models';
+import { Order, OrderItem, Shop, Shipment } from '../../core/models/models';
+import { ShipmentFormModal } from '../shipments/shipment-form.modal';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-order-detail',
@@ -70,13 +73,17 @@ export class OrderDetailPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private ordersService = inject(OrdersService);
+  private shipmentsService = inject(ShipmentsService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private actionSheetCtrl = inject(ActionSheetController);
   private auth = inject(AuthService);
+  private modalCtrl = inject(ModalController);
 
   readonly order = signal<Order | null>(null);
   readonly items = signal<OrderItem[]>([]);
+  /** Vận đơn liên quan (migration v25 — trống nếu chưa chạy migration) */
+  readonly shipments = signal<Shipment[]>([]);
   readonly loading = signal(true);
   readonly busy = signal(false);
   /** Các cột mở rộng v22 tồn tại trong DB (undefined -> ẩn khối vận chuyển/khách mở rộng) */
@@ -109,6 +116,11 @@ export class OrderDetailPage implements OnInit {
       const { order, items } = await this.ordersService.getWithItems(id);
       this.order.set(order);
       this.items.set(items);
+      // Vận đơn liên quan (im lặng khi chưa chạy migration v25)
+      this.shipmentsService
+        .listByOrder(id)
+        .then((list) => this.shipments.set(list))
+        .catch(() => this.shipments.set([]));
     } catch (e: any) {
       console.error('load order failed', e);
     } finally {
@@ -200,7 +212,61 @@ export class OrderDetailPage implements OnInit {
   /** Đơn có dữ liệu vận chuyển / khách mở rộng để hiển thị? */
   hasShippingInfo(o: Order): boolean {
     if (!this.extras().size) return false;
-    return Boolean(o.shipping_code || o.shipping_partner || o.shipper_name || o.shipper_phone || o.shipping_address || (o.ship_fee ?? 0) > 0);
+    return Boolean(
+      o.shipping_code ||
+        o.shipping_partner ||
+        o.shipper_name ||
+        o.shipper_phone ||
+        o.shipping_address ||
+        (o.ship_fee ?? 0) > 0
+    );
+  }
+
+  /** Có khối vận chuyển để render (cũ v22 hoặc vận đơn v25)? */
+  shouldShowShippingCard(o: Order): boolean {
+    return this.shipments().length > 0 || this.hasShippingInfo(o);
+  }
+
+  /** Tạo vận đơn từ đơn hàng (prefill người nhận/mã cũ) */
+  async openCreateShipment() {
+    const o = this.order();
+    if (!o) return;
+    if (this.shipmentsService.migrationNeeded()) {
+      const alert = await this.alertCtrl.create({
+        header: 'Cần nâng cấp dữ liệu',
+        message:
+          'Bảng vận đơn chưa tồn tại. Hãy chạy supabase-migration-v25.sql trong Supabase SQL Editor, sau đó tải lại trang.',
+        buttons: ['Đã hiểu'],
+      });
+      await alert.present();
+      return;
+    }
+    const modal = await this.modalCtrl.create({
+      component: ShipmentFormModal,
+      componentProps: {
+        order: o,
+        prefillTrackingCode: o.shipping_code ?? null,
+        prefillAddress:
+          [o.customer_name, o.customer_phone, o.shipping_address || o.customer_address]
+            .filter(Boolean)
+            .join(' · ') || null,
+      },
+    });
+    await modal.present();
+    const { role } = await modal.onWillDismiss();
+    if (role === 'save') await this.load();
+  }
+
+  openShipment(shipmentId: string) {
+    this.router.navigateByUrl(`/shipments/detail/${shipmentId}`);
+  }
+
+  shipmentStatusLabel(s: string): string {
+    return ShipmentsService.statusLabel(s);
+  }
+
+  shipmentStatusColor(s: string): string {
+    return ShipmentsService.statusColor(s);
   }
 
   /** QR VietQR cho đơn (khi shop đã cấu hình ngân hàng) */

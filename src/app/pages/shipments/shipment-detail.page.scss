@@ -1,0 +1,204 @@
+/* ---------- Head + badge ---------- */
+.detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+
+  .detail-code {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--app-text);
+    word-break: break-all;
+  }
+
+  .detail-date {
+    font-size: 12.5px;
+    color: var(--app-text-muted);
+    margin-top: 2px;
+  }
+}
+
+.head-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.status-badge {
+  cursor: pointer;
+}
+
+/* ---------- Thanh tiến trình 6 mốc ---------- */
+.progress-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+  margin: 4px 0 10px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  background: var(--app-surface-alt, rgba(0, 0, 0, 0.03));
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+
+  .dot {
+    font-size: 18px;
+    line-height: 1;
+    color: var(--app-text-muted);
+    opacity: 0.5;
+  }
+
+  .step-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--app-text-muted);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  &.done {
+    .dot {
+      color: var(--ion-color-primary);
+      opacity: 1;
+    }
+
+    .step-label {
+      color: var(--ion-color-primary);
+    }
+  }
+
+  &.current {
+    .dot {
+      transform: scale(1.15);
+    }
+
+    .step-label {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* ---------- Banner nhánh phụ (hoàn/hủy/lỗi/nháp) ---------- */
+.branch-banner {
+  margin: 2px 0 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(var(--ion-color-warning-rgb), 0.12);
+  color: var(--ion-color-warning-shade, #a08300);
+
+  &.bad {
+    background: rgba(var(--ion-color-danger-rgb), 0.1);
+    color: var(--ion-color-danger);
+  }
+}
+
+/* ---------- Timeline ---------- */
+.timeline-empty {
+  padding: 18px 4px 8px;
+  font-size: 13px;
+  color: var(--app-text-muted);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.tl-item {
+  display: flex;
+  gap: 12px;
+  position: relative;
+  padding-bottom: 16px;
+
+  /* đường nối dọc */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 5.5px;
+    top: 14px;
+    bottom: 0;
+    width: 2px;
+    background: var(--app-border, rgba(0, 0, 0, 0.12));
+  }
+
+  &.last {
+    padding-bottom: 4px;
+
+    &::before {
+      display: none;
+    }
+  }
+}
+
+.tl-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--ion-color-primary);
+  flex-shrink: 0;
+  margin-top: 3px;
+  position: relative;
+  z-index: 1;
+
+  &.done {
+    background: var(--ion-color-success);
+  }
+
+  &.bad {
+    background: var(--ion-color-danger);
+  }
+}
+
+.tl-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tl-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+
+  .tl-status {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--app-text);
+  }
+
+  .tl-time {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+    white-space: nowrap;
+  }
+}
+
+.tl-desc {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--app-text);
+}
+
+.tl-loc {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--app-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+
+  ion-icon {
+    font-size: 12px;
+  }
+}

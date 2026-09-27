@@ -180,6 +180,7 @@ export class AppComponent implements OnInit {
   readonly menuItems: MenuItem[] = [
     { title: 'Trang chủ', icon: 'grid-outline', path: '/home' },
     { title: 'Đơn hàng', icon: 'cart-outline', path: '/order', permission: 'sell' },
+    { title: 'Đơn vận chuyển', icon: 'cube-outline', path: '/shipments', permission: 'sell' },
     { title: 'Trả hàng', icon: 'return-down-back-outline', path: '/returns', permission: 'sell' },
     { title: 'Sản phẩm', icon: 'pricetags-outline', path: '/product', permission: 'inventory' },
     { title: 'Nhập hàng', icon: 'download-outline', path: '/received-note', permission: 'inventory' },

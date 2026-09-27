@@ -1,0 +1,153 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="app-menu" auto-hide="false" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Đơn vận chuyển</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleSearch()">
+        <ion-icon slot="icon-only" [name]="searchVisible() ? 'close-outline' : 'search-outline'" />
+      </ion-button>
+      <ion-button (click)="openAdd()">
+        <ion-icon slot="icon-only" name="add" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  @if (searchVisible()) {
+    <ion-toolbar>
+      <ion-searchbar
+        placeholder="Nhập mã vận đơn"
+        [debounce]="300"
+        (ionInput)="onSearch($any($event))"
+      />
+    </ion-toolbar>
+  }
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    <!-- Bộ lọc như ISale: Đối tác | Trạng thái -->
+    <div class="app-card filter-card">
+      <div class="filter-row">
+        <ion-select
+          label="Đối tác"
+          labelPlacement="stacked"
+          interface="action-sheet"
+          cancelText="Đóng"
+          [(ngModel)]="partnerFilter"
+          (ionChange)="onPartnerFilter($any($event))"
+        >
+          <ion-select-option value="all">Toàn bộ</ion-select-option>
+          @for (p of partners(); track p.id) {
+            <ion-select-option [value]="p.id">{{ p.name }}</ion-select-option>
+          }
+        </ion-select>
+        <ion-select
+          label="Trạng thái"
+          labelPlacement="stacked"
+          interface="action-sheet"
+          cancelText="Đóng"
+          [(ngModel)]="statusFilter"
+          (ionChange)="onStatusFilter($any($event))"
+        >
+          <ion-select-option value="all">Toàn bộ</ion-select-option>
+          @for (st of statuses; track st.value) {
+            <ion-select-option [value]="st.value">{{ st.label }}</ion-select-option>
+          }
+        </ion-select>
+      </div>
+      <div class="filter-count">
+        {{ items().length }} vận đơn
+        @if (statusFilter !== 'all') {
+          · {{ statusLabel(statusFilter) }}
+        }
+      </div>
+    </div>
+
+    @if (shipmentsService.migrationNeeded()) {
+      <div class="app-card migration-note">
+        Bảng vận đơn chưa tồn tại — hãy chạy <b>supabase-migration-v25.sql</b> trong Supabase SQL
+        Editor rồi tải lại trang.
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (items().length === 0) {
+      <div class="app-empty ship-empty">
+        <div><ion-icon name="cube-outline" /></div>
+        <span>
+          Chưa có đơn vận chuyển nào.<br />
+          Tạo vận đơn từ đơn hàng hoặc bấm nút ＋ để nhập mã hãng.
+        </span>
+      </div>
+    } @else {
+      <div class="ship-list">
+        @for (s of items(); track s.id) {
+          <div class="ship-card" (click)="openDetail(s)">
+            <div class="ship-head">
+              <div class="ship-main">
+                <h2>{{ s.tracking_code }}</h2>
+                <span class="ship-sub">
+                  {{ s.partner_name || shipmentsService.providerLabel(s.provider) }}
+                  @if (s.order_code) {
+                    · #{{ s.order_code }}
+                  }
+                </span>
+              </div>
+              <ion-badge [color]="statusColor(s.status)">{{ statusLabel(s.status) }}</ion-badge>
+            </div>
+            <div class="ship-fields">
+              <div class="field">
+                <span class="field-label">Ngày tạo</span>
+                <span class="field-value">{{ fmtDate(s.created_at) }}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Cước</span>
+                <span class="field-value">{{ money(s.shipping_fee) }}</span>
+              </div>
+              @if ((s.cod_amount ?? 0) > 0) {
+                <div class="field">
+                  <span class="field-label">COD</span>
+                  <span class="field-value cod">{{ money(s.cod_amount) }}</span>
+                </div>
+              }
+              @if (s.weight_g) {
+                <div class="field">
+                  <span class="field-label">KL</span>
+                  <span class="field-value">{{ shipmentsService.formatWeight(s.weight_g) }}</span>
+                </div>
+              }
+            </div>
+            <div class="ship-actions">
+              <ion-button fill="clear" size="small" (click)="printLabel(s); $event.stopPropagation()">
+                <ion-icon slot="start" name="print-outline" />
+                In
+              </ion-button>
+              @if (shipmentsService.canCancel(s.status)) {
+                <ion-button fill="clear" size="small" color="danger" (click)="confirmCancel(s); $event.stopPropagation()">
+                  <ion-icon slot="start" name="ban-outline" />
+                  Hủy
+                </ion-button>
+              }
+              <span class="spacer"></span>
+              <ion-button fill="clear" size="small" (click)="openItemActions($event, s)">
+                <ion-icon slot="icon-only" name="ellipsis-horizontal" />
+              </ion-button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Bộ 3 FAB chuẩn ISale -->
+  <app-fab-trio mainIcon="add" mainLabel="Tạo vận đơn" (mainAction)="openAdd()" />
+</ion-content>
