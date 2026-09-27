@@ -90,6 +90,175 @@ ion-content {
   font-weight: 600;
   color: var(--app-text-muted);
   margin-left: 6px;
+
+  &.out {
+    color: var(--ion-color-danger);
+  }
+}
+
+/* ---------- Bulk select ---------- */
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.35);
+  border-radius: var(--app-radius);
+  padding: 8px 12px;
+  margin-bottom: 10px;
+
+  .bulk-count {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+  }
+}
+
+/* ---------- Tổng hợp + dự báo + biểu đồ ngày ---------- */
+.trade-summary {
+  margin-bottom: 12px;
+
+  .summary-cells {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: var(--app-surface-alt, rgba(0, 0, 0, 0.03));
+
+    .cell-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--app-text-muted);
+    }
+
+    .cell-value {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--app-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &.in .cell-value {
+      color: var(--ion-color-success);
+    }
+
+    &.out .cell-value {
+      color: var(--ion-color-danger);
+    }
+
+    &.net .cell-value {
+      color: var(--app-text);
+
+      &.pos {
+        color: var(--ion-color-success);
+      }
+    }
+  }
+
+  .forecast-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--app-text-muted);
+
+    b {
+      color: var(--ion-color-primary);
+    }
+  }
+
+  .day-chart {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    margin-top: 10px;
+    height: 56px;
+
+    .day-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 0;
+
+      .day-stack {
+        flex: 1;
+        width: 100%;
+        max-width: 18px;
+        display: flex;
+        flex-direction: column-reverse;
+        border-radius: 3px;
+        overflow: hidden;
+        background: transparent;
+
+        .seg {
+          width: 100%;
+
+          &.in {
+            background: rgba(45, 213, 91, 0.75);
+          }
+
+          &.out {
+            background: rgba(220, 20, 60, 0.65);
+          }
+        }
+      }
+
+      .day-num {
+        font-size: 8.5px;
+        line-height: 12px;
+        height: 12px;
+        color: var(--app-text-muted);
+      }
+    }
+  }
+}
+
+/* ---------- Tags trên card ---------- */
+.trade-tags {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 3px;
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--app-text-muted);
+    background: var(--app-surface-alt, rgba(0, 0, 0, 0.04));
+    border-radius: 999px;
+    padding: 1px 8px;
+
+    ion-icon {
+      font-size: 12px;
+    }
+
+    &.auto {
+      color: var(--ion-color-tertiary);
+      background: rgba(var(--ion-color-tertiary-rgb, 112, 68, 255), 0.1);
+    }
+  }
+}
+
+.trade-card {
+  .trade-head {
+    .trade-check {
+      margin-right: 2px;
+    }
+  }
 }
 
 /* ---------- Danh sách ---------- */

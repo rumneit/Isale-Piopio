@@ -206,6 +206,8 @@ export class OrderAddPage implements OnInit {
           amount: this.total,
           note: `Thu tiền đơn ${order.code}`,
           occurred_at: new Date().toISOString(),
+          order_id: order.id,
+          source: 'order',
         });
       }
 

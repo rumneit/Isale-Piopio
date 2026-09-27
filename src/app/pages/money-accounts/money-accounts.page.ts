@@ -29,8 +29,10 @@ import {
   phonePortraitOutline,
   createOutline,
   trashOutline,
+  swapHorizontalOutline,
 } from 'ionicons/icons';
 import { MoneyAccountsService } from '../../core/services/money-accounts.service';
+import { TransactionsService } from '../../core/services/transactions.service';
 import { MoneyAccount } from '../../core/models/models';
 
 @Component({
@@ -65,11 +67,14 @@ export class MoneyAccountsPage implements OnInit {
   }
 
   readonly accountsService = inject(MoneyAccountsService);
+  private transactionsService = inject(TransactionsService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
 
   readonly items = signal<MoneyAccount[]>([]);
   readonly loading = signal(true);
+  /** Số dư thực (số dư khai báo + giao dịch) theo account_id */
+  readonly liveBalances = signal<Map<string, number>>(new Map());
 
   constructor() {
     addIcons({
@@ -80,6 +85,7 @@ export class MoneyAccountsPage implements OnInit {
       phonePortraitOutline,
       createOutline,
       trashOutline,
+      swapHorizontalOutline,
     });
   }
 
@@ -91,6 +97,11 @@ export class MoneyAccountsPage implements OnInit {
     this.loading.set(true);
     try {
       this.items.set(await this.accountsService.list());
+      try {
+        this.liveBalances.set(await this.transactionsService.accountBalances());
+      } catch {
+        this.liveBalances.set(new Map());
+      }
     } catch (e: any) {
       console.error('load accounts failed', e);
       this.items.set([]);
@@ -99,8 +110,86 @@ export class MoneyAccountsPage implements OnInit {
     }
   }
 
+  liveBalance(account: MoneyAccount): number {
+    const map = this.liveBalances();
+    return map.has(account.id) ? map.get(account.id)! : Number(account.balance ?? 0);
+  }
+
   get totalBalance(): number {
-    return this.items().reduce((s, a) => s + Number(a.balance ?? 0), 0);
+    return this.items().reduce((s, a) => s + this.liveBalance(a), 0);
+  }
+
+  // ================= Chuyển tiền nội bộ (ISale money-account-transfer) =================
+
+  async openTransfer() {
+    const accounts = this.items();
+    if (accounts.length < 2) {
+      this.toast('Cần ít nhất 2 sổ tiền để chuyển khoản nội bộ', 'warning');
+      return;
+    }
+    const from = await this.pickAccount('Chuyển từ sổ nào?');
+    if (!from) return;
+    const to = await this.pickAccount('Chuyển đến sổ nào?', from.id);
+    if (!to) return;
+
+    const alert = await this.alertCtrl.create({
+      header: 'Chuyển tiền nội bộ',
+      message: `Từ "${from.name}" sang "${to.name}"`,
+      inputs: [
+        { name: 'amount', type: 'number', placeholder: 'Số tiền (₫) *' },
+        { name: 'fee', type: 'number', placeholder: 'Phí chuyển (₫, 0 nếu miễn)', value: '0' },
+        { name: 'note', type: 'text', placeholder: 'Ghi chú (tùy chọn)' },
+      ],
+      buttons: [
+        { text: 'Hủy', role: 'cancel' },
+        {
+          text: 'Chuyển',
+          handler: async (data) => {
+            const amount = Number(data?.amount ?? 0);
+            const fee = Number(data?.fee ?? 0);
+            if (!amount || amount <= 0) {
+              this.toast('Số tiền chuyển cần lớn hơn 0', 'danger');
+              return false;
+            }
+            if (fee < 0) {
+              this.toast('Phí chuyển không hợp lệ', 'danger');
+              return false;
+            }
+            try {
+              await this.transactionsService.transferMoney(from.id, to.id, amount, fee, (data?.note ?? '').trim() || undefined);
+              this.toast(`Đã chuyển ${this.formatMoney(amount)} từ ${from.name} sang ${to.name}${fee > 0 ? ` (phí ${this.formatMoney(fee)})` : ''}`);
+              await this.load();
+              return true;
+            } catch (e: any) {
+              this.toast(e?.message ?? 'Chuyển tiền thất bại', 'danger');
+              return false;
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async pickAccount(header: string, excludeId?: string): Promise<MoneyAccount | null> {
+    const options = this.items().filter((a) => a.id !== excludeId);
+    const alert = await this.alertCtrl.create({
+      header,
+      inputs: options.map((a, i) => ({
+        name: 'account',
+        type: 'radio' as const,
+        label: `${a.name} (${this.formatMoney(this.liveBalance(a))})`,
+        value: a.id,
+        checked: i === 0,
+      })),
+      buttons: [
+        { text: 'Hủy', role: 'cancel' },
+        { text: 'Chọn', handler: (data) => !!data?.account },
+      ],
+    });
+    await alert.present();
+    const { data } = await alert.onWillDismiss();
+    return options.find((a) => a.id === data?.account) ?? null;
   }
 
   typeIcon(type: string): string {

@@ -7,6 +7,11 @@
       </ion-button>
     </ion-buttons>
     <ion-title>Sổ tiền</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openTransfer()">
+        <ion-icon slot="icon-only" name="swap-horizontal-outline" />
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -37,7 +42,7 @@
                   <h3>{{ item.name }}</h3>
                   <p>{{ accountsService.typeLabel(item.type) }}</p>
                 </ion-label>
-                <ion-badge slot="end" color="primary">{{ formatMoney(item.balance) }}</ion-badge>
+                <ion-badge slot="end" color="primary">{{ formatMoney(liveBalance(item)) }}</ion-badge>
               </ion-item>
             }
           </ion-list>

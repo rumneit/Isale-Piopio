@@ -4,11 +4,13 @@
       <ion-button (click)="goBack()">
         <ion-icon slot="icon-only" name="close-outline" />
       </ion-button>
-      <ion-button (click)="openHome()">
-        <ion-icon slot="icon-only" name="home-outline" />
-      </ion-button>
+      @if (!asModal) {
+        <ion-button (click)="openHome()">
+          <ion-icon slot="icon-only" name="home-outline" />
+        </ion-button>
+      }
     </ion-buttons>
-    <ion-title>Giao dịch mới</ion-title>
+    <ion-title>{{ pageTitle }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="save()" [disabled]="busy()">
         @if (busy()) {
@@ -27,14 +29,15 @@
       <div class="form-error">{{ error }}</div>
     }
 
+    <!-- ISale: TIỀN VÀO | TIỀN RA -->
     <ion-segment [value]="type" (ionChange)="onTypeChange($any($event))" class="trade-type-segment">
-      <ion-segment-button value="expense">
-        <ion-icon name="trending-down-outline" color="danger" />
-        <ion-label>Chi tiền</ion-label>
-      </ion-segment-button>
       <ion-segment-button value="income">
         <ion-icon name="trending-up-outline" color="success" />
-        <ion-label>Thu tiền</ion-label>
+        <ion-label>Tiền vào</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="expense">
+        <ion-icon name="trending-down-outline" color="danger" />
+        <ion-label>Tiền ra</ion-label>
       </ion-segment-button>
     </ion-segment>
 
@@ -51,23 +54,84 @@
             placeholder="0"
             class="trade-amount-input"
           />
+          <ion-buttons slot="end" class="trade-quick">
+            <ion-button size="small" fill="outline" (click)="appendZeros(2)">×100</ion-button>
+            <ion-button size="small" fill="outline" (click)="appendZeros(3)">×1000</ion-button>
+          </ion-buttons>
         </ion-item>
         <ion-item>
-          <ion-select label="Nhóm" labelPlacement="floating" [(ngModel)]="category" interface="action-sheet" cancelText="Đóng">
-            @for (c of categories; track c) {
+          <ion-select label="Mục" labelPlacement="floating" [(ngModel)]="category" interface="action-sheet" cancelText="Đóng">
+            @for (c of categories(); track c) {
               <ion-select-option [value]="c">{{ c }}</ion-select-option>
+            }
+          </ion-select>
+          <ion-button slot="end" size="small" fill="clear" (click)="promptAddCategory()">
+            <ion-icon slot="icon-only" name="add-outline" />
+          </ion-button>
+        </ion-item>
+        <ion-item>
+          <ion-input label="Mô tả ngắn" labelPlacement="floating" [(ngModel)]="note" placeholder="VD: Nhập hàng trà sữa..." />
+        </ion-item>
+        <ion-item>
+          <ion-input label="Ngày tạo" labelPlacement="floating" type="date" [(ngModel)]="occurredDate" />
+        </ion-item>
+        <ion-item>
+          <ion-select label="Ví/Tài khoản" labelPlacement="floating" [(ngModel)]="accountId" interface="action-sheet" cancelText="Đóng">
+            <ion-select-option value="">— Không chọn —</ion-select-option>
+            @for (a of accounts(); track a.id) {
+              <ion-select-option [value]="a.id">{{ a.name }}</ion-select-option>
             }
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-input label="Ghi chú" labelPlacement="floating" [(ngModel)]="note" placeholder="VD: Nhập hàng trà sữa..." />
+          <ion-select label="Hình thức thanh toán" labelPlacement="floating" [(ngModel)]="paymentType" interface="action-sheet" cancelText="Đóng">
+            @for (p of paymentTypes; track p.value) {
+              <ion-select-option [value]="p.value">{{ p.label }}</ion-select-option>
+            }
+          </ion-select>
         </ion-item>
       </ion-list>
-      <ion-note class="trade-date-note">Ghi nhận tại thời điểm hiện tại</ion-note>
+    </div>
+
+    <!-- Ảnh biên lai -->
+    <div class="app-card trade-receipts">
+      <div class="receipts-head">
+        <span class="receipts-title">
+          <ion-icon name="image-outline" />
+          Ảnh biên lai
+        </span>
+        <ion-button size="small" fill="outline" (click)="fileInput.click()">
+          <ion-icon slot="start" name="add-outline" />
+          Thêm ảnh
+        </ion-button>
+        <input #fileInput type="file" accept="image/*" multiple hidden (change)="onFiles($event)" />
+      </div>
+      @if (existingImages.length || pendingReceipts().length) {
+        <div class="receipts-grid">
+          @for (url of existingImages; track url; let i = $index) {
+            <div class="receipt-thumb">
+              <img [src]="url" alt="Biên lai" loading="lazy" />
+              <button class="thumb-remove" type="button" (click)="removeExisting(i)">
+                <ion-icon name="close-circle" />
+              </button>
+            </div>
+          }
+          @for (p of pendingReceipts(); track p.previewUrl; let i = $index) {
+            <div class="receipt-thumb">
+              <img [src]="p.previewUrl" alt="Biên lai mới" />
+              <button class="thumb-remove" type="button" (click)="removePending(i)">
+                <ion-icon name="close-circle" />
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <ion-note class="receipts-empty">Đính kèm ảnh hóa đơn/chứng từ (tối đa 10 ảnh)</ion-note>
+      }
     </div>
 
     <ion-button expand="block" size="large" (click)="save()" [disabled]="busy()">
-      Lưu giao dịch
+      {{ isEdit ? 'Lưu thay đổi' : 'Lưu giao dịch' }}
     </ion-button>
   </div>
 </ion-content>

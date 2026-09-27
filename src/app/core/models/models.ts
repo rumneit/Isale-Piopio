@@ -187,6 +187,40 @@ export interface Transaction {
   note: string | null;
   occurred_at: string;
   created_at?: string;
+  /** Liên kết nguồn gốc (P1): khóa sửa/xóa tay khi khác null */
+  contact_id?: string | null;
+  order_id?: string | null;
+  debt_id?: string | null;
+  /** CASH | BANK | CARD | E-WALLET | INTERNAL | OTHER */
+  payment_type?: string | null;
+  /** Ảnh biên lai (URL Storage) */
+  image_urls?: string[] | null;
+  /** manual | order | debt | transfer | recurring */
+  source?: string | null;
+}
+
+export interface TradeCategory {
+  id: string;
+  shop_id: string;
+  title: string;
+  type: 'income' | 'expense';
+  order_index: number;
+  created_at?: string;
+}
+
+export interface RecurringTransaction {
+  id: string;
+  shop_id: string;
+  title: string;
+  type: 'income' | 'expense';
+  amount: number;
+  category: string | null;
+  account_id: string | null;
+  payment_type: string | null;
+  day_of_month: number;
+  active: boolean;
+  last_run_month: string | null;
+  created_at?: string;
 }
 
 export interface HomeStats {

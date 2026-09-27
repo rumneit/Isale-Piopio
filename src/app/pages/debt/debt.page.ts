@@ -365,6 +365,8 @@ export class DebtPage implements OnInit {
         amount: Number(loan.amount ?? 0),
         note: `${this.loansService.typeLabel(loan.type)} - ${loan.party_name}`,
         occurred_at: new Date().toISOString(),
+        debt_id: loan.id,
+        source: 'debt',
       });
       this.toast('Đã tạo giao dịch tương ứng');
     } catch (e: any) {

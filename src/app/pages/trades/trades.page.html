@@ -8,6 +8,9 @@
     </ion-buttons>
     <ion-title>Quản lý Thu/Chi</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="openRecurring()">
+        <ion-icon slot="icon-only" name="repeat-outline" />
+      </ion-button>
       <ion-button (click)="openPath('/report')">
         <ion-icon slot="icon-only" name="stats-chart-outline" />
       </ion-button>
@@ -42,25 +45,86 @@
     <!-- Lọc loại giao dịch -->
     <div class="filter-row">
       <span class="filter-label">Loại giao dịch</span>
-      <button class="filter-btn" (click)="openTypeFilter()">{{ typeFilterLabel() }}</button>
+      <button class="filter-btn" (click)="openTypeFilter()">{{ typeFilterLabel() }} ▾</button>
     </div>
 
     <!-- Toolbar -->
     <div class="list-toolbar">
       <div class="toolbar-left">
-        <ion-button fill="clear" size="small" (click)="toggleSearch()">
-          <ion-icon slot="icon-only" name="search-outline" />
-        </ion-button>
         <span class="toolbar-total">Tổng: {{ items().length }} giao dịch</span>
-        <span class="toolbar-money">/ Tổng giao dịch: {{ formatMoney(totalAmount()) }}</span>
+        <span class="toolbar-money">/ Tiền vào: {{ formatMoney(totalIn()) }}</span>
+        <span class="toolbar-money out">Tiền ra: {{ formatMoney(totalOut()) }}</span>
       </div>
       <div class="toolbar-actions">
+        <ion-button fill="clear" size="small" [color]="selectMode() ? 'primary' : 'dark'" (click)="toggleSelectMode()">
+          <ion-icon slot="icon-only" name="checkbox-outline" />
+        </ion-button>
         <ion-button fill="clear" size="small" (click)="exportCsv()">
           <ion-icon slot="icon-only" name="download-outline" />
         </ion-button>
         <ion-button fill="clear" size="small" (click)="openPath('/import')">
           <ion-icon slot="icon-only" name="cloud-upload-outline" />
         </ion-button>
+      </div>
+    </div>
+
+    <!-- Bulk bar -->
+    @if (selectMode()) {
+      <div class="bulk-bar">
+        <ion-checkbox [checked]="pageAllSelected" (click)="toggleSelectPage(); $event.preventDefault()" labelPlacement="end">
+          Chọn trang
+        </ion-checkbox>
+        <span class="bulk-count">{{ selected().size }} đã chọn</span>
+        <ion-button size="small" fill="outline" color="danger" [disabled]="selected().size === 0" (click)="bulkDelete()">
+          <ion-icon slot="start" name="trash-outline" />
+          Xóa
+        </ion-button>
+        <ion-button size="small" fill="clear" (click)="toggleSelectMode()">
+          <ion-icon slot="icon-only" name="close-outline" />
+        </ion-button>
+      </div>
+    }
+
+    <!-- Tổng hợp + dự báo + biểu đồ (P3) -->
+    <div class="app-card trade-summary">
+      <div class="summary-cells">
+        <div class="cell in">
+          <span class="cell-label">Tiền vào</span>
+          <span class="cell-value">{{ formatMoney(totalIn()) }}</span>
+        </div>
+        <div class="cell out">
+          <span class="cell-label">Tiền ra</span>
+          <span class="cell-value">{{ formatMoney(totalOut()) }}</span>
+        </div>
+        <div class="cell net" [class.pos]="totalAmount() >= 0">
+          <span class="cell-label">Chênh lệch</span>
+          <span class="cell-value">{{ totalAmount() >= 0 ? '+' : '' }}{{ formatMoney(totalAmount()) }}</span>
+        </div>
+      </div>
+      @if (forecast() !== null) {
+        <div class="forecast-row">
+          <ion-icon name="sparkles-outline" />
+          Dự báo chênh lệch cuối tháng: <b>{{ forecast()! >= 0 ? '+' : '' }}{{ formatMoney(forecast()!) }}</b>
+        </div>
+      }
+      <div class="day-chart" aria-hidden="true">
+        @for (bar of dayBars(); track bar.day) {
+          <div class="day-col" [title]="'Ngày ' + bar.day + ': vào ' + bar.in + ' / ra ' + bar.out">
+            <div class="day-stack">
+              @if (bar.inH > 0) {
+                <div class="seg in" [style.height.%]="bar.inH"></div>
+              }
+              @if (bar.outH > 0) {
+                <div class="seg out" [style.height.%]="bar.outH"></div>
+              }
+            </div>
+            @if (bar.day % 5 === 0 || bar.day === 1) {
+              <span class="day-num">{{ bar.day }}</span>
+            } @else {
+              <span class="day-num"></span>
+            }
+          </div>
+        }
       </div>
     </div>
 
@@ -71,7 +135,7 @@
         <div><ion-icon name="file-tray-outline" /></div>
         <span>
           Chưa có Giao dịch nào. Bấm biểu tượng + để thêm mới Giao dịch. Với mỗi giao dịch bạn có thể:
-          cập nhật thông tin (tiền, khách hàng, sản phẩm, ghi chú, ảnh..), chia sẻ/xuất ra Gmail, Facebook..,
+          cập nhật thông tin (tiền, ví/tài khoản, ghi chú, ảnh biên lai..), tạo giao dịch định kỳ,
           xem dữ liệu ảnh hưởng lên báo cáo trong các menu Báo cáo.
         </span>
       </div>
@@ -79,13 +143,30 @@
       <div class="trade-list">
         @for (item of pagedItems(); track item.id) {
           <div class="trade-card" (click)="openItemActions(item)">
+            @if (selectMode()) {
+              <ion-checkbox
+                [checked]="isSelected(item.id)"
+                (click)="toggleSelect(item.id); $event.preventDefault()"
+                class="trade-check"
+              />
+            }
             <div class="trade-head">
               <div class="trade-icon" [class.income]="item.type === 'income'">
                 <ion-icon [name]="item.type === 'income' ? 'trending-up-outline' : 'trending-down-outline'" />
               </div>
               <div class="trade-main">
-                <h2>{{ item.note || item.category || (item.type === 'income' ? 'Thu' : 'Chi') }}</h2>
-                <span class="trade-category">{{ item.category ?? '—' }}</span>
+                <h2>{{ item.note || item.category || (item.type === 'income' ? 'Tiền vào' : 'Tiền ra') }}</h2>
+                <span class="trade-category">{{ item.category ?? '—' }} · {{ paymentTypeLabel(item) }}</span>
+                @if ((item.image_urls?.length ?? 0) > 0 || sourceLabel(item)) {
+                  <span class="trade-tags">
+                    @if ((item.image_urls?.length ?? 0) > 0) {
+                      <span class="tag"><ion-icon name="image-outline" /> {{ item.image_urls!.length }}</span>
+                    }
+                    @if (sourceLabel(item)) {
+                      <span class="tag auto">{{ sourceLabel(item) }}</span>
+                    }
+                  </span>
+                }
               </div>
               <ion-badge [color]="item.type === 'income' ? 'success' : 'danger'">
                 {{ item.type === 'income' ? '+' : '-' }}{{ formatMoney(item.amount) }}

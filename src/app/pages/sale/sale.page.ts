@@ -651,6 +651,8 @@ export class SalePage implements OnInit {
             amount: due,
             note: `Thu tiền đơn ${order.code}`,
             occurred_at: new Date().toISOString(),
+            order_id: order.id,
+            source: 'order',
           });
         }
         saved++;
