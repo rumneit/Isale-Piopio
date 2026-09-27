@@ -9,6 +9,7 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 10px;
+  gap: 8px;
 
   .detail-code {
     font-weight: 800;
@@ -19,6 +20,18 @@
   .detail-date {
     font-size: 12px;
     color: var(--app-text-muted);
+  }
+
+  .head-badges {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .status-badge {
+    cursor: pointer;
   }
 }
 

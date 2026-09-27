@@ -18,6 +18,7 @@ import {
   IonBackButton,
   AlertController,
   ToastController,
+  ActionSheetController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -29,10 +30,15 @@ import {
   checkmarkCircleOutline,
   printOutline,
   returnDownBackOutline,
+  cardOutline,
+  cubeOutline,
+  callOutline,
+  locationOutline,
+  swapVerticalOutline,
 } from 'ionicons/icons';
 import { OrdersService } from '../../core/services/orders.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Order, OrderItem } from '../../core/models/models';
+import { Order, OrderItem, Shop } from '../../core/models/models';
 
 @Component({
   selector: 'app-order-detail',
@@ -66,15 +72,18 @@ export class OrderDetailPage implements OnInit {
   private ordersService = inject(OrdersService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
+  private actionSheetCtrl = inject(ActionSheetController);
   private auth = inject(AuthService);
 
   readonly order = signal<Order | null>(null);
   readonly items = signal<OrderItem[]>([]);
   readonly loading = signal(true);
   readonly busy = signal(false);
+  /** Các cột mở rộng v22 tồn tại trong DB (undefined -> ẩn khối vận chuyển/khách mở rộng) */
+  readonly extras = signal<Set<string>>(new Set());
 
   constructor() {
-    addIcons({ trashOutline, cashOutline, receiptOutline, personOutline, ellipseOutline, checkmarkCircleOutline, printOutline, returnDownBackOutline });
+    addIcons({ trashOutline, cashOutline, receiptOutline, personOutline, ellipseOutline, checkmarkCircleOutline, printOutline, returnDownBackOutline, cardOutline, cubeOutline, callOutline, locationOutline, swapVerticalOutline });
   }
 
   goReturn() {
@@ -86,6 +95,7 @@ export class OrderDetailPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.hasPaymentMethod = await this.ordersService.detectPaymentMethod().catch(() => false);
+    this.extras.set(await this.ordersService.detectOrderExtras().catch(() => new Set<string>()));
     await this.load();
   }
 
@@ -119,6 +129,93 @@ export class OrderDetailPage implements OnInit {
     } finally {
       this.busy.set(false);
     }
+  }
+
+  /** Đổi trạng thái đơn (ISale: 8 mức trạng thái) */
+  async changeStatus() {
+    const order = this.order();
+    if (!order) return;
+    const buttons = OrdersService.orderStatuses.map((s) => ({
+      text: (order.status === s.value ? '✓ ' : '') + s.label,
+      handler: async () => {
+        if (order.status === s.value) return;
+        this.busy.set(true);
+        try {
+          await this.ordersService.update(order.id, { status: s.value });
+          await this.load();
+          this.toast(`Đã chuyển sang "${s.label}"`);
+        } catch (e: any) {
+          this.toast(e?.message ?? 'Đổi trạng thái thất bại', 'danger');
+        } finally {
+          this.busy.set(false);
+        }
+      },
+    }));
+    const sheet = await this.actionSheetCtrl.create({
+      header: 'Đổi trạng thái đơn hàng',
+      buttons: [...buttons, { text: 'Hủy', role: 'cancel' }],
+    });
+    await sheet.present();
+  }
+
+  /** Đổi hình thức thanh toán (ISale: 10 mã) */
+  async changePayment() {
+    const order = this.order();
+    if (!order) return;
+    const buttons = OrdersService.paymentMethods.map((m) => ({
+      text: ((order.payment_method ?? 'CASH') === m.value ? '✓ ' : '') + m.label,
+      handler: async () => {
+        if ((order.payment_method ?? 'CASH') === m.value) return;
+        this.busy.set(true);
+        try {
+          await this.ordersService.update(order.id, { payment_method: m.value });
+          await this.load();
+          this.toast(`Hình thức thanh toán: ${m.label}`);
+        } catch (e: any) {
+          this.toast(e?.message ?? 'Cập nhật thất bại', 'danger');
+        } finally {
+          this.busy.set(false);
+        }
+      },
+    }));
+    const sheet = await this.actionSheetCtrl.create({
+      header: 'Hình thức thanh toán',
+      buttons: [...buttons, { text: 'Hủy', role: 'cancel' }],
+    });
+    await sheet.present();
+  }
+
+  statusLabel(status: string | null | undefined): string {
+    return OrdersService.statusLabel(status);
+  }
+
+  statusColor(status: string | null | undefined): string {
+    return OrdersService.statusColor(status);
+  }
+
+  paymentLabel(code: string | null | undefined): string {
+    return OrdersService.paymentLabel(code);
+  }
+
+  /** Đơn có dữ liệu vận chuyển / khách mở rộng để hiển thị? */
+  hasShippingInfo(o: Order): boolean {
+    if (!this.extras().size) return false;
+    return Boolean(o.shipping_code || o.shipping_partner || o.shipper_name || o.shipper_phone || o.shipping_address || (o.ship_fee ?? 0) > 0);
+  }
+
+  /** QR VietQR cho đơn (khi shop đã cấu hình ngân hàng) */
+  qrUrlFor(o: Order): string {
+    const shop = this.auth.shop() as (Shop & { bank_code?: string | null }) | null;
+    const bank = (shop?.bank_code ?? '').trim();
+    const acc = (shop?.bank_account ?? '').trim();
+    if (!bank || !acc) return '';
+    const info = encodeURIComponent(o.code || 'Thanh toan');
+    const owner = encodeURIComponent((shop?.bank_owner ?? '').trim());
+    return (
+      `https://img.vietqr.io/image/${bank}-${acc}-compact2.png` +
+      `?amount=${Math.max(0, Math.round(Number(o.total ?? 0)))}&addInfo=${info}` +
+      (owner ? `&accountName=${owner}` : '')
+    );
   }
 
   async confirmDelete() {
@@ -172,6 +269,27 @@ export class OrderDetailPage implements OnInit {
       )
       .join('');
 
+    const qr = this.qrUrlFor(o);
+    const shipFee = Number(o.ship_fee ?? 0);
+    const shipHtml =
+      this.hasShippingInfo(o) && shipFee > 0
+        ? `<tr><td class="l">Phi van chuyen${o.ship_fee_by_customer ? '' : ' (shop tra)'}</td><td class="r">${money(shipFee)}</td></tr>`
+        : '';
+    const shipInfo =
+      this.hasShippingInfo(o)
+        ? `<hr>
+  <table>
+    ${o.shipping_code ? `<tr><td class="l">Ma van don: <b>${esc(o.shipping_code)}</b>${o.shipping_partner ? ' - ' + esc(o.shipping_partner) : ''}</td></tr>` : ''}
+    ${o.shipper_name ? `<tr><td class="l">Shipper: ${esc(o.shipper_name)}${o.shipper_phone ? ' - ' + esc(o.shipper_phone) : ''}</td></tr>` : ''}
+    ${o.shipping_address ? `<tr><td class="l">Giao den: ${esc(o.shipping_address)}</td></tr>` : ''}
+  </table>`
+        : '';
+    const qrHtml = qr
+      ? `<hr>
+  <p class="center"><img src="${qr}" alt="QR thanh toan" width="180" height="180"></p>
+  <p class="center muted">Quet ma QR de thanh toan</p>`
+      : '';
+
     const html = `<!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8"><title>Hoa don ${esc(o.code)}</title>
 <style>
@@ -194,15 +312,17 @@ export class OrderDetailPage implements OnInit {
   <hr>
   <table>
     <tr><td class="l">So: <b>${esc(o.code)}</b></td><td class="r">${esc(this.fmtDate(o.created_at))}</td></tr>
-    <tr><td class="l">Khach: <b>${esc(o.customer_name ?? 'Khach le')}</b></td><td class="r">${o.paid ? 'DA THANH TOAN' : 'CON NO'}</td></tr>
+    <tr><td class="l">Khach: <b>${esc(o.customer_name ?? 'Khach le')}</b>${o.customer_phone ? ' - ' + esc(o.customer_phone) : ''}</td><td class="r">${o.paid ? 'DA THANH TOAN' : 'CON NO'}</td></tr>
+    <tr><td class="l">Trang thai: <b>${esc(this.statusLabel(o.status))}</b></td><td class="r">${esc(this.paymentLabel(o.payment_method))}</td></tr>
   </table>
   <hr>
   <table>${rows}</table>
   <hr>
   <table>
     ${o.discount ? `<tr><td class="l">Giam gia</td><td class="r">-${money(o.discount)}</td></tr>` : ''}
+    ${shipHtml}
     <tr class="total"><td class="l">TONG CONG</td><td class="r">${money(o.total)}</td></tr>
-  </table>
+  </table>${shipInfo}${qrHtml}
   <p class="thanks muted">Cam on quy khach — Hen gap lai!</p>
   <script>window.onload = function () { window.print(); };</script>
 </body></html>`;
@@ -229,5 +349,11 @@ export class OrderDetailPage implements OnInit {
 
   totalQty(): number {
     return this.items().reduce((s, i) => s + (i.qty ?? 0), 0);
+  }
+
+  /** Tiền hàng = tổng cộng + giảm giá − phí ship (nếu khách trả ship) — đúng ngược công thức bán hàng */
+  sumMerchandise(o: Order): number {
+    const ship = o.ship_fee_by_customer ? Number(o.ship_fee ?? 0) : 0;
+    return Number(o.total ?? 0) + Number(o.discount ?? 0) - ship;
   }
 }

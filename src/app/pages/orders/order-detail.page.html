@@ -32,16 +32,21 @@
             <div class="detail-code">{{ o.code }}</div>
             <div class="detail-date">{{ o.created_at | date: 'dd/MM/yyyy HH:mm' }}</div>
           </div>
-          <ion-badge [color]="o.paid ? 'success' : 'warning'">{{ o.paid ? 'Đã thanh toán' : 'Còn nợ' }}</ion-badge>
+          <div class="head-badges">
+            <ion-badge [color]="statusColor(o.status)" (click)="changeStatus()" [class.status-badge]="true">
+              {{ statusLabel(o.status) }}
+            </ion-badge>
+            <ion-badge [color]="o.paid ? 'success' : 'warning'">{{ o.paid ? 'Đã thanh toán' : 'Còn nợ' }}</ion-badge>
+          </div>
         </div>
 
         <ion-list lines="full">
           @if (hasPaymentMethod) {
-            <ion-item>
+            <ion-item button detail="true" (click)="changePayment()">
               <ion-icon slot="start" name="card-outline" />
               <ion-label>
-                <h3>{{ o.payment_method ?? '—' }}</h3>
-                <p>Hình thức thanh toán</p>
+                <h3>{{ paymentLabel(o.payment_method) }}</h3>
+                <p>Hình thức thanh toán (bấm để đổi)</p>
               </ion-label>
             </ion-item>
           }
@@ -52,6 +57,24 @@
               <p>Khách hàng</p>
             </ion-label>
           </ion-item>
+          @if (o.customer_phone) {
+            <ion-item>
+              <ion-icon slot="start" name="call-outline" />
+              <ion-label>
+                <h3><a [href]="'tel:' + o.customer_phone">{{ o.customer_phone }}</a></h3>
+                <p>Số điện thoại</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (o.customer_address) {
+            <ion-item>
+              <ion-icon slot="start" name="location-outline" />
+              <ion-label>
+                <h3>{{ o.customer_address }}</h3>
+                <p>Địa chỉ</p>
+              </ion-label>
+            </ion-item>
+          }
           @if (o.note) {
             <ion-item>
               <ion-icon slot="start" name="ellipse-outline" />
@@ -63,6 +86,46 @@
           }
         </ion-list>
       </div>
+
+      @if (hasShippingInfo(o)) {
+        <div class="app-card">
+          <div class="app-card-title"><h4><ion-icon name="cube-outline" /> Vận chuyển</h4></div>
+          <ion-list lines="full">
+            @if (o.shipping_code) {
+              <ion-item>
+                <ion-label>
+                  <h3>{{ o.shipping_code }}</h3>
+                  <p>Mã vận đơn{{ o.shipping_partner ? ' · ' + o.shipping_partner : '' }}</p>
+                </ion-label>
+              </ion-item>
+            }
+            @if (o.shipper_name || o.shipper_phone) {
+              <ion-item>
+                <ion-label>
+                  <h3>{{ o.shipper_name || '—' }}{{ o.shipper_phone ? ' · ' + o.shipper_phone : '' }}</h3>
+                  <p>Người giao hàng</p>
+                </ion-label>
+              </ion-item>
+            }
+            @if (o.shipping_address) {
+              <ion-item>
+                <ion-label>
+                  <h3>{{ o.shipping_address }}</h3>
+                  <p>Địa chỉ giao hàng</p>
+                </ion-label>
+              </ion-item>
+            }
+            @if ((o.ship_fee ?? 0) > 0) {
+              <ion-item>
+                <ion-label>
+                  <h3>{{ formatMoney(o.ship_fee) }}</h3>
+                  <p>Phí vận chuyển{{ o.ship_fee_by_customer ? ' (khách trả)' : ' (shop trả)' }}</p>
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </div>
+      }
 
       <div class="app-card">
         <div class="app-card-title"><h4><ion-icon name="receipt-outline" /> Sản phẩm ({{ items().length }})</h4></div>
@@ -85,12 +148,18 @@
           </div>
           <div class="detail-sum-row">
             <span>Tổng tiền hàng</span>
-            <span>{{ formatMoney(o.total + (o.discount ?? 0)) }}</span>
+            <span>{{ formatMoney(sumMerchandise(o)) }}</span>
           </div>
           @if ((o.discount ?? 0) > 0) {
             <div class="detail-sum-row">
               <span>Giảm giá</span>
               <span>-{{ formatMoney(o.discount) }}</span>
+            </div>
+          }
+          @if ((o.ship_fee ?? 0) > 0) {
+            <div class="detail-sum-row">
+              <span>Phí vận chuyển{{ o.ship_fee_by_customer ? ' (khách trả)' : ' (shop trả)' }}</span>
+              <span>{{ formatMoney(o.ship_fee) }}</span>
             </div>
           }
           <div class="detail-sum-row detail-sum-total">
@@ -100,6 +169,10 @@
         </div>
       </div>
 
+      <ion-button expand="block" fill="outline" color="primary" (click)="changeStatus()" [disabled]="busy()">
+        <ion-icon slot="start" name="swap-vertical-outline" />
+        Đổi trạng thái đơn hàng
+      </ion-button>
       <ion-button expand="block" fill="outline" [color]="o.paid ? 'warning' : 'success'" (click)="togglePaid()" [disabled]="busy()">
         <ion-icon slot="start" [name]="o.paid ? 'ellipse-outline' : 'checkmark-circle-outline'" />
         {{ o.paid ? 'Đánh dấu còn nợ' : 'Đánh dấu đã thanh toán' }}

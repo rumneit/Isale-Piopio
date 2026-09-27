@@ -16,6 +16,7 @@ import {
   IonMenuButton,
   IonBadge,
   ActionSheetController,
+  ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -34,6 +35,10 @@ import {
   addOutline,
   fileTrayOutline,
   checkmarkCircleOutline,
+  checkboxOutline,
+  squareOutline,
+  closeOutline,
+  cubeOutline,
 } from 'ionicons/icons';
 import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 import { OrdersService } from '../../core/services/orders.service';
@@ -73,6 +78,7 @@ export class OrdersPage implements OnInit {
   private csvExport = inject(CsvExportService);
   private router = inject(Router);
   private actionSheetCtrl = inject(ActionSheetController);
+  private toastCtrl = inject(ToastController);
 
   readonly loading = signal(true);
   readonly allOrders = signal<Order[]>([]);
@@ -81,7 +87,15 @@ export class OrdersPage implements OnInit {
 
   readonly monthTabs: MonthTab[] = this.buildMonthTabs();
   readonly selectedMonth = signal(0); // index vào monthTabs
-  readonly statusFilter = signal<'all' | 'shipping' | 'completed' | 'cancelled'>('all');
+  /** 'all' | 4 tab nhanh | các trạng thái phụ qua nút ••• (như ISale) */
+  readonly statusFilter = signal<string>('all');
+  /** Chế độ chọn nhiều đơn (ISale: bulk select) */
+  readonly selectMode = signal(false);
+  readonly selectedIds = signal<Set<string>>(new Set());
+  /** Các trạng thái phụ nằm sau nút ••• (ISale: Nháp, Đang xử lý, Công nợ...) */
+  readonly extraStatuses = OrdersService.orderStatuses.filter((s) =>
+    !['shipping', 'completed', 'cancelled'].includes(s.value)
+  );
 
   readonly items = computed(() => {
     const tab = this.monthTabs[this.selectedMonth()];
@@ -91,8 +105,9 @@ export class OrdersPage implements OnInit {
     });
     const sf = this.statusFilter();
     if (sf === 'shipping') list = list.filter((o) => o.status === 'shipping');
-    if (sf === 'completed') list = list.filter((o) => o.status === 'completed' || o.status === 'delivered');
-    if (sf === 'cancelled') list = list.filter((o) => o.status === 'cancelled');
+    else if (sf === 'completed') list = list.filter((o) => o.status === 'completed' || o.status === 'delivered');
+    else if (sf === 'cancelled') list = list.filter((o) => o.status === 'cancelled');
+    else if (sf !== 'all') list = list.filter((o) => o.status === sf);
     return list;
   });
 
@@ -115,6 +130,10 @@ export class OrdersPage implements OnInit {
       addOutline,
       fileTrayOutline,
       checkmarkCircleOutline,
+      checkboxOutline,
+      squareOutline,
+      closeOutline,
+      cubeOutline,
     });
   }
 
@@ -169,8 +188,112 @@ export class OrdersPage implements OnInit {
     this.selectedMonth.set(index);
   }
 
-  selectStatus(status: 'all' | 'shipping' | 'completed' | 'cancelled') {
+  selectStatus(status: string) {
     this.statusFilter.set(status);
+  }
+
+  /** Đang lọc bằng một trạng thái phụ (nút ••• sáng lên như tab) */
+  isExtraFilter(): boolean {
+    const sf = this.statusFilter();
+    return sf !== 'all' && sf !== 'shipping' && sf !== 'completed' && sf !== 'cancelled';
+  }
+
+  activeFilterLabel(): string {
+    return OrdersService.statusLabel(this.statusFilter());
+  }
+
+  /** Nút ••• của dải trạng thái: chọn trạng thái phụ (giống ISale) */
+  async openMoreStatuses() {
+    const current = this.statusFilter();
+    const buttons = this.extraStatuses.map((s) => ({
+      text: (current === s.value ? '✓ ' : '') + s.label,
+      handler: () => this.selectStatus(s.value),
+    }));
+    const sheet = await this.actionSheetCtrl.create({
+      header: 'Lọc theo trạng thái',
+      buttons: [...buttons, { text: 'Tất cả trạng thái', handler: () => this.selectStatus('all') }, { text: 'Đóng', role: 'cancel' }],
+    });
+    await sheet.present();
+  }
+
+  // ---------- Chọn nhiều đơn (ISale bulk) ----------
+
+  toggleSelectMode() {
+    this.selectMode.update((v) => !v);
+    this.selectedIds.set(new Set());
+  }
+
+  toggleSelectOrder(id: string) {
+    this.selectedIds.update((set) => {
+      const next = new Set(set);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  selectAllVisible() {
+    const all = this.items().map((o) => o.id);
+    const current = this.selectedIds();
+    const isAll = all.length > 0 && all.every((id) => current.has(id));
+    this.selectedIds.set(isAll ? new Set() : new Set(all));
+  }
+
+  async bulkChangeStatus() {
+    const ids = [...this.selectedIds()];
+    if (!ids.length) {
+      this.toast('Chưa chọn đơn nào', 'danger');
+      return;
+    }
+    const buttons = OrdersService.orderStatuses.map((s) => ({
+      text: s.label,
+      handler: async () => {
+        try {
+          await this.ordersService.bulkUpdateStatus(ids, s.value);
+          this.toast(`Đã đổi ${ids.length} đơn sang "${s.label}"`);
+          this.selectMode.set(false);
+          this.selectedIds.set(new Set());
+          await this.load();
+        } catch (e: any) {
+          this.toast(e?.message ?? 'Đổi trạng thái thất bại', 'danger');
+        }
+      },
+    }));
+    const sheet = await this.actionSheetCtrl.create({
+      header: `Đổi trạng thái ${ids.length} đơn đã chọn`,
+      buttons: [...buttons, { text: 'Hủy', role: 'cancel' }],
+    });
+    await sheet.present();
+  }
+
+  async bulkDelete() {
+    const ids = [...this.selectedIds()];
+    if (!ids.length) {
+      this.toast('Chưa chọn đơn nào', 'danger');
+      return;
+    }
+    const alert = await this.actionSheetCtrl.create({
+      header: `Xóa ${ids.length} đơn đã chọn?`,
+      buttons: [
+        { text: 'Hủy', role: 'cancel' },
+        {
+          text: 'Xóa',
+          role: 'destructive',
+          handler: async () => {
+            try {
+              await this.ordersService.bulkRemove(ids);
+              this.toast(`Đã xóa ${ids.length} đơn`);
+              this.selectMode.set(false);
+              this.selectedIds.set(new Set());
+              await this.load();
+            } catch (e: any) {
+              this.toast(e?.message ?? 'Xóa thất bại', 'danger');
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   openDetail(order: Order) {
@@ -224,5 +347,18 @@ export class OrdersPage implements OnInit {
 
   statusLabel(status: string | null | undefined): string {
     return OrdersService.statusLabel(status);
+  }
+
+  statusColor(status: string | null | undefined): string {
+    return OrdersService.statusColor(status);
+  }
+
+  paymentLabel(code: string | null | undefined): string {
+    return OrdersService.paymentLabel(code);
+  }
+
+  private async toast(message: string, color: string = 'success') {
+    const t = await this.toastCtrl.create({ message, duration: 2200, color, position: 'bottom' });
+    await t.present();
   }
 }

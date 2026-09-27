@@ -125,6 +125,52 @@ export class OrdersService {
     return OrdersService.orderStatuses.find((s) => s.value === status)?.label ?? (status ?? '—');
   }
 
+  /** Màu badge theo trạng thái (đồng bộ cảm giác màu ISale) */
+  static statusColor(status: string | null | undefined): string {
+    const map: Record<string, string> = {
+      draft: 'medium',
+      pending: 'warning',
+      processing: 'primary',
+      shipping: 'tertiary',
+      delivered: 'success',
+      completed: 'success',
+      quote: 'medium',
+      debt: 'danger',
+      ship_debt: 'danger',
+      consignment: 'secondary',
+      cancelled: 'danger',
+    };
+    return map[status ?? ''] ?? 'medium';
+  }
+
+  /** Nhãn hình thức thanh toán từ mã (CASH -> Tiền mặt) */
+  static paymentLabel(code: string | null | undefined): string {
+    if (!code) return '—';
+    return OrdersService.paymentMethods.find((m) => m.value === code)?.label ?? code;
+  }
+
+  /** Đổi trạng thái nhiều đơn (ISale: bulk status) */
+  async bulkUpdateStatus(ids: string[], status: string): Promise<void> {
+    if (!this.sb.isConfigured || !this.shopId || !ids.length) return;
+    const { error } = await this.sb
+      .from('orders')
+      .update({ status })
+      .in('id', ids)
+      .eq('shop_id', this.shopId!);
+    if (error) throw error;
+  }
+
+  /** Xóa nhiều đơn (ISale: multi-delete) */
+  async bulkRemove(ids: string[]): Promise<void> {
+    if (!this.sb.isConfigured || !this.shopId || !ids.length) return;
+    const { error } = await this.sb
+      .from('orders')
+      .delete()
+      .in('id', ids)
+      .eq('shop_id', this.shopId!);
+    if (error) throw error;
+  }
+
   async getWithItems(id: string): Promise<{ order: Order | null; items: OrderItem[] }> {
     if (!this.sb.isConfigured || !this.shopId) return { order: null, items: [] };
     const [{ data: order, error }, { data: items, error: itemsError }] = await Promise.all([

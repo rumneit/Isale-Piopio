@@ -39,9 +39,14 @@
       <button class="status-tab" [class.active]="statusFilter() === 'shipping'" (click)="selectStatus('shipping')">Đang ship</button>
       <button class="status-tab" [class.active]="statusFilter() === 'completed'" (click)="selectStatus('completed')">Hoàn thành</button>
       <button class="status-tab" [class.active]="statusFilter() === 'cancelled'" (click)="selectStatus('cancelled')">Hủy</button>
-      <ion-button fill="clear" size="small" (click)="openMoreMenu()">
-        <ion-icon slot="icon-only" name="ellipsis-horizontal" />
-      </ion-button>
+      <button
+        class="status-tab more-tab"
+        [class.active]="isExtraFilter()"
+        (click)="openMoreStatuses()"
+        [attr.aria-label]="activeFilterLabel()"
+      >
+        {{ isExtraFilter() ? activeFilterLabel() : '•••' }}
+      </button>
     </div>
 
     @if (searchVisible()) {
@@ -58,6 +63,9 @@
         <span class="toolbar-money">/ Tổng tiền: {{ formatMoney(totalAmount()) }}</span>
       </div>
       <div class="toolbar-actions">
+        <ion-button fill="clear" size="small" (click)="toggleSelectMode()" [class.active-btn]="selectMode()">
+          <ion-icon slot="icon-only" [name]="selectMode() ? 'close-outline' : 'checkbox-outline'" />
+        </ion-button>
         <ion-button fill="clear" size="small" (click)="exportCsv()">
           <ion-icon slot="icon-only" name="download-outline" />
         </ion-button>
@@ -81,10 +89,23 @@
     } @else {
       <div class="order-list">
         @for (order of items(); track order.id) {
-          <div class="order-card" (click)="openDetail(order)">
+          <div
+            class="order-card"
+            [class.selected]="selectMode() && selectedIds().has(order.id)"
+            (click)="selectMode() ? toggleSelectOrder(order.id) : openDetail(order)"
+          >
+            @if (selectMode()) {
+              <ion-icon class="row-check" [name]="selectedIds().has(order.id) ? 'checkbox-outline' : 'square-outline'" />
+            }
             <div class="order-head">
               <h2>{{ order.code }}</h2>
-              <ion-badge [color]="order.paid ? 'success' : 'warning'">{{ order.paid ? 'Đã trả' : 'Còn nợ' }}</ion-badge>
+              <div class="head-badges">
+                @if (order.shipping_code) {
+                  <ion-icon class="ship-flag" name="cube-outline" aria-label="Có vận chuyển" />
+                }
+                <ion-badge [color]="statusColor(order.status)">{{ statusLabel(order.status) }}</ion-badge>
+                <ion-badge [color]="order.paid ? 'success' : 'warning'">{{ order.paid ? 'Đã trả' : 'Còn nợ' }}</ion-badge>
+              </div>
             </div>
             <div class="order-fields">
               <div class="field-row">
@@ -107,9 +128,30 @@
                   <span class="field-value">{{ order.created_at | date: 'HH:mm dd/MM/yyyy' }}</span>
                 </div>
               </div>
+              @if (order.payment_method) {
+                <div class="field-row">
+                  <div class="field">
+                    <span class="field-label">Thanh toán</span>
+                    <span class="field-value">{{ paymentLabel(order.payment_method) }}</span>
+                  </div>
+                  <div class="field"></div>
+                </div>
+              }
             </div>
           </div>
         }
+      </div>
+    }
+
+    @if (selectMode()) {
+      <div class="bulk-bar">
+        <button class="bulk-btn select-all" (click)="selectAllVisible()">
+          {{ items().length > 0 && items().every((o) => selectedIds().has(o.id)) ? 'Bỏ chọn tất cả' : 'Chọn tất cả' }}
+        </button>
+        <span class="bulk-count">{{ selectedIds().size }} đã chọn</span>
+        <button class="bulk-btn primary" (click)="bulkChangeStatus()" [disabled]="selectedIds().size === 0">Đổi trạng thái</button>
+        <button class="bulk-btn danger" (click)="bulkDelete()" [disabled]="selectedIds().size === 0">Xóa</button>
+        <button class="bulk-btn" (click)="toggleSelectMode()">Thoát</button>
       </div>
     }
   </div>
