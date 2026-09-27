@@ -149,7 +149,7 @@ function toDateInput(iso: string | null | undefined): string {
               <ion-input label="Ngày đến hạn" labelPlacement="stacked" type="date" [(ngModel)]="maturityDate" />
             </ion-item>
             <ion-item>
-              <ion-toggle labelPlacement="stacked" label="Đã trả?" [(ngModel)]="paid" />
+              <ion-toggle [(ngModel)]="paid">Đã trả?</ion-toggle>
             </ion-item>
             <ion-item>
               <ion-input
@@ -166,6 +166,21 @@ function toDateInput(iso: string | null | undefined): string {
   `,
   styles: [
     `
+      /* Ionic gan class .ion-page len host modal nhung core CSS khong ap dung
+         trong app nay -> tu don lay out full-height nhu .ion-page chuan */
+      :host {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--app-page-bg);
+      }
+
+      ion-content {
+        flex: 1 1 0%;
+        --background: var(--app-page-bg);
+      }
+
       .form-error {
         margin: 12px 16px 0;
         padding: 10px 12px;

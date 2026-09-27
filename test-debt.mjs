@@ -154,13 +154,15 @@ r.addModal = await page.evaluate(() => {
   if (!modal) return { open: false };
   const root = modal.querySelector('.ion-page') ?? modal;
   const title = root.querySelector('ion-title')?.textContent?.trim() ?? '';
-  // label cua ion-input/ion-select nam trong attribute (shadow DOM khong doc qua textContent)
-  const labels = Array.from(root.querySelectorAll('[label]')).map((i) => i.getAttribute('label') ?? '');
-  const joined = labels.join(' | ');
+  // label cua ion-input/ion-select nam trong attribute (shadow DOM khong doc qua textContent);
+  // ion-toggle dung label slotted (pattern chuan cua app)
+  const attrLabels = Array.from(root.querySelectorAll('[label]')).map((i) => i.getAttribute('label') ?? '');
+  const slotLabels = Array.from(root.querySelectorAll('ion-toggle')).map((i) => i.textContent?.trim() ?? '');
+  const joined = [...attrLabels, ...slotLabels].join(' | ');
   return {
     open: true,
     title,
-    labels,
+    labels: [...attrLabels, ...slotLabels],
     hasType: joined.includes('Kiểu vay/nợ'),
     hasParty: joined.includes('Tên người/đối tác'),
     hasMoney: joined.includes('Số tiền'),
