@@ -15,7 +15,7 @@ export class TransactionsService {
   }
 
   readonly incomeCategories = ['Bán hàng', 'Thu nợ', 'Thu khác'];
-  readonly expenseCategories = ['Nhập hàng', 'Chi phí', 'Lương', 'Thuê nhà', 'Marketing', 'Chi khác'];
+  readonly expenseCategories = ['Nhập hàng', 'Chi phí', 'Lương', 'Thuê nhà', 'Marketing', 'Trả nợ', 'Chi khác'];
 
   async list(type: 'all' | 'income' | 'expense' = 'all', search = ''): Promise<Transaction[]> {
     if (!this.sb.isConfigured || !this.shopId) return [];

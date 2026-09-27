@@ -31,8 +31,30 @@
     </div>
 
     @if (searchVisible()) {
-      <ion-searchbar placeholder="Tìm theo đối tác hoặc ghi chú" [debounce]="300" (ionInput)="onSearch($any($event))" />
+      <ion-searchbar placeholder="Tìm kiếm khoản vay/nợ" [debounce]="300" (ionInput)="onSearch($any($event))" />
     }
+
+    <!-- Chip loc kieu vay/no + chi con no (ISale debt-chip-row / show-left-only) -->
+    <div class="debt-chip-row">
+      <button class="debt-chip" [class.active]="typeFilter() === 'all'" (click)="setTypeFilter('all')">Tất cả</button>
+      @for (t of debtTypes; track t.value) {
+        <button
+          class="debt-chip"
+          [class.active]="typeFilter() === t.value"
+          [class.dir-in]="t.direction === 'in'"
+          [class.dir-out]="t.direction === 'out'"
+          (click)="setTypeFilter(t.value)"
+        >
+          {{ t.label }}
+        </button>
+      }
+      <button class="debt-chip left-only" [class.active]="showLeftOnly()" (click)="toggleLeftOnly()">
+        Chỉ còn nợ
+      </button>
+      <button class="debt-chip filter-btn" (click)="openFilter()">
+        <ion-icon name="funnel-outline" />
+      </button>
+    </div>
 
     <!-- Toolbar -->
     <div class="list-toolbar">
@@ -56,8 +78,8 @@
       <div class="app-empty debt-empty">
         <div><ion-icon name="file-tray-outline" /></div>
         <span>
-          Chưa có khoản Vay/Nợ nào. Bấm biểu tượng + để thêm mới. Với mỗi khoản vay/nợ, bạn có thể:
-          cập nhật thông tin (tiền, đối tác, ghi chú), cập nhật trạng thái 'Đã trả' và ngược lại,
+          <b>Chưa có khoản Vay/Nợ nào</b>. Bấm biểu tượng + để thêm mới. Với mỗi khoản vay/nợ, bạn có thể:
+          cập nhật thông tin (tiền, khách hàng, sản phẩm, ghi chú, ảnh..), cập nhật trạng thái 'Đã trả' và ngược lại,
           xem ảnh hưởng của nó lên các báo cáo Vay/Nợ.
         </span>
       </div>
@@ -65,7 +87,11 @@
       <div class="summary-row">
         <div class="summary-item">
           <span>Còn phải thu</span>
-          <strong class="receivable">{{ formatMoney(unpaidAmount()) }}</strong>
+          <strong class="receivable">{{ formatMoney(leftToCollect()) }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Còn phải trả</span>
+          <strong class="payable">{{ formatMoney(leftToPay()) }}</strong>
         </div>
         <div class="summary-item">
           <span>Tổng giá trị</span>
@@ -75,24 +101,45 @@
 
       <div class="loan-list">
         @for (loan of pagedItems(); track loan.id) {
-          <div class="loan-card" (click)="editLoan(loan, $event)">
+          <div class="loan-card" [class.overdue]="isOverdue(loan)" (click)="editLoan(loan, $event)">
             <div class="loan-head">
               <ion-icon name="cash-outline" [color]="loan.paid ? 'success' : 'warning'" />
               <div class="loan-main">
                 <h2>{{ loan.party_name }}</h2>
-                <span class="loan-type">{{ loansService.typeLabel(loan.type) }}</span>
+                <span class="loan-type" [class.in]="loansService.typeDirection(loan.type) === 'in'" [class.out]="loansService.typeDirection(loan.type) === 'out'">
+                  {{ loansService.typeLabel(loan.type) }}
+                </span>
               </div>
               <div class="loan-end" (click)="$event.stopPropagation()">
                 <ion-badge [color]="loan.paid ? 'success' : 'warning'">{{ formatMoney(loan.amount) }}</ion-badge>
                 <ion-badge color="medium" class="paid-toggle" (click)="togglePaid(loan, $event)">
                   {{ loan.paid ? 'Đã trả' : 'Chưa trả' }}
                 </ion-badge>
+                <ion-button fill="clear" size="small" color="danger" class="loan-delete" (click)="deleteLoan(loan, $event)">
+                  <ion-icon slot="icon-only" name="trash-outline" />
+                </ion-button>
               </div>
             </div>
             @if (loan.note) {
               <div class="loan-note">{{ loan.note }}</div>
             }
-            <div class="loan-date">{{ loan.occurred_at | date: 'HH:mm dd/MM/yyyy' }}</div>
+            <div class="loan-meta">
+              @if (loan.category) {
+                <span class="meta-chip">{{ loan.category }}</span>
+              }
+              @if (loan.interest_rate != null) {
+                <span class="meta-chip">Lãi {{ loan.interest_rate }}%</span>
+              }
+              @if (loan.maturity_date) {
+                <span class="meta-chip" [class.due-overdue]="isOverdue(loan)">
+                  @if (isOverdue(loan)) {
+                    <ion-icon name="alert-circle-outline" />
+                  }
+                  {{ isOverdue(loan) ? 'Quá hạn ' : 'Đến hạn ' }}{{ loan.maturity_date | date: 'dd/MM/yyyy' }}
+                </span>
+              }
+              <span class="loan-date">{{ loan.occurred_at | date: 'HH:mm dd/MM/yyyy' }}</span>
+            </div>
           </div>
         }
       </div>
