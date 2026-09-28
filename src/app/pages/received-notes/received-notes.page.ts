@@ -24,9 +24,10 @@ import { IonButton,
   ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, downloadOutline, alertCircleOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { addOutline, downloadOutline, alertCircleOutline, checkmarkCircleOutline, timeOutline } from 'ionicons/icons';
 import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 import { ReceivedNotesService, ReceivedNote } from '../../core/services/received-notes.service';
+import { InventoryLedgerService } from '../../core/services/inventory-ledger.service';
 import { DataService } from '../../core/services/data.service';
 
 @Component({
@@ -63,6 +64,7 @@ export class ReceivedNotesPage implements OnInit {
   }
 
   private notesService = inject(ReceivedNotesService);
+  private ledger = inject(InventoryLedgerService);
   private dataService = inject(DataService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
@@ -73,7 +75,7 @@ export class ReceivedNotesPage implements OnInit {
   search = '';
 
   constructor() {
-    addIcons({ addOutline, downloadOutline, alertCircleOutline, checkmarkCircleOutline });
+    addIcons({ addOutline, downloadOutline, alertCircleOutline, checkmarkCircleOutline, timeOutline });
   }
 
   ngOnInit(): void {
@@ -132,6 +134,37 @@ export class ReceivedNotesPage implements OnInit {
 
   formatMoney(v: number | null | undefined): string {
     return new Intl.NumberFormat('vi-VN').format(v ?? 0) + ' ₫';
+  }
+
+  /** Lịch sử thay đổi phiếu (audit trail — v27) */
+  async openHistory(note: ReceivedNote, ev?: Event) {
+    ev?.stopPropagation();
+    const rows = await this.ledger.history('received_notes', note.id, 50);
+    const actionLabel: Record<string, string> = {
+      create: 'Tạo phiếu',
+      update: 'Sửa phiếu',
+      delete: 'Xoá phiếu',
+      manual_adjust: 'Chỉnh tồn tay',
+    };
+    const body = rows.length
+      ? rows
+          .map((r) => {
+            const t = new Date(r.created_at).toLocaleString('vi-VN');
+            const who = r.actor_id ? '' : '';
+            const detail =
+              r.action === 'manual_adjust' && r.before && r.after
+                ? ` (${Number(r.before.stock ?? 0)} → ${Number(r.after.stock ?? 0)})`
+                : '';
+            return `${t} · ${actionLabel[r.action] ?? r.action}${detail}${who}`;
+          })
+          .join('\n')
+      : 'Chưa có lịch sử (dữ liệu ghi từ khi chạy migration v27).';
+    const alert = await this.alertCtrl.create({
+      header: `Lịch sử ${note.code}`,
+      message: `<pre style="white-space:pre-wrap;font-size:12px;margin:0">${body}</pre>`,
+      buttons: ['Đóng'],
+    });
+    await alert.present();
   }
 
   private async toast(message: string, color: string = 'success') {

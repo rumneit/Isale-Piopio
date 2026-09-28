@@ -11,6 +11,7 @@ import { addIcons } from 'ionicons';
 import { saveOutline, closeOutline, arrowRedoOutline, cubeOutline, trashOutline } from 'ionicons/icons';
 import { ShopTableService } from '../../core/services/shop-table.service';
 import { ProductsService } from '../../core/services/products.service';
+import { InventoryLedgerService } from '../../core/services/inventory-ledger.service';
 import { Product } from '../../core/models/models';
 
 interface DraftItem {
@@ -130,6 +131,7 @@ export class TransferAddPage implements OnInit {
 
   private svc = inject(ShopTableService);
   private productsService = inject(ProductsService);
+  private ledger = inject(InventoryLedgerService);
   private router = inject(Router);
   private toastCtrl = inject(ToastController);
 
@@ -190,19 +192,27 @@ export class TransferAddPage implements OnInit {
 
     this.busy.set(true);
     try {
-      await this.svc.create('transfers', {
+      const created = await this.svc.create<{ id: string; code: string }>('transfers', {
         code: this.svc.newCode('CH'),
         destination: this.destination.trim() || null,
         items: this.items().map((i) => ({ product_id: i.product_id, name: i.name, qty: i.qty })),
         note: this.note.trim() || null,
       });
-      // Giảm tồn kho
-      for (const item of this.items()) {
-        const product = await this.productsService.get(item.product_id);
-        if (product) {
-          await this.productsService.update(item.product_id, {
-            stock: Math.max(0, Number(product.stock ?? 0) - item.qty),
-          });
+      // Giảm tồn kho QUA SỔ CÁI (v27): server khoá dòng SP + chặn âm kho +
+      // idempotent. Fallback khi chưa chạy migration: trừ client-side (cũ).
+      const applied = await this.ledger.applyNote(
+        'transfer_out',
+        created.id,
+        this.items().map((i) => ({ product_id: i.product_id, name: i.name, qty: i.qty }))
+      );
+      if (!applied) {
+        for (const item of this.items()) {
+          const product = await this.productsService.get(item.product_id);
+          if (product) {
+            await this.productsService.update(item.product_id, {
+              stock: Math.max(0, Number(product.stock ?? 0) - item.qty),
+            });
+          }
         }
       }
       this.toast('Đã tạo phiếu chuyển — tồn kho đã giảm');

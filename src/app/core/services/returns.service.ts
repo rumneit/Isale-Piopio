@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { TransactionsService } from './transactions.service';
 import { ProductsService } from './products.service';
 import { PointsService } from './points.service';
+import { InventoryLedgerService } from './inventory-ledger.service';
 
 export interface ReturnNoteItem {
   product_id: string | null;
@@ -33,6 +34,7 @@ export class ReturnsService {
   private transactionsService = inject(TransactionsService);
   private productsService = inject(ProductsService);
   private pointsService = inject(PointsService);
+  private ledger = inject(InventoryLedgerService);
 
   private get shopId(): string | null {
     return this.auth.shop()?.id ?? null;
@@ -100,18 +102,25 @@ export class ReturnsService {
       .single();
     if (error) throw error;
 
-    // Hoàn tồn kho
-    for (const item of items) {
-      if (!item.product_id) continue;
-      try {
-        const product = await this.productsService.get(item.product_id);
-        if (product) {
-          await this.productsService.update(item.product_id, {
-            stock: Number(product.stock ?? 0) + item.qty,
-          });
+    // Hoàn tồn kho QUA SỔ CÁI (v27). Fallback khi chưa chạy migration: cộng client-side.
+    const applied = await this.ledger.applyNote(
+      'return_note',
+      data.id,
+      items.map((i) => ({ product_id: i.product_id, name: i.name, qty: i.qty }))
+    );
+    if (!applied) {
+      for (const item of items) {
+        if (!item.product_id) continue;
+        try {
+          const product = await this.productsService.get(item.product_id);
+          if (product) {
+            await this.productsService.update(item.product_id, {
+              stock: Number(product.stock ?? 0) + item.qty,
+            });
+          }
+        } catch (e) {
+          console.error('stock revert failed for', item.name, e);
         }
-      } catch (e) {
-        console.error('stock revert failed for', item.name, e);
       }
     }
 

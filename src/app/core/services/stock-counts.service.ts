@@ -3,14 +3,16 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { LogService } from './log.service';
 import { ProductsService } from './products.service';
+import { InventoryLedgerService } from './inventory-ledger.service';
 import { StockCount, StockCountItem } from '../models/models';
 
 /**
  * Kiểm kê kho (cycle count) theo chuẩn WMS:
  * - Tạo phiếu nháp (draft) ghi lại tồn hệ thống + số lượng đếm thực tế.
- * - Chênh lệch (diff) = thực tế - hệ thống, tính tại thời điểm đếm.
- * - Khi hoàn tất (completed) mới ghi tồn thật vào sản phẩm + ghi log.
- * Nhờ vậy việc đếm không làm sai tồn kho giữa chừng.
+ * - Khi hoàn tất (completed): server RE-BASE chênh lệch theo tồn HIỆN TẠI
+ *   (khoá dòng SP trong 1 transaction qua inventory_ledger v27) → việc bán
+ *   hàng trong lúc kiểm kê không làm sai kết quả. Fallback khi chưa chạy
+ *   migration v27: đè tồn = số đếm client-side như trước.
  */
 @Injectable({ providedIn: 'root' })
 export class StockCountsService {
@@ -18,6 +20,7 @@ export class StockCountsService {
   private auth = inject(AuthService);
   private logService = inject(LogService);
   private productsService = inject(ProductsService);
+  private ledger = inject(InventoryLedgerService);
 
   private get shopId(): string | null {
     return this.auth.shop()?.id ?? null;
@@ -100,29 +103,60 @@ export class StockCountsService {
     if (error) throw error;
   }
 
-  /** Hoàn tất kiểm kê: ghi tồn thực tế vào sản phẩm rồi chốt phiếu. */
+  /**
+   * Hoàn tất kiểm kê: server re-base chênh lệch theo tồn hiện tại rồi ghi
+   * sổ cái (v27); fallback khi chưa chạy migration: đè tồn = số đếm (cũ).
+   */
   async complete(id: string): Promise<void> {
     const count = await this.get(id);
     if (!count) throw new Error('Không tìm thấy phiếu kiểm kê.');
     if (count.status !== 'draft') throw new Error('Phiếu này đã được chốt.');
 
-    for (const item of count.items) {
-      if (!item.product_id) continue;
-      try {
-        await this.productsService.update(item.product_id, { stock: Number(item.counted_qty) || 0 });
-      } catch (e) {
-        console.error('stock apply failed for', item.name, e);
+    // 1) Ghi sổ cái: diff = số đếm − tồn hiện tại (server khoá dòng SP)
+    const res = await this.ledger.completeStockCount(
+      id,
+      count.items.map((i) => ({ product_id: i.product_id, name: i.name, counted_qty: Number(i.counted_qty) || 0 }))
+    );
+
+    let itemsForSave: StockCountItem[] | null = null;
+    let totalDiff = StockCountsService.totalDiff(count.items);
+
+    if (!res.fallback) {
+      if (res.items && res.items.length) {
+        // Ghi lại items với system_qty/diff đã re-base theo tồn tại thời điểm chốt
+        itemsForSave = count.items.map((i) => {
+          const rb = res.items!.find((x) => x.product_id === i.product_id);
+          if (!rb) return i;
+          return { ...i, system_qty: rb.system_qty, counted_qty: rb.counted_qty, diff: rb.diff };
+        });
+        totalDiff = res.total_diff ?? StockCountsService.totalDiff(itemsForSave);
+      }
+    } else {
+      // Fallback cũ: đè tồn = số đếm client-side
+      for (const item of count.items) {
+        if (!item.product_id) continue;
+        try {
+          await this.productsService.update(item.product_id, { stock: Number(item.counted_qty) || 0 });
+        } catch (e) {
+          console.error('stock apply failed for', item.name, e);
+        }
       }
     }
 
+    // 2) Chốt phiếu
     const { error } = await this.sb
       .from('stock_counts')
-      .update({ status: 'completed', completed_at: new Date().toISOString() })
+      .update({
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        ...(itemsForSave ? { items: itemsForSave, total_diff: totalDiff } : {}),
+      })
       .eq('id', id)
-      .eq('shop_id', this.shopId!);
+      .eq('shop_id', this.shopId!)
+      .eq('status', 'draft');
     if (error) throw error;
 
-    this.logService.log('update', 'stock_count', `${count.code} (chênh lệch ${count.total_diff})`);
+    this.logService.log('update', 'stock_count', `${count.code} (chênh lệch ${totalDiff})`);
   }
 
   async cancel(id: string): Promise<void> {

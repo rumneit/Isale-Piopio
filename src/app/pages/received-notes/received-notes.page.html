@@ -37,6 +37,9 @@
                 <h3>{{ note.code }}</h3>
                 <p>{{ note.supplier_name ?? 'Không rõ NCC' }} · {{ note.items.length }} SP · {{ note.created_at | date: 'dd/MM HH:mm' }}</p>
               </ion-label>
+              <ion-button slot="end" fill="clear" size="small" aria-label="Xem lịch sử phiếu" (click)="openHistory(note, $event)">
+                <ion-icon slot="icon-only" name="time-outline" />
+              </ion-button>
               <ion-badge slot="end" color="tertiary">{{ formatMoney(note.total) }}</ion-badge>
             </ion-item>
           }

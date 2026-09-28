@@ -3,6 +3,7 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { TransactionsService } from './transactions.service';
 import { ProductsService } from './products.service';
+import { InventoryLedgerService } from './inventory-ledger.service';
 
 export interface ReceivedNoteItem {
   product_id: string | null;
@@ -29,6 +30,7 @@ export class ReceivedNotesService {
   private auth = inject(AuthService);
   private transactionsService = inject(TransactionsService);
   private productsService = inject(ProductsService);
+  private ledger = inject(InventoryLedgerService);
 
   private get shopId(): string | null {
     return this.auth.shop()?.id ?? null;
@@ -85,20 +87,10 @@ export class ReceivedNotesService {
       .single();
     if (error) throw error;
 
-    // Tăng tồn kho cho từng sản phẩm
-    for (const item of items) {
-      if (!item.product_id) continue;
-      try {
-        const product = await this.productsService.get(item.product_id);
-        if (product) {
-          await this.productsService.update(item.product_id, {
-            stock: Number(product.stock ?? 0) + item.qty,
-          });
-        }
-      } catch (e) {
-        console.error('stock update failed for', item.name, e);
-      }
-    }
+    // Tăng tồn kho QUA SỔ CÁI (v27): 1 transaction, idempotent, có audit.
+    // Fallback khi migration v27 chưa chạy: cộng client-side từng dòng (cũ).
+    const applied = await this.ledger.applyNote('received_note', data.id, items);
+    if (!applied) await this.legacyApplyStock(items);
 
     // Ghi nhận chi tiền nếu đã trả nhà cung cấp
     if (input.paid && total > 0) {
@@ -114,19 +106,40 @@ export class ReceivedNotesService {
     return data as ReceivedNote;
   }
 
-  async remove(note: ReceivedNote): Promise<void> {
-    // Hoàn lại tồn kho trước khi xóa
-    for (const item of note.items ?? []) {
+  /** Đường cũ (chỉ dùng khi v27 chưa chạy): cộng tồn client-side từng dòng. */
+  private async legacyApplyStock(items: ReceivedNoteItem[]): Promise<void> {
+    for (const item of items) {
       if (!item.product_id) continue;
       try {
         const product = await this.productsService.get(item.product_id);
         if (product) {
           await this.productsService.update(item.product_id, {
-            stock: Math.max(0, Number(product.stock ?? 0) - item.qty),
+            stock: Number(product.stock ?? 0) + item.qty,
           });
         }
       } catch (e) {
-        console.error('stock revert failed for', item.name, e);
+        console.error('stock update failed for', item.name, e);
+      }
+    }
+  }
+
+  async remove(note: ReceivedNote): Promise<void> {
+    // Hoàn tồn kho QUA SỔ CÁI (đảo dấu các dòng ledger của phiếu)
+    const reversed = await this.ledger.reverseNote('received_note', note.id);
+    if (!reversed) {
+      // Fallback cũ: hoàn tồn client-side trước khi xoá
+      for (const item of note.items ?? []) {
+        if (!item.product_id) continue;
+        try {
+          const product = await this.productsService.get(item.product_id);
+          if (product) {
+            await this.productsService.update(item.product_id, {
+              stock: Math.max(0, Number(product.stock ?? 0) - item.qty),
+            });
+          }
+        } catch (e) {
+          console.error('stock revert failed for', item.name, e);
+        }
       }
     }
     const { error } = await this.sb
