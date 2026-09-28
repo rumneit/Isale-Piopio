@@ -1,0 +1,285 @@
+{
+ "issues": [],
+ "report": [
+  {
+   "route": "/home",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/home",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/sale",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/sale",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/product",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/product",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/product/detail/p1",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/product/detail/p1",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/product/update/p1",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/product/update/p1",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/product/add",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/product/add",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/order",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/order",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/order/add",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/order/add",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/contact",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/contact",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/debt",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/debt",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/report",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/report",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/config",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/config",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/trade",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/trade",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/crm",
+   "viewport": 1440,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  },
+  {
+   "route": "/crm",
+   "viewport": 390,
+   "overflow": [],
+   "brokenImgs": 0,
+   "unnamed": 0,
+   "unnamedSamples": [],
+   "placeholderOnly": 0,
+   "realErrors": 0
+  }
+ ]
+}

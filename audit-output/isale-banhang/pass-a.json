@@ -1,0 +1,59 @@
+{
+  "url": "https://isale.online/app/#/online-order",
+  "controls": [
+    {
+      "tag": "ion-searchbar",
+      "placeholder": "",
+      "label": "",
+      "value": "",
+      "type": "",
+      "disabled": false,
+      "path": "ion-searchbar.ng-untouched.ng-pristine.ng-valid.sc-ion-searchbar-md-h.sc-ion-searchbar-md-"
+    }
+  ],
+  "buttons": [
+    {
+      "text": "menu",
+      "icon": null,
+      "path": "button.button-native > ",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "button.button-native > ",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "ion-button.ion-color.ion-color-primary.md.button.button-clear.in-toolbar.ion-activatable.i",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "ion-button.ion-item-right.ion-color.ion-color-primary.md.button.button-small.button-clear.",
+      "disabled": false
+    }
+  ],
+  "headers": [
+    {
+      "tag": "ion-header",
+      "text": "Đơn từ Website Tháng 08/2026  Tháng 09/2026  Tháng 10/2026  "
+    },
+    {
+      "tag": "ion-toolbar",
+      "text": "Đơn từ Website"
+    },
+    {
+      "tag": "ion-title",
+      "text": "Đơn từ Website"
+    }
+  ],
+  "counts": {
+    "controls": 1,
+    "buttons": 4,
+    "headers": 3
+  }
+}

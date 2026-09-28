@@ -1,0 +1,126 @@
+{
+  "url": "https://isale.online/app/#/order/multi-add",
+  "controls": [
+    {
+      "tag": "ion-searchbar",
+      "placeholder": "",
+      "label": "",
+      "value": "",
+      "type": "",
+      "disabled": false,
+      "path": "ion-searchbar.ng-untouched.ng-pristine.ng-valid.sc-ion-searchbar-md-h.sc-ion-searchbar-md-"
+    },
+    {
+      "tag": "ion-select",
+      "placeholder": "",
+      "label": "Gần đây",
+      "value": "recent",
+      "type": "",
+      "disabled": false,
+      "path": "ion-select.ng-untouched.ng-pristine.ng-valid.md.in-item.hydrated.ion-untouched.ion-pristin"
+    }
+  ],
+  "buttons": [
+    {
+      "text": "back",
+      "icon": null,
+      "path": "button.button-native > ",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "button.button-native > ",
+      "disabled": false
+    },
+    {
+      "text": "Lưu",
+      "icon": null,
+      "path": "ion-button.ion-color.ion-color-warning.md.button.button-solid.in-toolbar.ion-activatable.i",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "ion-button.order-add-btn.ion-color.ion-color-primary.md.button.button-small.button-outline",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "div.scrollable-div > div > div > ion-button.md.button.button-clear.ion-activatable.ion-foc",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "button > ",
+      "disabled": false
+    },
+    {
+      "text": "Chọn Nhóm hàng",
+      "icon": null,
+      "path": "ion-item.ion-no-padding.ps-filter-control.item.md.item-lines-none.item-fill-none.in-list.i",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "ion-button.md.button.button-solid.button-has-icon-only.ion-activatable.ion-focusable.hydra",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "ion-button.ion-color.ion-color-secondary.md.button.button-small.button-solid.button-has-ic",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "ion-button.ion-color.ion-color-primary.md.button.button-small.button-solid.button-has-icon",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "ion-button.md.button.button-small.button-solid.button-has-icon-only.ion-activatable.ion-fo",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "icon": null,
+      "path": "button.item-native > ",
+      "disabled": false
+    },
+    {
+      "text": "Báo lỗi/Yêu cầu hỗ trợ",
+      "icon": "mail-outline",
+      "path": "ion-content.order-page-content.md.content-ltr.hydrated > div.ion-padding > support > div.c",
+      "disabled": false
+    }
+  ],
+  "headers": [
+    {
+      "tag": "ion-header",
+      "text": "Bán hàng  Lưu"
+    },
+    {
+      "tag": "ion-toolbar",
+      "text": "Bán hàng  Lưu"
+    },
+    {
+      "tag": "ion-title",
+      "text": "Bán hàng"
+    },
+    {
+      "tag": "h2",
+      "text": "Liên hệ/Báo lỗi"
+    }
+  ],
+  "counts": {
+    "controls": 2,
+    "buttons": 13,
+    "headers": 4
+  }
+}

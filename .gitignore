@@ -72,8 +72,8 @@ Thumbs.db
 # Playwright MCP artifacts
 .playwright-mcp/
 
-# Ket qua audit Playwright (chi chay local, khong push)
-/audit-output/
+# Ket qua audit Playwright — bao cao module, luu len repo (yeu cau upload toan bo)
+#/audit-output/
 
 # Cau hinh OpenCode cua may ca nhan — chua API key, KHONG commit
 opencode.json

@@ -1,0 +1,369 @@
+{
+  "responses": [
+    {
+      "reqId": "49AB71CDF7A005D7AD38B2E3D6829E4A",
+      "url": "https://api2.isale.online/publicSettings",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.917",
+      "url": "https://api2.isale.online/publicSettings",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "17112.918",
+      "url": "https://auth.isale.online/connect/token",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "CA33C2EA701005572AE90B8FA03534DE",
+      "url": "https://api2.isale.online/app/i18n?lang=vn",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.920",
+      "url": "https://api2.isale.online/app/i18n?lang=vn",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "284583A660053A8D505144423D65B77B",
+      "url": "https://api2.isale.online/data/list?table=shop_config",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.921",
+      "url": "https://api2.isale.online/data/list?table=shop_config",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "2EB6573D05CEB599F60DF088551A7D36",
+      "url": "https://api2.isale.online/plan/GetEntitlements",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.922",
+      "url": "https://api2.isale.online/plan/GetEntitlements",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "FF3A8D4E7BD3726A354E03E7DEC8144C",
+      "url": "https://api2.isale.online/data/customTables",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.923",
+      "url": "https://api2.isale.online/data/customTables",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "468702FDDEBD5F11633B9F7967FEDDCA",
+      "url": "https://api2.isale.online/app/manifest",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.924",
+      "url": "https://api2.isale.online/app/manifest",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "1B65D7737955D0A5B0EE330E57A3D1FF",
+      "url": "https://api2.isale.online/data/StandardFields?table=shop_config",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.925",
+      "url": "https://api2.isale.online/data/StandardFields?table=shop_config",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "17112.926",
+      "url": "https://api2.isale.online/data/list?table=shop_config",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "17112.927",
+      "url": "https://api2.isale.online/data/list?table=shop_config",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "17112.928",
+      "url": "https://api2.isale.online/plan/GetEntitlements",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "17112.929",
+      "url": "https://api2.isale.online/data/customTables",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "8301168CB276B473B3A227AD58CE2926",
+      "url": "https://api2.isale.online/order/neworderdata",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.937",
+      "url": "https://api2.isale.online/order/neworderdata",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "5D95E063FC49BF849D11EFC3B7E6D81B",
+      "url": "https://api2.isale.online/plan/GetCurrentPlan",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.988",
+      "url": "https://api2.isale.online/plan/GetCurrentPlan",
+      "status": 204,
+      "mime": "text/plain"
+    },
+    {
+      "reqId": "9B6C847D5D7A3D39775CD0A665E96868",
+      "url": "https://api2.isale.online/shipping/connections",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "B32DE19459EE6FB90C45D189898073DA",
+      "url": "https://api2.isale.online/shipping/partners",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.992",
+      "url": "https://api2.isale.online/shipping/partners",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "17112.991",
+      "url": "https://api2.isale.online/shipping/connections",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "2F1A5A027D2F0158C2EE19BD5BEB391C",
+      "url": "https://api2.isale.online/address/Provinces",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.993",
+      "url": "https://api2.isale.online/address/Provinces",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "59E80D12A808371AE5EAC3CD565C9614",
+      "url": "https://api2.isale.online/plan/CheckProduct",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.998",
+      "url": "https://api2.isale.online/plan/CheckProduct",
+      "status": 200,
+      "mime": "application/json"
+    },
+    {
+      "reqId": "6977F0151AEA728FF6A119DC730DF0AE",
+      "url": "https://api2.isale.online/data/list?table=shop",
+      "status": 204,
+      "mime": ""
+    },
+    {
+      "reqId": "17112.999",
+      "url": "https://api2.isale.online/data/list?table=shop",
+      "status": 200,
+      "mime": "application/json"
+    }
+  ],
+  "bodies": [
+    {
+      "url": "https://api2.isale.online/publicSettings",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/publicSettings",
+      "size": 3274,
+      "body": "{\"isOnReview\":false,\"vndPrices\":\"{\\\"3\\\": 174000,\\\"6\\\": 348000,\\\"12\\\": 696000}\",\"enterpriseVndPrices\":\"{\\\"3\\\": 750000,\\\"6\\\": 1500000,\\\"12\\\": 3000000}\",\"dollarPrices\":\"{\\\"3\\\": 7.25,\\\"6\\\": 14.5,\\\"12\\\": 29}\",\"savedPrices\":\"{\\\"3\\\":\\\"\\\",\\\"6\\\": \\\"1 tháng\\\",\\\"12\\\": \\\"3 tháng\\\"}\",\"enterpriseSavedPrices\":\"{\\\"3\\\":\\\"\\\",\\\"6\\\": \\\"1 tháng\\\",\\\"12\\\": \\\"3 tháng\\\"}\",\"planPricing\":{\"proBaseVnd\":58000,\"proIncludedStaff\":30,\"proMaxStaff\":30,\"proOveragePerSeatVnd\":20000,\"proIncludedShops\":5,\"proOveragePerShopVnd\":16000,\"freeMaxStaff\":5,\"freeMaxAutomationFlows\":2,\"proMaxAutomationFlows\":8,\"enterpriseIncludedSeats\":45,\"enterpriseOveragePerSeatVnd\":40000,\"enterpriseIncludedShops\":15,\"enterpriseOveragePerShopVnd\":40000,\"enterpriseBaseVnd\":250000,\"enterpriseMaxAutomationFlows\":50,\"enterpriseFlowPackSize\":50,\"enterpriseFlowPackVnd\":30000,\"customDataPackTablesPerPack\":50,\"customDataPackFieldsPerPack\":100,\"proIncludedCustomDataPacks\":1,\"proOveragePerCustomDataPackVnd\":18000,\"enterpriseIncludedCustomDataPacks\":10,\"enterpriseOveragePerCustomDataPackVnd\":18000},\"enterprisePricing\":{\"proBaseVnd\":58000,\"proIncludedStaff\":30,\"proMaxStaff\":30,\"proOveragePerSeatVnd\":20000,\"proIncludedShops\":5,\"proOveragePerShopVnd\":16000,\"freeMaxStaff\":5,\"freeMaxAutomationFlows\":2,\"proMaxAutomationFlows\":8,\"enterpriseIncludedSeats\":45,\"enterpriseOveragePerSeatVnd\":40000,\"enterpriseIncludedShops\":15,\"enterpriseOveragePerShopVnd\":40000,\"enterpriseBaseVnd\":250000,\"enterpriseMaxAutomationFlows\":50,\"enterpriseFlowPackSize\":50,\"enterpriseFlowPackVnd\":30000,\"customDataPackTablesPerPack\":50,\"customDataPackFieldsPerPack\":100,\"proIncludedCustomDataPacks\":1,\"proOveragePerCustomDataPackVnd\":18000,\"enterpriseIncludedCustomDataPacks\":10,\"enterpriseOveragePerCustomDataPackVnd\":18000},\"promotionTexts\":\"[[\\\"Chỉ 1399K, bạn được tặng máy in đơn, khi mua gói 2 năm. Cài đặt và hỗ trợ tận nơi tại nội thành Hà Nội. Gọi ngay 024.668.23.968 để biết thêm chi tiết!\\\",\\\"For only 1399K, you'll receive a free printer when purchasing a 2-year package. Installation and on-site support are available within Hanoi city center. Call now at 024.668.23.968 for more details!\\\"],[\\\"Chỉ 58K/tháng (giá gốc 66K) cho bản CHUYÊN NGHIỆP, không giới hạn tính năng, không quảng cáo, miễn phí nâng cấp tính năng mới. Mua càng nhiều tháng càng được KHUYẾN MẠI!\\\",\\\"Only 58K/month (original price 66K) for the PRO version, unlimited features, ad-free, free upgrades for new features. The more months you buy, the more DISCOUNTS you get!\\\"],[\\\"ISale tặng bạn thêm 1 tháng khi mua Gói Chuyên Nghiệp từ 6 tháng trở lên chỉ với 348K! Chương trình chỉ giới hạn trong tháng 3, hãy nhanh tay để có cơ hội trải nghiệm gói chuyên nghiệp với không giới hạn chức năng bạn nhé!\\\",\\\"ISale gives you an extra month when you purchase the Professional Package for 6 months or more, for only 348K! This offer is limited to March only, so hurry up to have the chance to experience the professional package with unlimited features!\\\"]]\",\"hotline\":\"(+84) 0938.212.188\",\"zalo\":\"0938.212.188\",\"telegram\":\"(+84) 0938.212.188\",\"email\":\"dlv.isale.app@gmail.com\",\"availableGeminiModels\":\"[\\\"gemini-2.5-pro\\\",\\\"gemini-2.5-flash\\\",\\\"gemini-2.5-flash-lite\\\"]\",\"smsCostPerSms\":666.0,\"zbsCostPerZbs\":100.0,\"surveyDescription\":null,\"surveyLink\":null,\"usdToVndRate\":27000.0}"
+    },
+    {
+      "url": "https://auth.isale.online/connect/token",
+      "size": 1179,
+      "body": "{\"access_token\":\"[REDACTED-JWT]\",\"expires_in\":2592000,\"token_type\":\"Bearer\",\"refresh_token\":\"11c3160c394a2917f873c0d950b9d9473c40afbb4155f586918ba1368a9ee503\"}"
+    },
+    {
+      "url": "https://api2.isale.online/app/i18n?lang=vn",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/app/i18n?lang=vn",
+      "size": 38,
+      "body": "{\"version\":9,\"lang\":\"vn\",\"strings\":{}}"
+    },
+    {
+      "url": "https://api2.isale.online/data/list?table=shop_config",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/data/list?table=shop_config",
+      "size": 912,
+      "body": "[{\"id\":2603,\"userId\":\"5641FE28F65E4D609E76E0BB8F85ABF9\",\"currency\":\"VND\",\"language\":\"vn\",\"dateFormat\":\"DD/MM/YYYY\",\"timeFormat\":\"HH:mm\",\"outStockNotSell\":0,\"printOrderLikeInvoice\":1,\"currencySymbolToTheRight\":0,\"orderInvoiceMaxEmptyRows\":5,\"hideDiscountColumn\":1,\"hideTax\":0,\"hideTablesFunction\":1,\"hideCalendarFunction\":1,\"showStaffNameUnderSign\":0,\"hideMaterials\":1,\"hideProductCodePrint\":1,\"allowPointPayment\":0,\"pointPaymentAfterBuyCount\":0,\"pointPaymentExchange\":0.00,\"orderPrintNote\":\"\",\"showStaffPhone\":0,\"hidePromotionFunction\":1,\"showDeliveryNoteFunction\":0,\"turnOffNotification\":0,\"revenueByLastestCostPrice\":0,\"syncCostPriceFromReceivedNote\":0,\"enableForAttributeQuantity\":0,\"showQrOnOrderPrint\":0,\"enableShiftClosure\":0,\"autoProductCode\":0,\"autoOrderCode\":1,\"apiGeminiKey\":null,\"enableSmsMarketingFunction\":0,\"enableZbsMarketingFunction\":0,\"homeLayoutJson\":null,\"orderPrintInvoiceTemplateHtml\":null}]"
+    },
+    {
+      "url": "https://api2.isale.online/plan/GetEntitlements",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/plan/GetEntitlements",
+      "size": 789,
+      "body": "{\"tier\":\"FREE\",\"subscriptionType\":null,\"crmAccessLevel\":\"pro\",\"staffCount\":1,\"staffIncluded\":5,\"shopCount\":1,\"shopIncluded\":5,\"canAddStaff\":true,\"canAddShop\":true,\"canUseExtApi\":false,\"maxAutomationFlows\":2,\"activeFlowCount\":0,\"canCreateFlow\":true,\"deviceSyncTargets\":[\"lead\"],\"crmModules\":[\"lead\",\"activity\",\"lead_pipeline\",\"stage_config\",\"org_chart\",\"flow\",\"crm_settings\"],\"staffOverageVnd\":null,\"shopOverageVnd\":null,\"flowPackOverageVnd\":null,\"customTableCount\":0,\"customFieldCount\":0,\"customDataPacksRequired\":0,\"customDataPackIncluded\":0,\"customDataPackOverageVnd\":null,\"enterpriseBaseVnd\":250000,\"enterpriseOveragePerSeatVnd\":40000,\"enterpriseIncludedSeats\":45,\"estimatedEnterpriseMonthlyVnd\":null,\"estimatedProMonthlyVnd\":null,\"isEnterpriseTrial\":false,\"enterpriseTrialEndsAt\":null}"
+    },
+    {
+      "url": "https://api2.isale.online/data/customTables",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/data/customTables",
+      "size": 2,
+      "body": "[]"
+    },
+    {
+      "url": "https://api2.isale.online/app/manifest",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/app/manifest",
+      "size": 32352,
+      "body": "{\"version\":9,\"nav\":[{\"id\":\"selling.order-multi-add\",\"section\":\"selling\",\"tab\":\"selling\",\"title\":\"order-add.multi-add\",\"icon\":\"basket\",\"isFaIcon\":false,\"color\":\"danger\",\"customColor\":null,\"path\":null,\"isPush\":true,\"handler\":\"openSalesOrder\",\"showNewBadgeKey\":null,\"visibleWhen\":{\"requireStaffAnyOf\":[\"canCreateOrder\"]},\"order\":0},{\"id\":\"crm.help\",\"section\":\"crm\",\"tab\":\"crm\",\"title\":\"help-crm.home-short-title\",\"icon\":\"help-circle-outline\",\"isFaIcon\":false,\"color\":\"medium\",\"customColor\":null,\"path\":\"/help/crm\",\"isPush\":true,\"handler\":null,\"showNewBadgeKey\":null,\"visibleWhen\":{\"requireStaffAnyOf\":[\"canViewAllContacts\",\"canManageContacts\",\"canCreateUpdateNote\"]},\"order\":0},{\"id\":\"config.sms-marketing\",\"section\":\"config\",\"tab\":null,\"title\":\"sms-marketing.title\",\"icon\":\"chatbubble-ellipses\",\"isFaIcon\":false,\"color\":\"success\",\"customColor\":null,\"path\":\"/sms-marketing\",\"isPush\":false,\"handler\":null,\"showNewBadgeKey\":null,\"visibleWhen\":{\"requireOwnerOrFullAccess\":true,\"hideWhenShopAttrFalse\":[\"enableSmsMarketingFunction\"]},\"order\":0},{\"id\":\"crmConfig.settings\",\"section\":\"crmConfig\",\"tab\":\"crm\",\"title\":\"contact-crm-settings.title\",\"icon\":\"cog-outline\",\"isFaIcon\":false,\"color\":\"medium\",\"customColor\":null,\"path\":\"/contact/crm-settings\",\"isPush\":true,\"handler\":null,\"showNewBadgeKey\":null,\"visibleWhen\":{\"requireOwnerOrFullAccess\":true,\"requireCrmModuleAnyOf\":[\"crm_settings\",\"lead\"]},\"order\":0},{\"id\":\"customernstaff.contacts\",\"section\":\"customernstaff\",\"tab\":\"customernstaff\",\"title\":\"home.view-contacts\",\"icon\":\"address-card\",\"isFaIcon\":true,\"color\":\"#3dc2ff\",\"customColor\":null,\"path\":\"/contact\",\"isPush\":false,\"handler\":null,\"showNewBadgeKey\":null,\"visibleWhen\":{\"requireStaffAnyOf\":[\"canViewAllContacts\",\"canManageContacts\"]},\"order\":0},{\"id\":\"inventory.products\",\"section\":\"inventory\",\"tab\":\"inventory\",\"title\":\"home.view-products\",\"icon\":\"cart\",\"isFaIcon\":false,\"color\":\"warning\",\"customColor\":null,\"path\":\"/product\",\"isPush\":false,\"handler\":null,\"showNewBadgeKey\":null,\"visibleWhen\":{\"requireStaffAnyOf\":[\"canUpdateDeleteProduct\",\"canCreateUpdateNote\"]},\"order\":0},{\"id\":\"selling.order-scan\",\"section\":\"selling\",\"tab\":\"selling\",\"title\":\"home.new-order-scan-barcode\",\"icon\":\"barcode\",\"isFaIcon\":false,\"color\":\"success\",\"customColor\":null,\"path\":null,\"isPush\":false,\"handler\":\"scanForOrder\",\"showNewBadgeKey\":null,\"visibleWhen\":{\"requireStaffAnyOf\":[\"canCreateOrder\"]},\"order\":1},{\"id\":\"crm.leads\",\"section\":\"crm\",\"tab\":\"crm\",\"title\":\"contact-crm-leads.home-short-title\",\"icon\":\"person-add-outline\",\"isFaIcon\":false,\"color\":\"tertiary\",\"customColor\":null,\"path\":\"/contact/crm-leads\",\"isPush\":true,\"handler\":null,\"showNewBadgeKey\":null,\"visibleWhen\":{\"requireStaffAnyOf\":[\"canViewAllContacts\",\"canManageContacts\",\"canCreateUpdateNote\"]},\"order\":1},{\"id\":\"config.zbs-marketing\",\"section\":\"config\",\"tab\":null,\"title\":\"zbs-marketing.title\",\"icon\":\"chatbubbles\",\"isFaIcon\":false,\"color\":\"primary\",\"customColor\":null,\"path\":\"/zbs-marketing\",\"isPush\":false,\"handler\":null,\"showNewBadgeKey\":null,\"visibleWhen\":{\"requireOwnerOrFullAccess\":true,\"hideWhenShopAttrFalse\":[\"enableZbsMarketingFunction\"]},\"order\":1},{\"id\":\"inventory.received-note\",\"section\":\"inventory\",\"tab\":\"inventory\",\"title\":\"home.view-receiveds\",\"icon\":\"clipboard\",\"isFaIcon\":false,\"color\":\"tertiary\",\"customColor\":null,\"path\":\"/received-note\",\"isPush\":false,\"handler\":null,\"showNewBadgeKey\":null,\"visibleWhen\":{\"requireStaffAnyOf\":[\"canCreateUpdateNote\"]},\"order\":1},{\"id\":\"crmConfig.approval-settings\",\"section\":\"crmConfig\",\"tab\":\"crm\",\"title\":\"contact-crm-approval-settings.home-short-title\",\"icon\":\"git-pull-request-outline\",\"isFaIcon\":false,\"color\":\"medium\",\"customColor\":null,\"path\":\"/contact/crm-approval-settings\",\"isPush\":true,\"handler\":null,\"showNewBadgeKey\":null,\"visibleWhen\":{\"requireOwnerOrFullAccess\":true,\"requireCrmFull\":true},\"order\":1},{\"id\":\"customernstaff.sales-route\",\"section\":\"customernstaff\",\"tab\":\"customernstaff\",\"title\":\"sales-route.title\",\"icon\":\"flag\",\"isFaIcon\":false,\"color\":\"primary\",\"customColor\":n"
+    },
+    {
+      "url": "https://api2.isale.online/data/StandardFields?table=shop_config",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/data/StandardFields?table=shop_config",
+      "size": 15454,
+      "body": "[{\"id\":19,\"fieldName\":\"language\",\"table\":\"shop_config\",\"valueType\":0,\"langEn\":\"Language\",\"langVn\":\"Ngôn ngữ\",\"defaultValue\":\"vn\",\"order\":0,\"descriptionEn\":null,\"descriptionVn\":null,\"depentField\":null,\"depentValue\":null,\"uiType\":\"language\",\"needConfirm\":0,\"confirmMessage\":null,\"fieldType\":null,\"lookupTable\":null,\"lookupField\":null,\"isRequired\":0,\"isReadonly\":0,\"searchable\":0,\"sortable\":0,\"listJson\":null,\"readOnly\":0},{\"id\":274,\"fieldName\":\"apiGeminiKey\",\"table\":\"shop_config\",\"valueType\":0,\"langEn\":\"Api Gemini Key\",\"langVn\":\"Khoá API Gemini\",\"defaultValue\":null,\"order\":0,\"descriptionEn\":\"Enter Gemini API Key to enable Chat with AI\",\"descriptionVn\":\"Nhập api gemini key để bật chức năng Chat AI\",\"depentField\":null,\"depentValue\":null,\"uiType\":null,\"needConfirm\":0,\"confirmMessage\":null,\"fieldType\":null,\"lookupTable\":null,\"lookupField\":null,\"isRequired\":0,\"isReadonly\":0,\"searchable\":0,\"sortable\":0,\"listJson\":null,\"readOnly\":0},{\"id\":18,\"fieldName\":\"currency\",\"table\":\"shop_config\",\"valueType\":0,\"langEn\":\"Currency\",\"langVn\":\"Đơn vị tiền\",\"defaultValue\":\"VND\",\"order\":1,\"descriptionEn\":null,\"descriptionVn\":null,\"depentField\":null,\"depentValue\":null,\"uiType\":\"currency\",\"needConfirm\":0,\"confirmMessage\":null,\"fieldType\":null,\"lookupTable\":null,\"lookupField\":null,\"isRequired\":0,\"isReadonly\":0,\"searchable\":0,\"sortable\":0,\"listJson\":null,\"readOnly\":0},{\"id\":20,\"fieldName\":\"dateFormat\",\"table\":\"shop_config\",\"valueType\":0,\"langEn\":\"Date format\",\"langVn\":\"Định dạng ngày\",\"defaultValue\":\"DD/MM/YYYY\",\"order\":2,\"descriptionEn\":null,\"descriptionVn\":null,\"depentField\":null,\"depentValue\":null,\"uiType\":\"dateFormat\",\"needConfirm\":0,\"confirmMessage\":null,\"fieldType\":null,\"lookupTable\":null,\"lookupField\":null,\"isRequired\":0,\"isReadonly\":0,\"searchable\":0,\"sortable\":0,\"listJson\":null,\"readOnly\":0},{\"id\":21,\"fieldName\":\"timeFormat\",\"table\":\"shop_config\",\"valueType\":0,\"langEn\":\"Time format\",\"langVn\":\"Định dạng giờ\",\"defaultValue\":\"HH:mm\",\"order\":3,\"descriptionEn\":null,\"descriptionVn\":null,\"depentField\":null,\"depentValue\":null,\"uiType\":\"timeFormat\",\"needConfirm\":0,\"confirmMessage\":null,\"fieldType\":null,\"lookupTable\":null,\"lookupField\":null,\"isRequired\":0,\"isReadonly\":0,\"searchable\":0,\"sortable\":0,\"listJson\":null,\"readOnly\":0},{\"id\":22,\"fieldName\":\"outStockNotSell\",\"table\":\"shop_config\",\"valueType\":7,\"langEn\":\"Quantity 0, cannot sell\",\"langVn\":\"Số lượng 0, không thể bán\",\"defaultValue\":\"false\",\"order\":4,\"descriptionEn\":null,\"descriptionVn\":null,\"depentField\":null,\"depentValue\":null,\"uiType\":null,\"needConfirm\":0,\"confirmMessage\":null,\"fieldType\":null,\"lookupTable\":null,\"lookupField\":null,\"isRequired\":0,\"isReadonly\":0,\"searchable\":0,\"sortable\":0,\"listJson\":null,\"readOnly\":0},{\"id\":29,\"fieldName\":\"hideMaterials\",\"table\":\"shop_config\",\"valueType\":7,\"langEn\":\"Hide Materials function\",\"langVn\":\"Ẩn tính năng Nguyên Vật Liệu\",\"defaultValue\":\"false\",\"order\":5,\"descriptionEn\":null,\"descriptionVn\":null,\"depentField\":null,\"depentValue\":null,\"uiType\":null,\"needConfirm\":0,\"confirmMessage\":null,\"fieldType\":null,\"lookupTable\":null,\"lookupField\":null,\"isRequired\":0,\"isReadonly\":0,\"searchable\":0,\"sortable\":0,\"listJson\":null,\"readOnly\":0},{\"id\":26,\"fieldName\":\"hideTablesFunction\",\"table\":\"shop_config\",\"valueType\":7,\"langEn\":\"Hide Tables function\",\"langVn\":\"Ẩn tính năng Đặt bàn\",\"defaultValue\":\"false\",\"order\":6,\"descriptionEn\":null,\"descriptionVn\":null,\"depentField\":null,\"depentValue\":null,\"uiType\":null,\"needConfirm\":0,\"confirmMessage\":null,\"fieldType\":null,\"lookupTable\":null,\"lookupField\":null,\"isRequired\":0,\"isReadonly\":0,\"searchable\":0,\"sortable\":0,\"listJson\":null,\"readOnly\":0},{\"id\":27,\"fieldName\":\"hideCalendarFunction\",\"table\":\"shop_config\",\"valueType\":7,\"langEn\":\"Hide Calendar function\",\"langVn\":\"Ẩn tính năng Đặt lịch\",\"defaultValue\":\"false\",\"order\":7,\"descriptionEn\":null,\"descriptionVn\":null,\"depentField\":null,\"depentValue\":null,\"uiType\":null,\"needConfirm\":0,\"confirmMessage\":null,\"fieldType\":null,\"lookupTable\":null,\"lookupField\":null,\"isRequired\":0,\"isReadonly\":0,\"searchable"
+    },
+    {
+      "url": "https://api2.isale.online/data/list?table=shop_config",
+      "size": 912,
+      "body": "[{\"id\":2603,\"userId\":\"5641FE28F65E4D609E76E0BB8F85ABF9\",\"currency\":\"VND\",\"language\":\"vn\",\"dateFormat\":\"DD/MM/YYYY\",\"timeFormat\":\"HH:mm\",\"outStockNotSell\":0,\"printOrderLikeInvoice\":1,\"currencySymbolToTheRight\":0,\"orderInvoiceMaxEmptyRows\":5,\"hideDiscountColumn\":1,\"hideTax\":0,\"hideTablesFunction\":1,\"hideCalendarFunction\":1,\"showStaffNameUnderSign\":0,\"hideMaterials\":1,\"hideProductCodePrint\":1,\"allowPointPayment\":0,\"pointPaymentAfterBuyCount\":0,\"pointPaymentExchange\":0.00,\"orderPrintNote\":\"\",\"showStaffPhone\":0,\"hidePromotionFunction\":1,\"showDeliveryNoteFunction\":0,\"turnOffNotification\":0,\"revenueByLastestCostPrice\":0,\"syncCostPriceFromReceivedNote\":0,\"enableForAttributeQuantity\":0,\"showQrOnOrderPrint\":0,\"enableShiftClosure\":0,\"autoProductCode\":0,\"autoOrderCode\":1,\"apiGeminiKey\":null,\"enableSmsMarketingFunction\":0,\"enableZbsMarketingFunction\":0,\"homeLayoutJson\":null,\"orderPrintInvoiceTemplateHtml\":null}]"
+    },
+    {
+      "url": "https://api2.isale.online/data/list?table=shop_config",
+      "size": 912,
+      "body": "[{\"id\":2603,\"userId\":\"5641FE28F65E4D609E76E0BB8F85ABF9\",\"currency\":\"VND\",\"language\":\"vn\",\"dateFormat\":\"DD/MM/YYYY\",\"timeFormat\":\"HH:mm\",\"outStockNotSell\":0,\"printOrderLikeInvoice\":1,\"currencySymbolToTheRight\":0,\"orderInvoiceMaxEmptyRows\":5,\"hideDiscountColumn\":1,\"hideTax\":0,\"hideTablesFunction\":1,\"hideCalendarFunction\":1,\"showStaffNameUnderSign\":0,\"hideMaterials\":1,\"hideProductCodePrint\":1,\"allowPointPayment\":0,\"pointPaymentAfterBuyCount\":0,\"pointPaymentExchange\":0.00,\"orderPrintNote\":\"\",\"showStaffPhone\":0,\"hidePromotionFunction\":1,\"showDeliveryNoteFunction\":0,\"turnOffNotification\":0,\"revenueByLastestCostPrice\":0,\"syncCostPriceFromReceivedNote\":0,\"enableForAttributeQuantity\":0,\"showQrOnOrderPrint\":0,\"enableShiftClosure\":0,\"autoProductCode\":0,\"autoOrderCode\":1,\"apiGeminiKey\":null,\"enableSmsMarketingFunction\":0,\"enableZbsMarketingFunction\":0,\"homeLayoutJson\":null,\"orderPrintInvoiceTemplateHtml\":null}]"
+    },
+    {
+      "url": "https://api2.isale.online/plan/GetEntitlements",
+      "size": 789,
+      "body": "{\"tier\":\"FREE\",\"subscriptionType\":null,\"crmAccessLevel\":\"pro\",\"staffCount\":1,\"staffIncluded\":5,\"shopCount\":1,\"shopIncluded\":5,\"canAddStaff\":true,\"canAddShop\":true,\"canUseExtApi\":false,\"maxAutomationFlows\":2,\"activeFlowCount\":0,\"canCreateFlow\":true,\"deviceSyncTargets\":[\"lead\"],\"crmModules\":[\"lead\",\"activity\",\"lead_pipeline\",\"stage_config\",\"org_chart\",\"flow\",\"crm_settings\"],\"staffOverageVnd\":null,\"shopOverageVnd\":null,\"flowPackOverageVnd\":null,\"customTableCount\":0,\"customFieldCount\":0,\"customDataPacksRequired\":0,\"customDataPackIncluded\":0,\"customDataPackOverageVnd\":null,\"enterpriseBaseVnd\":250000,\"enterpriseOveragePerSeatVnd\":40000,\"enterpriseIncludedSeats\":45,\"estimatedEnterpriseMonthlyVnd\":null,\"estimatedProMonthlyVnd\":null,\"isEnterpriseTrial\":false,\"enterpriseTrialEndsAt\":null}"
+    },
+    {
+      "url": "https://api2.isale.online/data/customTables",
+      "size": 2,
+      "body": "[]"
+    },
+    {
+      "url": "https://api2.isale.online/order/neworderdata",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/order/neworderdata",
+      "size": 1011,
+      "body": "{\"shopConfigs\":[{\"id\":2603,\"userId\":\"5641FE28F65E4D609E76E0BB8F85ABF9\",\"currency\":\"VND\",\"language\":\"vn\",\"dateFormat\":\"DD/MM/YYYY\",\"timeFormat\":\"HH:mm\",\"outStockNotSell\":0,\"printOrderLikeInvoice\":1,\"currencySymbolToTheRight\":0,\"orderInvoiceMaxEmptyRows\":5,\"hideDiscountColumn\":1,\"hideTax\":0,\"hideTablesFunction\":1,\"hideCalendarFunction\":1,\"showStaffNameUnderSign\":0,\"hideMaterials\":1,\"hideProductCodePrint\":1,\"allowPointPayment\":0,\"pointPaymentAfterBuyCount\":0,\"pointPaymentExchange\":0.00,\"orderPrintNote\":\"\",\"showStaffPhone\":0,\"hidePromotionFunction\":1,\"showDeliveryNoteFunction\":0,\"turnOffNotification\":0,\"revenueByLastestCostPrice\":0,\"syncCostPriceFromReceivedNote\":0,\"enableForAttributeQuantity\":0,\"showQrOnOrderPrint\":0,\"enableShiftClosure\":0,\"autoProductCode\":0,\"autoOrderCode\":1,\"apiGeminiKey\":null,\"enableSmsMarketingFunction\":0,\"enableZbsMarketingFunction\":0,\"homeLayoutJson\":null,\"orderPrintInvoiceTemplateHtml\":null}],\"pointConfigs\":[],\"customerPrices\":[],\"customerDiscounts\":[],\"defaultAccount\":null}"
+    },
+    {
+      "url": "https://api2.isale.online/plan/GetCurrentPlan",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/plan/GetCurrentPlan",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/shipping/connections",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/shipping/partners",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/shipping/partners",
+      "size": 1578,
+      "body": "[{\"id\":2,\"code\":\"GHTK\",\"name\":\"Giao hàng tiết kiệm\",\"status\":\"active\",\"settingsSchemaJson\":\"{\\\"fields\\\":[{\\\"name\\\":\\\"token\\\",\\\"label\\\":\\\"API Token\\\",\\\"type\\\":\\\"password\\\",\\\"required\\\":true},{\\\"name\\\":\\\"partnerId\\\",\\\"label\\\":\\\"Partner ID\\\",\\\"type\\\":\\\"text\\\",\\\"required\\\":true}],\\\"addressRequirements\\\":{\\\"from\\\":{\\\"requireOneOf\\\":[[\\\"street\\\",\\\"hamlet\\\"]]},\\\"to\\\":{\\\"requireOneOf\\\":[[\\\"street\\\",\\\"hamlet\\\"]]}},\\\"addressFields\\\":{\\\"from\\\":[{\\\"name\\\":\\\"province\\\",\\\"labelKey\\\":\\\"order-add.province\\\",\\\"type\\\":\\\"province\\\",\\\"required\\\":true},{\\\"name\\\":\\\"ward\\\",\\\"labelKey\\\":\\\"order-add.ward\\\",\\\"type\\\":\\\"ward\\\",\\\"required\\\":true},{\\\"name\\\":\\\"address\\\",\\\"labelKey\\\":\\\"order-add.address\\\",\\\"type\\\":\\\"text\\\",\\\"required\\\":true},{\\\"name\\\":\\\"street\\\",\\\"labelKey\\\":\\\"order-add.street\\\",\\\"type\\\":\\\"text\\\",\\\"required\\\":false,\\\"hintKey\\\":\\\"order-add.street-hint\\\"},{\\\"name\\\":\\\"hamlet\\\",\\\"labelKey\\\":\\\"order-add.hamlet\\\",\\\"type\\\":\\\"text\\\",\\\"required\\\":false,\\\"hintKey\\\":\\\"order-add.hamlet-hint\\\"}],\\\"to\\\":[{\\\"name\\\":\\\"province\\\",\\\"labelKey\\\":\\\"order-add.province\\\",\\\"type\\\":\\\"province\\\",\\\"required\\\":true},{\\\"name\\\":\\\"ward\\\",\\\"labelKey\\\":\\\"order-add.ward\\\",\\\"type\\\":\\\"ward\\\",\\\"required\\\":true},{\\\"name\\\":\\\"address\\\",\\\"labelKey\\\":\\\"order-add.address\\\",\\\"type\\\":\\\"text\\\",\\\"required\\\":true},{\\\"name\\\":\\\"street\\\",\\\"labelKey\\\":\\\"order-add.street\\\",\\\"type\\\":\\\"text\\\",\\\"required\\\":false,\\\"hintKey\\\":\\\"order-add.street-hint\\\"},{\\\"name\\\":\\\"hamlet\\\",\\\"labelKey\\\":\\\"order-add.hamlet\\\",\\\"type\\\":\\\"text\\\",\\\"required\\\":false,\\\"hintKey\\\":\\\"order-add.hamlet-hint\\\"}]}}\",\"isConnected\":false,\"connection\":null}]"
+    },
+    {
+      "url": "https://api2.isale.online/shipping/connections",
+      "size": 2,
+      "body": "[]"
+    },
+    {
+      "url": "https://api2.isale.online/address/Provinces",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/address/Provinces",
+      "size": 1481,
+      "body": "[{\"id\":24,\"name\":\"An Giang\",\"title\":\"Tỉnh\"},{\"id\":30,\"name\":\"Bắc Ninh\",\"title\":\"Tỉnh\"},{\"id\":2,\"name\":\"Cà Mau\",\"title\":\"Tỉnh\"},{\"id\":33,\"name\":\"Cần Thơ\",\"title\":\"Thành phố\"},{\"id\":3,\"name\":\"Cao Bằng\",\"title\":\"Tỉnh\"},{\"id\":27,\"name\":\"Đà Nẵng\",\"title\":\"Thành phố\"},{\"id\":19,\"name\":\"Đắk Lắk\",\"title\":\"Tỉnh\"},{\"id\":10,\"name\":\"Điện Biên\",\"title\":\"Tỉnh\"},{\"id\":20,\"name\":\"Đồng Nai\",\"title\":\"Tỉnh\"},{\"id\":7,\"name\":\"Đồng Tháp\",\"title\":\"Tỉnh\"},{\"id\":25,\"name\":\"Gia Lai\",\"title\":\"Tỉnh\"},{\"id\":9,\"name\":\"Hà Nội\",\"title\":\"Thành phố\"},{\"id\":29,\"name\":\"Hà Tĩnh\",\"title\":\"Tỉnh\"},{\"id\":5,\"name\":\"Hải Phòng\",\"title\":\"Thành phố\"},{\"id\":12,\"name\":\"Huế\",\"title\":\"Thành phố\"},{\"id\":1,\"name\":\"Hưng Yên\",\"title\":\"Tỉnh\"},{\"id\":4,\"name\":\"Khánh Hòa\",\"title\":\"Tỉnh\"},{\"id\":6,\"name\":\"Lai Châu\",\"title\":\"Tỉnh\"},{\"id\":16,\"name\":\"Lâm Đồng\",\"title\":\"Tỉnh\"},{\"id\":23,\"name\":\"Lạng Sơn\",\"title\":\"Tỉnh\"},{\"id\":17,\"name\":\"Lào Cai\",\"title\":\"Tỉnh\"},{\"id\":34,\"name\":\"Nghệ An\",\"title\":\"Tỉnh\"},{\"id\":22,\"name\":\"Ninh Bình\",\"title\":\"Tỉnh\"},{\"id\":32,\"name\":\"Phú Thọ\",\"title\":\"Tỉnh\"},{\"id\":11,\"name\":\"Quảng Ngãi\",\"title\":\"Tỉnh\"},{\"id\":21,\"name\":\"Quảng Ninh\",\"title\":\"Tỉnh\"},{\"id\":15,\"name\":\"Quảng Trị\",\"title\":\"Tỉnh\"},{\"id\":13,\"name\":\"Sơn La\",\"title\":\"Tỉnh\"},{\"id\":31,\"name\":\"Tây Ninh\",\"title\":\"Tỉnh\"},{\"id\":26,\"name\":\"Thái Nguyên\",\"title\":\"Tỉnh\"},{\"id\":18,\"name\":\"Thanh Hoá\",\"title\":\"Tỉnh\"},{\"id\":28,\"name\":\"TP HCM\",\"title\":\"Thành phố\"},{\"id\":8,\"name\":\"Tuyên Quang\",\"title\":\"Tỉnh\"},{\"id\":14,\"name\":\"Vĩnh Long\",\"title\":\"Tỉnh\"}]"
+    },
+    {
+      "url": "https://api2.isale.online/plan/CheckProduct",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/plan/CheckProduct",
+      "size": 3,
+      "body": "199"
+    },
+    {
+      "url": "https://api2.isale.online/data/list?table=shop",
+      "size": 0,
+      "body": ""
+    },
+    {
+      "url": "https://api2.isale.online/data/list?table=shop",
+      "size": 636,
+      "body": "[{\"id\":3371,\"name\":\"CTY TNHH SX TM DV PIOPIO (PIOPIO.VN)\",\"address\":\"14 Đg số 16 KDC Bình Hưng, BC\",\"email\":\"trangthuy0809@gmail.com\",\"phone\":\"07.0404.0044\",\"website\":null,\"facebook\":\"www.fb.com/chuyendodungmotlan\",\"userId\":\"5641FE28F65E4D609E76E0BB8F85ABF9\",\"facebookId\":null,\"iconUrl\":null,\"createdAt\":\"2021-07-08T23:22:39+07:00\",\"bankAccountNumber\":\"0901.442.224\",\"bankAccountName\":\"Ng T Thùy Trang\",\"bankName\":\"Quân Đôi (MB bank)\",\"shortDescription\":\"Chuyên cung cấp các sản phẩm đồ dùng 1 lần tại HCM và các tỉnh lân cận\",\"userName\":\"trangthuy0809@gmail.com\",\"referralextendedtrial\":0,\"firebaseuid\":\"577d65yk2GPCbtcvs8dUhc05PZj2\"}]"
+    }
+  ]
+}

@@ -1,0 +1,716 @@
+{
+  "textCount": 166,
+  "apiCount": 32,
+  "storage": [
+    {
+      "k": "fbapc_128259294396486",
+      "len": 59,
+      "preview": "{\"config\":{\"fedcmDefault\":false},\"expiresAt\":1790576857125}"
+    },
+    {
+      "k": "_gcl_ls",
+      "len": 152,
+      "preview": "{\"schema\":\"gcl\",\"version\":1,\"gcl_ctr\":{\"value\":{\"value\":0,\"t"
+    }
+  ],
+  "texts": [
+    {
+      "t": "Bán hàng",
+      "p": "ion-header.md.header-md < ion-toolbar.toolbar-title-default.md < ion-title.ion-c"
+    },
+    {
+      "t": "Lưu",
+      "p": "ion-buttons.buttons-last-slot.sc-ion-buttons-md-h < ion-button.ion-color.ion-col"
+    },
+    {
+      "t": "Đơn hàng 1",
+      "p": "div.order-items < div.order-item.is-active < ion-label.ion-text-wrap.sc-ion-labe"
+    },
+    {
+      "t": "Thanh toán",
+      "p": "ion-segment-button.md.in-segment < ion-label.sc-ion-label-md-h.sc-ion-label-md-s"
+    },
+    {
+      "t": "Khách hàng",
+      "p": "ion-segment-button.md.in-segment < ion-label.sc-ion-label-md-h.sc-ion-label-md-s"
+    },
+    {
+      "t": "Ghi chú",
+      "p": "ion-segment-button.md.in-segment < ion-label.sc-ion-label-md-h.sc-ion-label-md-s"
+    },
+    {
+      "t": "Vận chuyển",
+      "p": "ion-segment-button.md.in-segment < ion-label.sc-ion-label-md-h.sc-ion-label-md-s"
+    },
+    {
+      "t": "Mã đơn",
+      "p": "div.order-meta-fields < div.order-meta-field < ion-label.sc-ion-label-md-h.sc-io"
+    },
+    {
+      "t": "Ngày",
+      "p": "div.order-meta-fields < div.order-meta-field < ion-label.sc-ion-label-md-h.sc-io"
+    },
+    {
+      "t": "Nhân viên/CTV",
+      "p": "ion-row.md.hydrated < ion-col.md.hydrated < ion-label.ion-text-wrap.sc-ion-label"
+    },
+    {
+      "t": "Chọn NV/CTV",
+      "p": "ion-grid.order-form-meta.md < ion-row.md.hydrated < ion-col.md.hydrated < ion-bu"
+    },
+    {
+      "t": "Sản phẩm",
+      "p": "ion-item-divider.order-section-header.md < ion-label.sc-ion-label-md-h.sc-ion-la"
+    },
+    {
+      "t": "Dùng mã vạch hoặc ấn nút bên dưới để thêm",
+      "p": "ion-item-divider.order-section-header.md < ion-label.sc-ion-label-md-h.sc-ion-la"
+    },
+    {
+      "t": "Quét mã",
+      "p": "ion-buttons.sc-ion-buttons-md-h.sc-ion-buttons-md-s < ion-button.ion-color.ion-c"
+    },
+    {
+      "t": "Từ báo giá",
+      "p": "ion-buttons.sc-ion-buttons-md-h.sc-ion-buttons-md-s < ion-button.ion-color.ion-c"
+    },
+    {
+      "t": "Chưa có sản phẩm nào. Thêm sản phẩm bằng cách, chọn ô 'Nhập mã vạch', sử dụng thiết bị đọc",
+      "p": "ion-list.order-products-card.md < ion-item.order-empty-products.ion-color < div."
+    },
+    {
+      "t": "Tài khoản",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "Chọn ví/tài khoản",
+      "p": "ion-col.order-pay-field.md < div.order-pay-control.order-pay-control--wallet < i"
+    },
+    {
+      "t": "Trạng thái",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "Hoàn thành",
+      "p": "div.select-text < "
+    },
+    {
+      "t": "Hoàn thành",
+      "p": "label < "
+    },
+    {
+      "t": "Thanh toán",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "Tiền mặt",
+      "p": "div.select-text < "
+    },
+    {
+      "t": "Tiền mặt",
+      "p": "label < "
+    },
+    {
+      "t": "Tổng tiền hàng",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "Phí ship",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "Khách trả ship?",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "Chiết khấu",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "%",
+      "p": "ion-col.order-pay-field.md < div.order-pay-control < ion-text.order-percent-badg"
+    },
+    {
+      "t": "Tổng tạm tính",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "Thuế",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "0%",
+      "p": "ion-col.order-pay-field.md < div.order-pay-control < ion-text.order-percent-badg"
+    },
+    {
+      "t": "Tổng phải trả",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "Khách đưa",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "Tiền thừa",
+      "p": "ion-row.order-pay-row.md < ion-col.order-pay-field.md < ion-label.sc-ion-label-m"
+    },
+    {
+      "t": "* Đơn vị tiền: VND",
+      "p": "ion-grid.order-payment-summary.md < ion-row.md.hydrated < ion-text.ion-float-rig"
+    },
+    {
+      "t": "Hiện QR Code thanh toán",
+      "p": "ion-buttons.sc-ion-buttons-md-h.sc-ion-buttons-md-s < ion-button.ion-color.ion-c"
+    },
+    {
+      "t": "Lọc theo",
+      "p": "div.ps-filter-toolbar__row.ps-filter-toolbar__row--filters < div.ps-filter-field"
+    },
+    {
+      "t": "Gần đây",
+      "p": "div.select-text < "
+    },
+    {
+      "t": "Gần đây",
+      "p": "label < "
+    },
+    {
+      "t": "Danh mục",
+      "p": "div.ps-filter-field.ps-filter-field--category < ion-label.ion-text-wrap.sc-ion-l"
+    },
+    {
+      "t": "Chọn Nhóm hàng",
+      "p": "div.ps-filter-field.ps-filter-field--category < ion-item.ion-no-padding.ps-filte"
+    },
+    {
+      "t": "Trang 1",
+      "p": "div.ps-filter-toolbar__row.ps-filter-toolbar__row--actions < div.ps-paging < ion"
+    },
+    {
+      "t": "[TAS.1] Đũa tách OPP kèm Tăm",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(Thùng (4000 đôi))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 540.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Giá nhập: 430.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Giá bán",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Thùng (4000 đôi)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Bao (100 đôi))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 15.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Bao (100 đôi)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[TCL] Muỗng Nhựa Trắng 16cm",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(Thùng (5000 cái))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 520.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Thùng (5000 cái)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Bao (100 cái))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 12.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Bao (100 cái)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[TCL] Ly nhựa PP 500ml - Trường Thành",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(Thùng)",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 425.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Giá nhập: 365.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Thùng",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Cái)",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 500 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Cái",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[UKP] Nắp PET Φ95 _ BẰNG",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(2 lốc (100 nắp))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": "Giá nhập: 12.200 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 2 lốc (100 nắp)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Nắp)",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 150 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Nắp",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Thùng (2000 nắp))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 295.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Thùng (2000 nắp)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[CB2] Combo Đũa OPP kèm tăm, khăn giấy, muỗng nhựa trắng",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(Thùng (1000 set))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 600.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Giá nhập: 480.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Thùng (1000 set)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Gói (100 set))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 65.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Gói (100 set)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Thun trung",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": ": 30.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Bịch (Nữa kí)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[TTK] Ống hút nhọn Phi 6 - TRẮNG",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(Bịch (Nữa ký))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 25.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Giá nhập: 18.400 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Bịch (Nữa ký)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Kiện (5 kí))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 230.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Kiện (5 kí)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[JB] Hộp HT17 2 ngăn 3/7",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": ": 1.200.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Thùng (1000)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Bao PE dẻo ....................",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": ": 37.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[TGP] Bao tay nilong thực phẩm",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": ": 48.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Kí",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[TGP] Bao Rác Cuộn (Màu) _ Size Đại",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(Gói (1kí))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 26.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Giá nhập: 20.500 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Gói (1kí)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Bao (25 kí))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 23.500 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Bao (25 kí)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[TGP3.2] Bọc 1 ly _ Xốp gai",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(Ký)",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 39.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Giá nhập: 32.500 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Ký",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": ": 975.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Thun lớn",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "[TGP1.1] Bọc 2 quai _ XỐP GAI _ Loại 10 kí (35T)",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(Bao 25 kí)",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 925.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Bao 25 kí",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[TCL] Hộp HT17 1 ngăn kèm nắp",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(Lốc (100 hộp))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 60.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Giá nhập: 485.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Lốc (100 hộp)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Thùng (500 hộp))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 550.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Thùng (500 hộp)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[TCL.L1] Hộp HT25 đế đen 4 ngăn",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(Thùng (300 hộp) )",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": "Giá nhập: 522.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Thùng (300 hộp)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "( Hộp)",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 2.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0  Hộp",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[TMT] Túi zip đỏ",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": ": 50.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[TTK] Ống hút nhọn BOPP phi 6 - ĐEN",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": ": 290.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Giá nhập: 237.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Gói (Nữa ký))",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 32.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Gói (Nữa ký)",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "[TGP1.1] Bọc 2 quai _ XỐP GAI _ Loại 5 kí (30T)",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "[TGP] Băng Keo _ 200Y 2kí",
+      "p": "ion-col.md.hydrated < ion-card.md.hydrated < div.psi-media < ion-text.text-produ"
+    },
+    {
+      "t": "(Cây)",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 93.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Giá nhập: 78.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Cây",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Cuộn)",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 16.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Cuộn",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "(Bao)",
+      "p": "ion-card.md.hydrated < div.psi-media < ion-text.text-product-name.ion-color < sp"
+    },
+    {
+      "t": ": 1.750.000 ₫",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Còn lại: 0 Bao",
+      "p": "ion-card-subtitle.ion-inherit-color.md < div.psi-card-meta < ion-text.psi-card-i"
+    },
+    {
+      "t": "Trang 1",
+      "p": "ion-list.md.list-md < ion-item.item.md < ion-label.ion-text-wrap.ion-text-right "
+    },
+    {
+      "t": "Trợ giúp: Bán hàng (tạo mới đơn)",
+      "p": "ion-list.order-help-list.md < ion-item.item.md < ion-label.sc-ion-label-md-h.sc-"
+    },
+    {
+      "t": "Liên hệ/Báo lỗi",
+      "p": "ion-content.order-page-content.md < div.ion-padding < support < div.contact-supp"
+    },
+    {
+      "t": "Nếu bạn muốn báo lỗi/đặt câu hỏi/hoặc yêu cầu tính năng, hãy gửi chúng tôi yêu cầu của bạn",
+      "p": "ion-content.order-page-content.md < div.ion-padding < support < div.contact-supp"
+    },
+    {
+      "t": "Báo lỗi/Yêu cầu hỗ trợ",
+      "p": "div.ion-padding < support < div.contact-support.compact < button.primary-button "
+    },
+    {
+      "t": "Hotline/Zalo/Telegram",
+      "p": "div.contact-methods < div.contact-method < div.contact-info < div.contact-label "
+    },
+    {
+      "t": "Email",
+      "p": "div.contact-methods < div.contact-method < div.contact-info < div.contact-label "
+    }
+  ],
+  "api": [
+    "https://connect.facebook.net/en_US/bundle/sdk.js/",
+    "https://firebase.googleapis.com/v1alpha/projects/-/apps/1:701553846711:web:38f8f48ff380b5458c2032/webConfig",
+    "https://www.googletagmanager.com/gtag/js?l=dataLayer&id=G-MS27D6BX22",
+    "https://auth.isale.online/connect/token",
+    "https://api2.isale.online/data/StandardFields?table=shop_config",
+    "https://api2.isale.online/data/list?table=shop_config",
+    "https://api2.isale.online/staff/CheckPermissions",
+    "https://api2.isale.online/sepay/settings",
+    "https://api2.isale.online/account/getdefault",
+    "https://api2.isale.online/Notification/UnreadCount?staffId=0",
+    "https://api2.isale.online/sepay/transactions?limit=20",
+    "https://api2.isale.online/data/list?table=shop",
+    "https://api2.isale.online/plan/GetCurrentPlan",
+    "https://api2.isale.online/plan/GetEntitlements",
+    "https://api2.isale.online/plan/CheckOrder",
+    "https://api2.isale.online/referral/MyCode",
+    "https://api2.isale.online/data/customTables",
+    "https://api2.isale.online/app/manifest",
+    "https://analytics.google.com/g/collect?v=2&tid=G-MS27D6BX22&gtm=45je69n1v899195636za200zd899195636xf1&_p=1790490511460&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAACQC",
+    "https://api2.isale.online/order/neworderdata",
+    "https://api2.isale.online/shipping/connections",
+    "https://api2.isale.online/shipping/partners",
+    "https://api2.isale.online/address/Provinces",
+    "https://api2.isale.online/plan/CheckProduct",
+    "https://api2.isale.online/product/ListRecent?storeId=0",
+    "https://api2.isale.online/data/listequal",
+    "https://api2.isale.online/category/GetCategoriesOfProducts",
+    "https://analytics.google.com/g/collect?v=2&tid=G-MS27D6BX22&gtm=45je69n1v899195636za200zd899195636xf1&_p=1790490511460&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=A",
+    "https://www.google.com.vn/ads/ga-audiences?v=1&t=sr&slf_rd=1&_r=4&ngs=1&ibt=1&tid=G-MS27D6BX22&cid=83237998.1790490428&gtm=45je69n1v899195636za200zd899195636xf1",
+    "https://api2.isale.online/data/StandardTables",
+    "https://api2.isale.online/data/StandardFields?table=contact",
+    "https://api2.isale.online/data/list?table=contact&withPermission=true"
+  ]
+}

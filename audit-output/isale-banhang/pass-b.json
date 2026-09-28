@@ -1,0 +1,66 @@
+{
+  "textCount": 7,
+  "apiCount": 18,
+  "storage": [
+    {
+      "k": "fbapc_128259294396486",
+      "len": 59,
+      "preview": "{\"config\":{\"fedcmDefault\":false},\"expiresAt\":1790576857125}"
+    },
+    {
+      "k": "_gcl_ls",
+      "len": 152,
+      "preview": "{\"schema\":\"gcl\",\"version\":1,\"gcl_ctr\":{\"value\":{\"value\":0,\"t"
+    }
+  ],
+  "texts": [
+    {
+      "t": "Đơn từ Website",
+      "p": "ion-header.md.header-md < ion-toolbar.toolbar-title-default.md < ion-title.ion-c"
+    },
+    {
+      "t": "Tháng 08/2026",
+      "p": "div < ion-segment.ion-no-padding.ng-untouched < ion-segment-button.ion-text-wrap"
+    },
+    {
+      "t": "Tháng 09/2026",
+      "p": "div < ion-segment.ion-no-padding.ng-untouched < ion-segment-button.ion-text-wrap"
+    },
+    {
+      "t": "Tháng 10/2026",
+      "p": "div < ion-segment.ion-no-padding.ng-untouched < ion-segment-button.ion-text-wrap"
+    },
+    {
+      "t": "Tổng: 0 ₫",
+      "p": "ion-item.ion-text-wrap.ion-no-padding < ion-label.sc-ion-label-md-h.sc-ion-label"
+    },
+    {
+      "t": "0 đơn hàng",
+      "p": "ion-label.sc-ion-label-md-h.sc-ion-label-md-s < p < ion-text.ion-color.ion-color"
+    },
+    {
+      "t": "Không có đơn đặt từ web nào. Chú ý các đơn này sẽ được đặt bởi khách truy cập vào website ",
+      "p": "ion-content.app-page-wide.md < ion-list.md.list-md < ion-item.item.md < div < b "
+    }
+  ],
+  "api": [
+    "https://connect.facebook.net/en_US/bundle/sdk.js/",
+    "https://api2.isale.online/publicSettings",
+    "https://auth.isale.online/connect/token",
+    "https://api2.isale.online/app/i18n?lang=vn",
+    "https://api2.isale.online/data/list?table=shop_config",
+    "https://api2.isale.online/plan/GetEntitlements",
+    "https://api2.isale.online/data/customTables",
+    "https://api2.isale.online/app/manifest",
+    "https://api2.isale.online/data/StandardFields?table=shop_config",
+    "https://firebase.googleapis.com/v1alpha/projects/-/apps/1:701553846711:web:38f8f48ff380b5458c2032/webConfig",
+    "https://api2.isale.online/data/StandardTables",
+    "https://www.googletagmanager.com/gtag/js?l=dataLayer&id=G-MS27D6BX22",
+    "https://analytics.google.com/g/collect?v=2&tid=G-MS27D6BX22&gtm=45je69n1v899195636za200zd899195636xf1&_p=1790494331561&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=A",
+    "https://www.google.com.vn/ads/ga-audiences?v=1&t=sr&slf_rd=1&_r=4&ngs=1&ibt=1&tid=G-MS27D6BX22&cid=83237998.1790490428&gtm=45je69n1v899195636za200zd899195636xf1",
+    "https://api2.isale.online/data/StandardFields?table=order",
+    "https://api2.isale.online/data/listequal",
+    "https://api2.isale.online/plan/GetCurrentPlan",
+    "https://api2.isale.online/data/CountGroup"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "selects": [
+    {
+      "label": "Tất cảGần đâyBán chạyCòn Hạn SDCòn số lư",
+      "value": "recent",
+      "options": [
+        {
+          "v": "all",
+          "t": "Tất cả"
+        },
+        {
+          "v": "recent",
+          "t": "Gần đây"
+        },
+        {
+          "v": "hot",
+          "t": "Bán chạy"
+        },
+        {
+          "v": "expiry",
+          "t": "Còn Hạn SD"
+        },
+        {
+          "v": "quantity",
+          "t": "Còn số lượng"
+        }
+      ]
+    }
+  ],
+  "rows": [],
+  "inputs": []
+}

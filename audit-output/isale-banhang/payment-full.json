@@ -1,0 +1,201 @@
+{
+  "selects": [
+    {
+      "label": "",
+      "value": "3",
+      "opts": [
+        {
+          "v": "",
+          "t": "Nháp"
+        },
+        {
+          "v": "",
+          "t": "Đang xử lý"
+        },
+        {
+          "v": "",
+          "t": "Đang ship"
+        },
+        {
+          "v": "",
+          "t": "Hoàn thành"
+        },
+        {
+          "v": "",
+          "t": "Hủy"
+        },
+        {
+          "v": "",
+          "t": "Công nợ"
+        },
+        {
+          "v": "",
+          "t": "Ship, có nợ"
+        },
+        {
+          "v": "",
+          "t": "Ký gửi"
+        }
+      ]
+    },
+    {
+      "label": "",
+      "value": "CASH",
+      "opts": [
+        {
+          "v": "CASH",
+          "t": "Tiền mặt"
+        },
+        {
+          "v": "BANK-TRANSFER",
+          "t": "Chuyển khoản"
+        },
+        {
+          "v": "CREDIT-CARD",
+          "t": "Thẻ tín dụng"
+        },
+        {
+          "v": "APPLE-PAY",
+          "t": "Apple Pay"
+        },
+        {
+          "v": "BANK-CARD",
+          "t": "Thẻ ngân hàng"
+        },
+        {
+          "v": "DEBIT-CARD",
+          "t": "Thẻ ghi nợ"
+        },
+        {
+          "v": "MOBILE-MONEY",
+          "t": "Mobile Money"
+        },
+        {
+          "v": "CHEQUE",
+          "t": "Séc"
+        },
+        {
+          "v": "BITCOIN",
+          "t": "Bitcoin"
+        },
+        {
+          "v": "OTHER",
+          "t": "Khác"
+        }
+      ]
+    },
+    {
+      "label": "Tất cảGần đâyBán chạyCòn Hạn SDCòn số lư",
+      "value": "recent",
+      "opts": [
+        {
+          "v": "all",
+          "t": "Tất cả"
+        },
+        {
+          "v": "recent",
+          "t": "Gần đây"
+        },
+        {
+          "v": "hot",
+          "t": "Bán chạy"
+        },
+        {
+          "v": "expiry",
+          "t": "Còn Hạn SD"
+        },
+        {
+          "v": "quantity",
+          "t": "Còn số lượng"
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "cls": "order-field-input ng-untouched ng-pristine ng-vali",
+      "val": "",
+      "dis": false,
+      "type": ""
+    },
+    {
+      "cls": "ng-untouched ng-pristine ng-valid sc-ion-input-md-",
+      "val": "",
+      "dis": false,
+      "type": ""
+    },
+    {
+      "cls": "order-barcode-input ng-untouched ng-pristine ng-va",
+      "val": "",
+      "dis": false,
+      "type": ""
+    },
+    {
+      "cls": "money-input-field ng-untouched ng-pristine sc-ion-",
+      "val": "",
+      "dis": true,
+      "type": ""
+    },
+    {
+      "cls": "money-input-field ng-untouched ng-pristine ng-vali",
+      "val": "",
+      "dis": false,
+      "type": ""
+    },
+    {
+      "cls": "money-input-field ng-untouched ng-pristine ng-vali",
+      "val": "",
+      "dis": false,
+      "type": ""
+    },
+    {
+      "cls": "money-input-field ng-untouched ng-pristine ng-vali",
+      "val": "",
+      "dis": false,
+      "type": ""
+    },
+    {
+      "cls": "money-input-field ng-untouched ng-pristine ng-vali",
+      "val": "",
+      "dis": false,
+      "type": ""
+    },
+    {
+      "cls": "money-input-field ng-untouched ng-pristine ng-vali",
+      "val": "",
+      "dis": false,
+      "type": ""
+    },
+    {
+      "cls": "money-input-field ng-untouched ng-pristine ng-vali",
+      "val": "",
+      "dis": false,
+      "type": ""
+    },
+    {
+      "cls": "money-input-field ng-untouched ng-pristine ng-vali",
+      "val": "",
+      "dis": false,
+      "type": ""
+    }
+  ],
+  "rows": [
+    {
+      "t": "Dùng mã vạch hoặc ấn nút bên dưới để thêm",
+      "cls": "order-section-desc"
+    },
+    {
+      "t": "Chưa có sản phẩm nào. Thêm sản phẩm bằng cách, chọ",
+      "cls": "order-empty-products__text"
+    },
+    {
+      "t": "%",
+      "cls": "order-percent-badge ion-text-nowrap md hydrated"
+    },
+    {
+      "t": "0%",
+      "cls": "order-percent-badge ion-text-nowrap md hydrated"
+    }
+  ],
+  "checkedSeg": "Thanh toán"
+}
