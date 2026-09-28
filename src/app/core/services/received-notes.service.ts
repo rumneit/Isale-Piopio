@@ -10,7 +10,11 @@ export interface ReceivedNoteItem {
   name: string;
   qty: number;
   cost: number;
+  /** Số lượng ĐẶT (v29 — partial receipt): nhận thiếu → phiếu rơi vào "Chờ nhập thêm". */
+  qty_ordered?: number;
 }
+
+export type ReceivedNoteStatus = 'pending' | 'partial' | 'completed' | 'cancelled';
 
 export interface ReceivedNote {
   id: string;
@@ -25,6 +29,13 @@ export interface ReceivedNote {
   supplier_id?: string | null;
   paid_amount?: number;
   due_date?: string | null;
+  /** v29: maker-checker + partial receipt */
+  status?: ReceivedNoteStatus;
+  parent_id?: string | null;
+  created_by?: string | null;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  reject_reason?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -74,6 +85,8 @@ export class ReceivedNotesService {
       supplier_id?: string | null;
       paid_amount?: number;
       due_date?: string | null;
+      /** v29: phiếu "nhập tiếp phần thiếu" tham chiếu phiếu gốc. */
+      parent_id?: string | null;
     },
     items: ReceivedNoteItem[]
   ): Promise<ReceivedNote> {
@@ -83,6 +96,13 @@ export class ReceivedNotesService {
 
     const total = items.reduce((s, i) => s + i.qty * i.cost, 0);
     const paidAmount = Math.max(0, Math.min(Number(input.paid_amount ?? (input.paid ? total : 0)), total));
+
+    // v29 — maker-checker: người KHÔNG có quyền duyệt (nhân viên) chỉ được
+    // tạo phiếu 'pending' — chưa ghi tồn/tiền/công nợ, chờ chủ shop duyệt.
+    // Có quyền duyệt: nhận thiếu so với số đặt → 'partial', đủ → 'completed'.
+    const canApprove = this.auth.can('inventory_approve');
+    const hasShort = items.some((i) => Number(i.qty_ordered ?? i.qty) > Number(i.qty));
+    const wantStatus: ReceivedNoteStatus = !canApprove ? 'pending' : hasShort ? 'partial' : 'completed';
 
     // Dò cột v28 (supplier_id/paid_amount/due_date) — chưa chạy migration thì gửi payload cũ
     let row: Record<string, unknown> = {
@@ -102,6 +122,17 @@ export class ReceivedNotesService {
         due_date: input.due_date || null,
       };
     }
+    // Dò cột v29 (status/parent_id/created_by) — chưa chạy thì mọi phiếu ghi ngay như cũ
+    const v29 = await this.detectV29Columns();
+    if (v29) {
+      row = {
+        ...row,
+        status: wantStatus,
+        parent_id: input.parent_id ?? null,
+        created_by: this.auth.session()?.user?.id ?? null,
+      };
+    }
+    const isPending = v29 && wantStatus === 'pending';
 
     const { data, error } = await this.sb
       .from('received_notes')
@@ -109,6 +140,10 @@ export class ReceivedNotesService {
       .select()
       .single();
     if (error) throw error;
+
+    // Phiếu CHỜ DUYỆT: dừng ở đây — tồn kho/tiền/công nợ chỉ ghi khi được duyệt
+    // (RPC inv_approve_note làm tất cả trong 1 transaction).
+    if (isPending) return data as ReceivedNote;
 
     // Tăng tồn kho QUA SỔ CÁI (v27): 1 transaction, idempotent, có audit.
     // Fallback khi migration v27 chưa chạy: cộng client-side từng dòng (cũ).
@@ -165,6 +200,17 @@ export class ReceivedNotesService {
     return this.debtColumnsPromise;
   }
 
+  private v29ColumnsPromise: Promise<boolean> | null = null;
+  /** Dò 1 lần (cache) xem received_notes đã có cột v29 (status/parent_id/created_by) chưa. */
+  private detectV29Columns(): Promise<boolean> {
+    this.v29ColumnsPromise ??= (async () => {
+      if (!this.sb.isConfigured) return false;
+      const { error } = await this.sb.from('received_notes').select('id, status, parent_id, created_by').limit(1);
+      return !error;
+    })();
+    return this.v29ColumnsPromise;
+  }
+
   /** Đường cũ (chỉ dùng khi v27 chưa chạy): cộng tồn client-side từng dòng. */
   private async legacyApplyStock(items: ReceivedNoteItem[]): Promise<void> {
     for (const item of items) {
@@ -183,9 +229,11 @@ export class ReceivedNotesService {
   }
 
   async remove(note: ReceivedNote): Promise<void> {
+    // Phiếu pending/cancelled (v29) CHƯA BAO GIỜ ghi tồn → xoá thẳng, không đảo.
+    const neverApplied = note.status === 'pending' || note.status === 'cancelled';
     // Hoàn tồn kho QUA SỔ CÁI (đảo dấu các dòng ledger của phiếu)
-    const reversed = await this.ledger.reverseNote('received_note', note.id);
-    if (!reversed) {
+    const reversed = neverApplied ? true : await this.ledger.reverseNote('received_note', note.id);
+    if (!reversed && !neverApplied) {
       // Fallback cũ: hoàn tồn client-side trước khi xoá
       for (const item of note.items ?? []) {
         if (!item.product_id) continue;

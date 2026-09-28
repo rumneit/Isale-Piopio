@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
@@ -25,10 +25,12 @@ import {
 } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { saveOutline, closeOutline, downloadOutline, cubeOutline, addOutline, trashOutline, businessOutline } from 'ionicons/icons';
+import { saveOutline, closeOutline, downloadOutline, cubeOutline, addOutline, trashOutline, businessOutline, hourglassOutline } from 'ionicons/icons';
 import { ReceivedNotesService, ReceivedNoteItem } from '../../core/services/received-notes.service';
 import { ProductsService } from '../../core/services/products.service';
 import { SuppliersService, Supplier } from '../../core/services/suppliers.service';
+import { InventoryLedgerService, OpenReceiveNote } from '../../core/services/inventory-ledger.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Product } from '../../core/models/models';
 
 @Component({
@@ -64,9 +66,12 @@ export class ReceivedNoteAddPage implements OnInit {
   }
 
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private notesService = inject(ReceivedNotesService);
   private productsService = inject(ProductsService);
   private suppliersService = inject(SuppliersService);
+  private ledger = inject(InventoryLedgerService);
+  private auth = inject(AuthService);
   private toastCtrl = inject(ToastController);
   private alertCtrl = inject(AlertController);
 
@@ -83,8 +88,22 @@ export class ReceivedNoteAddPage implements OnInit {
   note = '';
   error = '';
 
+  /** Bật "đặt trước, nhận một phần": hiện cột Số đặt (qty_ordered) — v29. */
+  preorder = false;
+  /** Phiếu gốc khi "Nhập tiếp phần thiếu" (query ?continue=<rootId>). */
+  continueRoot: OpenReceiveNote | null = null;
+
+  /** Người dùng hiện tại có quyền duyệt phiếu nhập? */
+  get canApprove(): boolean {
+    return this.auth.can('inventory_approve');
+  }
+
+  get showQtyOrdered(): boolean {
+    return this.preorder || this.continueRoot !== null;
+  }
+
   constructor() {
-    addIcons({ saveOutline, closeOutline, downloadOutline, cubeOutline, addOutline, trashOutline, businessOutline });
+    addIcons({ saveOutline, closeOutline, downloadOutline, cubeOutline, addOutline, trashOutline, businessOutline, hourglassOutline });
   }
 
   async ngOnInit(): Promise<void> {
@@ -97,6 +116,43 @@ export class ReceivedNoteAddPage implements OnInit {
       this.suppliers.set(await this.suppliersService.list());
     } catch (e: any) {
       console.warn('load suppliers failed (v28 chưa chạy?)', e);
+    }
+    const continueId = this.route.snapshot?.queryParamMap?.get('continue');
+    if (continueId) await this.loadContinueRoot(continueId);
+  }
+
+  /** Prefill form từ phần còn thiếu của phiếu gốc (v29 — "Nhập tiếp"). */
+  private async loadContinueRoot(rootId: string) {
+    try {
+      const opens = await this.ledger.openReceiveNotes();
+      const root = opens?.find((o) => o.root_id === rootId) ?? null;
+      if (!root) {
+        this.error = 'Không tìm thấy phần còn thiếu của phiếu này (có thể đã nhận đủ hàng).';
+        return;
+      }
+      this.continueRoot = root;
+      this.preorder = false; // qty_ordered luôn = phần thiếu, không cần toggle
+      this.items.set(
+        root.outstanding_items.map((o) => ({
+          product_id: o.product_id,
+          name: o.name,
+          qty: o.outstanding,          // mặc định nhận đủ phần thiếu (sửa được)
+          cost: Number(o.cost ?? 0),
+          qty_ordered: o.outstanding,  // số đặt = phần thiếu của chuỗi
+        }))
+      );
+      // Áp dụng thanh toán như phiếu mới (mặc định trả đủ phần này)
+      this.paid = true;
+      this.paidAmount = 0;
+      if (root.supplier_id && this.suppliers().some((s) => s.id === root.supplier_id)) {
+        this.supplierId = root.supplier_id;
+      } else if (root.supplier_name) {
+        this.supplierManual = root.supplier_name;
+      }
+      this.note = `Nhập tiếp phần thiếu ${root.root_code}`;
+    } catch (e: any) {
+      console.error('load continue root failed', e);
+      this.error = 'Không tải được phần còn thiếu của phiếu gốc.';
     }
   }
 
@@ -161,12 +217,14 @@ export class ReceivedNoteAddPage implements OnInit {
     const existing = current.find((i) => i.product_id === productId);
     if (existing) {
       existing.qty += 1;
+      if (existing.qty_ordered != null) existing.qty_ordered += 1;
     } else {
       current.push({
         product_id: productId,
         name: product.name,
         qty: 1,
         cost: Number(product.cost ?? product.price ?? 0),
+        qty_ordered: this.showQtyOrdered ? 1 : undefined,
       });
     }
     this.items.set(current);
@@ -197,6 +255,12 @@ export class ReceivedNoteAddPage implements OnInit {
     this.busy.set(true);
     try {
       const sup = this.selectedSupplier;
+      // Gửi qty_ordered khi bật "đặt trước" hoặc đang nhập tiếp phần thiếu — v29
+      const payloadItems: ReceivedNoteItem[] = this.items().map((i) =>
+        this.showQtyOrdered && i.qty_ordered != null && Number(i.qty_ordered) > 0
+          ? { ...i, qty: Number(i.qty), qty_ordered: Number(i.qty_ordered) }
+          : { ...i, qty: Number(i.qty) }
+      );
       const created = await this.notesService.create(
         {
           supplier_name: sup?.name ?? this.supplierManual.trim() ?? null,
@@ -205,14 +269,18 @@ export class ReceivedNoteAddPage implements OnInit {
           paid_amount: this.effectivePaid,
           due_date: this.dueDate || null,
           note: this.note.trim() || null,
+          parent_id: this.continueRoot?.root_id ?? null,
         },
-        this.items()
+        payloadItems
       );
-      const debtNote = created.total > this.effectivePaid && sup ? ` — còn nợ ${this.formatMoney(created.total - this.effectivePaid)}` : '';
       const t = await this.toastCtrl.create({
-        message: `Đã nhập hàng ${created.code} — tồn kho đã cập nhật${debtNote}`,
-        duration: 2200,
-        color: 'success',
+        message: created.status === 'pending'
+          ? `Đã gửi ${created.code} — chờ chủ shop duyệt, chưa ghi tồn kho`
+          : created.status === 'partial'
+            ? `Đã nhập ${created.code} (thiếu hàng) — xem "Chờ nhập thêm"`
+            : `Đã nhập hàng ${created.code} — tồn kho đã cập nhật`,
+        duration: 2400,
+        color: created.status === 'pending' ? 'warning' : 'success',
         position: 'bottom',
       });
       await t.present();

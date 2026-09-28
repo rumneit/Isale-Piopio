@@ -8,7 +8,7 @@
         <ion-icon slot="icon-only" name="home-outline" />
       </ion-button>
     </ion-buttons>
-    <ion-title>Nhập hàng</ion-title>
+    <ion-title>{{ continueRoot ? 'Nhập tiếp phần thiếu' : 'Nhập hàng' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="save()" [disabled]="busy()">
         @if (busy()) {
@@ -25,6 +25,19 @@
   <div class="app-page-container">
     @if (error) {
       <div class="form-error">{{ error }}</div>
+    }
+
+    @if (!canApprove) {
+      <div class="app-card pending-banner">
+        <ion-icon name="hourglass-outline" />
+        Bạn không có quyền duyệt phiếu nhập — phiếu sẽ ở trạng thái <strong>Chờ duyệt</strong> và chỉ ghi tồn kho sau khi chủ shop duyệt.
+      </div>
+    }
+    @if (continueRoot; as root) {
+      <div class="app-card continue-banner">
+        <ion-icon name="cube-outline" />
+        Nhập tiếp cho phiếu <strong>{{ root.root_code }}</strong> — {{ root.outstanding_items.length }} sản phẩm còn thiếu (đã prefill, có thể sửa số nhận).
+      </div>
     }
 
     <div class="app-card">
@@ -61,6 +74,17 @@
     <div class="app-card">
       <div class="app-card-title"><h4><ion-icon name="cube-outline" /> Sản phẩm nhập</h4></div>
 
+      @if (!continueRoot) {
+        <ion-item lines="full">
+          <ion-toggle [(ngModel)]="preorder">
+            <ion-label>
+              Đặt trước, nhận một phần
+              <ion-note>{{ preorder ? 'Nhập số đặt — thiếu sẽ vào "Chờ nhập thêm"' : 'Nhận đủ ngay khi nhập' }}</ion-note>
+            </ion-label>
+          </ion-toggle>
+        </ion-item>
+      }
+
       <ion-item lines="full">
         <ion-select placeholder="+ Chọn sản phẩm để nhập" (ionChange)="addProduct($any($event))" interface="action-sheet" cancelText="Đóng">
           @for (p of products(); track p.id) {
@@ -76,6 +100,12 @@
           @for (item of items(); track $index; let i = $index) {
             <div class="draft-item">
               <div class="draft-item-name">{{ item.name }}</div>
+              @if (showQtyOrdered) {
+                <div class="draft-item-row">
+                  <ion-input class="draft-qty" type="number" min="1" [placeholder]="'Số đặt'" [(ngModel)]="items()[i].qty_ordered" />
+                  <ion-note class="draft-ordered-note">số đặt</ion-note>
+                </div>
+              }
               <div class="draft-item-row">
                 <ion-input class="draft-qty" type="number" min="1" [(ngModel)]="items()[i].qty" />
                 <span class="draft-x">×</span>
@@ -132,7 +162,7 @@
 
     <ion-button expand="block" size="large" (click)="save()" [disabled]="busy()">
       <ion-icon slot="start" name="download-outline" />
-      Lưu phiếu nhập
+      {{ continueRoot ? 'Lưu phiếu nhập tiếp' : 'Lưu phiếu nhập' }}
     </ion-button>
   </div>
 </ion-content>

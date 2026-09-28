@@ -78,3 +78,38 @@ ion-item {
     color: var(--ion-color-tertiary);
   }
 }
+
+.pending-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ion-color-warning-shade);
+  background: var(--ion-color-warning-tint);
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 20px;
+    margin-top: 2px;
+  }
+}
+
+.continue-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ion-color-tertiary-shade);
+  background: var(--ion-color-tertiary-tint);
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 20px;
+    margin-top: 2px;
+  }
+}
+
+.draft-ordered-note {
+  flex-shrink: 0;
+  font-size: 11px;
+}
