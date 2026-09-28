@@ -315,3 +315,100 @@ export interface StockCount {
   created_at: string;
   completed_at: string | null;
 }
+
+// ============ Báo cáo & Biểu đồ v26 (server-side RPC) ============
+
+/** Tổng hợp 1 cửa sổ thời gian (report_kpis → current/prev/yoy). */
+export interface ReportWindowTotals {
+  from: string;
+  to: string;
+  revenue: number;
+  orders: number;
+  discount: number;
+  paid_total: number;
+  unpaid_orders: number;
+  cogs: number;
+  profit: number;
+  income: number;
+  expense: number;
+  returns_total: number;
+  returns_count: number;
+}
+
+export interface ReportKpis {
+  current: ReportWindowTotals;
+  prev: ReportWindowTotals;
+  yoy: ReportWindowTotals;
+}
+
+/** 1 bucket của biểu đồ cột (report_timeseries). */
+export interface ReportPoint {
+  bucket: string;
+  revenue: number;
+  orders: number;
+  cogs: number;
+  profit: number;
+  income: number;
+  expense: number;
+}
+
+/** Hóa đơn drill-down trong 1 ngày (report_orders_day). */
+export interface ReportOrderRow {
+  id: string;
+  code: string;
+  customer_name: string | null;
+  status: string | null;
+  paid: boolean;
+  total: number;
+  discount: number;
+  created_at: string;
+  total_count: number;
+}
+
+export interface ReportTopProductRow {
+  product_id: string | null;
+  name: string | null;
+  unit: string | null;
+  qty: number;
+  revenue: number;
+  cogs: number;
+  profit: number;
+  orders: number;
+}
+
+export interface ReportTopCustomerRow {
+  customer_id: string | null;
+  name: string | null;
+  orders: number;
+  revenue: number;
+  last_order_at: string | null;
+}
+
+export interface ReportCohortRow {
+  cohort_month: string;
+  month_n: number;
+  buyers: number;
+  revenue: number;
+}
+
+export interface ReportInventoryRow {
+  product_id: string;
+  name: string;
+  sku: string | null;
+  unit: string | null;
+  stock_now: number;
+  sold: number;
+  returned: number;
+  received: number;
+  transferred: number;
+  est_start: number;
+}
+
+export interface ReportExportLog {
+  id: string;
+  kind: string;
+  params: Record<string, unknown>;
+  rows: number;
+  user_id: string;
+  created_at: string;
+}

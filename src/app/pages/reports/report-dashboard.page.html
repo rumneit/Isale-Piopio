@@ -1,0 +1,463 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Báo cáo</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="exportOrders()" [disabled]="exporting()" aria-label="Xuất CSV đơn hàng">
+        @if (exporting()) {
+          <ion-spinner name="dots" />
+        } @else {
+          <ion-icon slot="icon-only" name="download-outline" />
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="dash">
+    <!-- ===== Kỳ thời gian ===== -->
+    <div class="range-row">
+      @for (c of rangeChips; track c.id) {
+        <button
+          class="range-chip"
+          [class.active]="rangeMode() === c.id"
+          (click)="setMode(c.id)"
+          type="button"
+        >
+          {{ c.label }}
+        </button>
+      }
+    </div>
+
+    <div class="range-meta">
+      <span class="range-label">{{ rangeLabel() }}</span>
+      @if (isDrilled()) {
+        <ion-chip class="drill-chip" (click)="clearDrill()" outline="true">
+          <ion-icon name="close-circle-outline" />
+          <ion-label>Bỏ lọc chi tiết</ion-label>
+        </ion-chip>
+      }
+      @if (exportNote()) {
+        <span class="export-note">{{ exportNote() }}</span>
+      }
+    </div>
+
+    @if (loadError()) {
+      <div class="err-card">
+        <ion-icon name="information-circle-outline" />
+        <span>{{ loadError() }}</span>
+      </div>
+    }
+
+    <!-- ===== KPI ===== -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-name">Doanh thu</span>
+          <ion-icon name="cash-outline" />
+        </div>
+        @if (cur(); as c) {
+          <div class="kpi-value">{{ money(c.revenue) }} ₫</div>
+        } @else {
+          <ion-skeleton-text [animated]="true" style="width: 80%; height: 22px" />
+        }
+        <div class="kpi-deltas">
+          <span class="delta" [class.up]="(delta('revenue', 'prev') ?? 0) >= 0" [class.down]="(delta('revenue', 'prev') ?? 0) < 0">
+            {{ deltaText(delta('revenue', 'prev')) }} <small>kỳ trước</small>
+          </span>
+          <span class="delta" [class.up]="(delta('revenue', 'yoy') ?? 0) >= 0" [class.down]="(delta('revenue', 'yoy') ?? 0) < 0">
+            {{ deltaText(delta('revenue', 'yoy')) }} <small>năm trước</small>
+          </span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-name">Lợi nhuận</span>
+          <ion-icon name="trending-up-outline" />
+        </div>
+        @if (cur(); as c) {
+          <div class="kpi-value">{{ money(c.profit) }} ₫</div>
+        } @else {
+          <ion-skeleton-text [animated]="true" style="width: 80%; height: 22px" />
+        }
+        <div class="kpi-deltas">
+          <span class="delta" [class.up]="(delta('profit', 'prev') ?? 0) >= 0" [class.down]="(delta('profit', 'prev') ?? 0) < 0">
+            {{ deltaText(delta('profit', 'prev')) }} <small>kỳ trước</small>
+          </span>
+          <span class="delta small-note">theo giá vốn hiện tại</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-name">Số đơn</span>
+          <ion-icon name="receipt-outline" />
+        </div>
+        @if (cur(); as c) {
+          <div class="kpi-value">{{ money(c.orders) }}</div>
+        } @else {
+          <ion-skeleton-text [animated]="true" style="width: 60%; height: 22px" />
+        }
+        <div class="kpi-deltas">
+          <span class="delta" [class.up]="(delta('orders', 'prev') ?? 0) >= 0" [class.down]="(delta('orders', 'prev') ?? 0) < 0">
+            {{ deltaText(delta('orders', 'prev')) }} <small>kỳ trước</small>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    @if (cur(); as c) {
+      <div class="mini-stats">
+        <span><b>{{ money(c.income) }}</b> thu</span>
+        <span><b>{{ money(c.expense) }}</b> chi</span>
+        <span><b>{{ money(c.returns_total) }}</b> hoàn ({{ c.returns_count }})</span>
+        <span><b>{{ money(c.unpaid_orders) }}</b> đơn chưa thu</span>
+      </div>
+    }
+
+    <!-- ===== Biểu đồ ===== -->
+    <div class="card chart-card">
+      <div class="card-head">
+        <h2>Biểu đồ</h2>
+        <ion-segment
+          class="mini-seg"
+          [value]="chartMetric()"
+          (ionChange)="chartMetric.set($any($event.detail.value))"
+          mode="ios"
+        >
+          <ion-segment-button value="revenue"><ion-label>Doanh thu</ion-label></ion-segment-button>
+          <ion-segment-button value="profit"><ion-label>Lợi nhuận</ion-label></ion-segment-button>
+        </ion-segment>
+        <ion-segment
+          class="mini-seg"
+          [value]="grain()"
+          (ionChange)="setGrain($any($event.detail.value))"
+          mode="ios"
+        >
+          <ion-segment-button value="day"><ion-label>Ngày</ion-label></ion-segment-button>
+          <ion-segment-button value="month"><ion-label>Tháng</ion-label></ion-segment-button>
+        </ion-segment>
+      </div>
+      @if (loading() && !series().length) {
+        <div class="chart-loading"><ion-spinner name="crescent" /></div>
+      } @else {
+        <app-report-chart
+          [points]="chartPoints()"
+          [selected]="selectedBucket()"
+          (bucketPick)="onBucketPick($event)"
+        />
+        <p class="chart-hint">
+          @if (grain() === 'month') {
+            Chạm vào cột tháng để xem chi tiết theo ngày
+          } @else {
+            Chạm vào cột ngày để xem hóa đơn
+          }
+        </p>
+      }
+    </div>
+
+    <!-- ===== Top ===== -->
+    <div class="card">
+      <div class="card-head">
+        <h2>Top trong kỳ</h2>
+      </div>
+      <ion-segment
+        class="mini-seg top-seg"
+        [value]="topTab()"
+        (ionChange)="topTab.set($any($event.detail.value))"
+        mode="ios"
+      >
+        <ion-segment-button value="product"><ion-label>Sản phẩm</ion-label></ion-segment-button>
+        <ion-segment-button value="customer"><ion-label>Khách hàng</ion-label></ion-segment-button>
+        <ion-segment-button value="staff"><ion-label>Nhân viên</ion-label></ion-segment-button>
+      </ion-segment>
+
+      @switch (topTab()) {
+        @case ('product') {
+          @if (topProducts().length) {
+            <div class="lb-list">
+              @for (r of topProducts(); track r.product_id; let i = $index) {
+                <div class="lb-row">
+                  <span class="lb-rank">{{ i + 1 }}</span>
+                  <div class="lb-main">
+                    <span class="lb-name">{{ r.name || '(Không tên)' }}</span>
+                    <span class="lb-sub">{{ money(r.qty) }} {{ r.unit || 'sp' }} · {{ r.orders }} đơn</span>
+                  </div>
+                  <div class="lb-right">
+                    <span class="lb-value">{{ money(r.revenue) }} ₫</span>
+                    <span class="lb-sub">LN {{ money(r.profit) }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+            <ion-button fill="clear" size="small" (click)="exportTopProducts()">
+              <ion-icon slot="start" name="download-outline" />
+              Xuất CSV
+            </ion-button>
+          } @else {
+            <p class="empty">Chưa có sản phẩm nào bán trong kỳ</p>
+          }
+        }
+        @case ('customer') {
+          @if (topCustomers().length) {
+            <div class="lb-list">
+              @for (r of topCustomers(); track r.customer_id; let i = $index) {
+                <div class="lb-row">
+                  <span class="lb-rank">{{ i + 1 }}</span>
+                  <div class="lb-main">
+                    <span class="lb-name">{{ r.name || 'Khách lẻ' }}</span>
+                    <span class="lb-sub">{{ r.orders }} đơn</span>
+                  </div>
+                  <div class="lb-right">
+                    <span class="lb-value">{{ money(r.revenue) }} ₫</span>
+                  </div>
+                </div>
+              }
+            </div>
+            <ion-button fill="clear" size="small" (click)="exportTopCustomers()">
+              <ion-icon slot="start" name="download-outline" />
+              Xuất CSV
+            </ion-button>
+          } @else {
+            <p class="empty">Chưa có khách hàng nào mua trong kỳ</p>
+          }
+        }
+        @case ('staff') {
+          <div class="empty staff-empty">
+            <ion-icon name="information-circle-outline" />
+            <p>
+              Chưa có doanh thu theo nhân viên: schema hiện tại chưa lưu
+              <code>staff_id</code> trên đơn hàng (chỉ có trên ca làm việc).
+              Cần bổ sung chọn NV khi bán hàng — đã ghi backlog.
+            </p>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- ===== Tồn kho biến chuyển ===== -->
+    <div class="card">
+      <div class="card-head">
+        <h2>Tồn kho biến chuyển</h2>
+        <ion-button fill="clear" size="small" (click)="exportInventory()" [disabled]="!inventoryRows().length">
+          <ion-icon slot="start" name="download-outline" />
+          CSV
+        </ion-button>
+      </div>
+      <p class="inv-note">
+        Tồn đầu kỳ là <b>ước tính</b> từ tồn hiện tại − nhập + bán − hoàn + chuyển (schema snapshot tồn
+        kho, kiểm kho tay sẽ làm lệch).
+      </p>
+      @if (inventoryRows().length) {
+        <div class="inv-scroll">
+          <table class="inv-table">
+            <thead>
+              <tr>
+                <th>Sản phẩm</th>
+                <th class="num">Tồn đầu¹</th>
+                <th class="num">Nhập</th>
+                <th class="num">Bán</th>
+                <th class="num">Hoàn</th>
+                <th class="num">Chuyển</th>
+                <th class="num">Tồn cuối</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of inventoryRows().slice(0, inventoryShown()); track r.product_id) {
+                <tr>
+                  <td class="inv-name">
+                    {{ r.name }}
+                    @if (r.sku) { <span class="inv-sku">{{ r.sku }}</span> }
+                  </td>
+                  <td class="num">{{ money(r.est_start) }}</td>
+                  <td class="num pos">{{ r.received ? money(r.received) : '·' }}</td>
+                  <td class="num">{{ r.sold ? money(r.sold) : '·' }}</td>
+                  <td class="num pos">{{ r.returned ? money(r.returned) : '·' }}</td>
+                  <td class="num neg">{{ r.transferred ? money(r.transferred) : '·' }}</td>
+                  <td class="num"><b>{{ money(r.stock_now) }}</b></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (inventoryShown() < inventoryRows().length) {
+          <ion-button fill="clear" size="small" (click)="inventoryShown.set(inventoryShown() + 30)">
+            Xem thêm ({{ inventoryRows().length - inventoryShown() }} SP)
+          </ion-button>
+        }
+      } @else {
+        <p class="empty">Không có phát sinh tồn kho trong kỳ</p>
+      }
+    </div>
+
+    <!-- ===== Cohort giữ chân khách (P2) ===== -->
+    <div class="card">
+      <div class="card-head">
+        <h2>Giữ chân khách theo tháng</h2>
+        <ion-segment
+          class="mini-seg"
+          [value]="cohortMode()"
+          (ionChange)="cohortMode.set($any($event.detail.value))"
+          mode="ios"
+        >
+          <ion-segment-button value="pct"><ion-label>%</ion-label></ion-segment-button>
+          <ion-segment-button value="gmv"><ion-label>GMV</ion-label></ion-segment-button>
+        </ion-segment>
+      </div>
+      @if (cohortGrid(); as g) {
+        <div class="cohort-scroll">
+          <table class="cohort-table">
+            <thead>
+              <tr>
+                <th>Tháng</th>
+                <th class="num">Size</th>
+                @for (n of g.months; track n) {
+                  <th class="num">M{{ n }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of g.rows; track row.cohort) {
+                <tr>
+                  <td class="cohort-lab">{{ row.label }}</td>
+                  <td class="num cohort-size">{{ row.size }}</td>
+                  @for (cell of row.cells; track cell.n) {
+                    <td
+                      class="num cohort-cell"
+                      [class.future]="cell.future"
+                      [style.background]="cell.future ? '' : cohortCellBg(cell.pct, cell.gmv)"
+                      [style.color]="!cell.future && (cell.pct >= 0.55 || (cohortMode() === 'gmv' && cell.gmv > g.maxGmv * 0.55)) ? '#fff' : ''"
+                    >
+                      {{ cohortCellText(cell) }}
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="inv-note">Hàng = tháng khách mua lần đầu; cột M n = n tháng sau. Chỉ tính đơn có lưu khách hàng.</p>
+      } @else {
+        <p class="empty">Chưa đủ dữ liệu khách hàng để dựng cohort</p>
+      }
+    </div>
+
+    <!-- ===== Hub: tất cả báo cáo ===== -->
+    <div class="hub">
+      <h2 class="hub-title">Tất cả báo cáo</h2>
+      @for (g of hubGroups; track g.title) {
+        <div class="card hub-card">
+          <h3>{{ g.title }}</h3>
+          <ion-list lines="none">
+            @for (it of g.items; track it.path) {
+              <ion-item button detail="true" (click)="openHub(it.path)">
+                <ion-icon slot="start" name="{{ it.icon }}" />
+                <ion-label class="ion-text-wrap">{{ it.label }}</ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ===== Sheet hóa đơn trong ngày ===== -->
+  <ion-modal
+    [isOpen]="sheetOpen()"
+    [initialBreakpoint]="0.6"
+    [breakpoints]="[0, 0.6, 0.9]"
+    (didDismiss)="sheetOpen.set(false)"
+  >
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>
+            Hóa đơn {{ sheetDate() ? vnDate(sheetDate()!) : '' }}
+            @if (sheetTotal()) { ({{ sheetTotal() }}) }
+          </ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="sheetOpen.set(false)">
+              <ion-icon slot="icon-only" name="close-circle-outline" />
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-list lines="full">
+          @for (o of sheetRows(); track o.id) {
+            <ion-item button (click)="openOrder(o.id)">
+              <div class="ord-row" slot="start">
+                <span class="ord-code">{{ o.code }}</span>
+                <span class="ord-cust">{{ o.customer_name || 'Khách lẻ' }}</span>
+              </div>
+              <div class="ord-end" slot="end">
+                <span class="ord-total">{{ money(o.total) }} ₫</span>
+                <div class="ord-meta">
+                  <ion-badge [color]="statusColor(o.status)">{{ statusLabelOf(o.status) }}</ion-badge>
+                  <small>{{ o.paid ? 'Đã thu' : 'Chưa thu' }}</small>
+                </div>
+              </div>
+            </ion-item>
+          } @empty {
+            <div class="empty sheet-empty">
+              @if (sheetLoading()) { <ion-spinner name="crescent" /> }
+              @else { Không có hóa đơn nào trong ngày này }
+            </div>
+          }
+        </ion-list>
+        @if (sheetRows().length < sheetTotal()) {
+          <ion-button expand="block" fill="clear" (click)="sheetLoadMore()" [disabled]="sheetLoading()">
+            Xem thêm ({{ sheetTotal() - sheetRows().length }})
+          </ion-button>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- ===== Modal tùy chọn kỳ ===== -->
+  <ion-modal [isOpen]="customOpen()" [breakpoints]="[0, 0.75]" [initialBreakpoint]="0.75" (didDismiss)="customCancel()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Chọn khoảng ngày</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="customCancel()">Đóng</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <div class="pick-grid">
+          <div class="pick-col">
+            <ion-note>Từ ngày</ion-note>
+            <ion-datetime
+              presentation="date"
+              locale="vi-VN"
+              [max]="todayStr"
+              [value]="pickerFrom()"
+              (ionChange)="pickerFrom.set($any($event.detail.value))"
+            />
+          </div>
+          <div class="pick-col">
+            <ion-note>Đến ngày</ion-note>
+            <ion-datetime
+              presentation="date"
+              locale="vi-VN"
+              [max]="todayStr"
+              [value]="pickerTo()"
+              (ionChange)="pickerTo.set($any($event.detail.value))"
+            />
+          </div>
+        </div>
+        <ion-button expand="block" (click)="customApply()">Áp dụng</ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

@@ -91,7 +91,7 @@ export const routes: Routes = [
   // Notifications
   { path: 'notifications', loadComponent: () => import('./pages/notifications/notifications.page').then((m) => m.NotificationsPage), canActivate: [authGuard] },
   // Reports
-  { path: 'report', loadComponent: () => import('./pages/reports/reports.page').then((m) => m.ReportsPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'report', loadComponent: () => import('./pages/reports/report-dashboard.page').then((m) => m.ReportDashboardPage), canActivate: [authGuard, permissionGuard] },
   { path: 'report/chart', loadComponent: () => import('./pages/reports/report-chart.page').then((m) => m.ReportChartPage), canActivate: [authGuard, permissionGuard] },
   { path: 'report/orders', loadComponent: () => import('./pages/reports/report-orders.page').then((m) => m.ReportOrdersPage), canActivate: [authGuard, permissionGuard] },
   { path: 'report/customer', loadComponent: () => import('./pages/reports/report-customer.page').then((m) => m.ReportCustomerPage), canActivate: [authGuard, permissionGuard] },
