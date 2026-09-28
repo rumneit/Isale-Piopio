@@ -7,15 +7,17 @@ import { IonButton,
   IonNote, IonRefresher, IonRefresherContent,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, arrowRedoOutline } from 'ionicons/icons';
+import { addOutline, arrowRedoOutline, timeOutline, checkmarkCircleOutline } from 'ionicons/icons';
 import { ShopTableService } from '../../core/services/shop-table.service';
 
 interface Transfer {
   id: string;
   code: string;
   destination: string | null;
-  items: Array<{ product_id: string | null; name: string; qty: number }>;
+  items: Array<{ product_id: string | null; name: string; qty: number; qty_received?: number }>;
   note: string | null;
+  status?: string; // v28: in_transit | completed (legacy mặc định completed)
+  received_at?: string | null;
   created_at: string;
 }
 
@@ -55,8 +57,8 @@ interface Transfer {
           <div class="app-card">
             <ion-list lines="full">
               @for (t of items(); track t.id) {
-                <ion-item>
-                  <ion-icon slot="start" name="arrow-redo-outline" color="primary" />
+                <ion-item [button]="t.status === 'in_transit'" (click)="t.status === 'in_transit' && openReceive(t)">
+                  <ion-icon slot="start" [name]="t.status === 'in_transit' ? 'time-outline' : 'checkmark-circle-outline'" [color]="t.status === 'in_transit' ? 'warning' : 'success'" />
                   <ion-label>
                     <h3>{{ t.code }}</h3>
                     <p>
@@ -64,12 +66,16 @@ interface Transfer {
                       {{ t.created_at | date: 'dd/MM HH:mm' }}
                     </p>
                   </ion-label>
-                  <ion-badge slot="end" color="primary">{{ totalQty(t) }} SP</ion-badge>
+                  @if (t.status === 'in_transit') {
+                    <ion-badge slot="end" color="warning">Đang đi</ion-badge>
+                  } @else {
+                    <ion-badge slot="end" color="primary">{{ totalQty(t) }} SP</ion-badge>
+                  }
                 </ion-item>
               }
             </ion-list>
           </div>
-          <ion-note class="page-hint">Phiếu chuyển làm giảm tồn kho của cửa hàng</ion-note>
+          <ion-note class="page-hint">Phiếu chuyển làm giảm tồn kho · Phiếu "Đang đi": nhấn để nhận hàng &amp; đối soát hao hụt</ion-note>
         }
       </div>
 
@@ -101,7 +107,7 @@ export class TransfersPage implements OnInit {
   search = '';
 
   constructor() {
-    addIcons({ addOutline, arrowRedoOutline });
+    addIcons({ addOutline, arrowRedoOutline, timeOutline, checkmarkCircleOutline });
   }
 
   ngOnInit(): void { this.load(); }
@@ -134,5 +140,9 @@ export class TransfersPage implements OnInit {
 
   openAdd() {
     this.router.navigateByUrl('/transfer/add');
+  }
+
+  openReceive(t: Transfer) {
+    this.router.navigateByUrl('/transfer/receive/' + t.id);
   }
 }

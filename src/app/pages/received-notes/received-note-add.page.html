@@ -29,9 +29,32 @@
 
     <div class="app-card">
       <ion-list lines="full">
-        <ion-item>
-          <ion-input label="Nhà cung cấp" labelPlacement="stacked" placeholder="VD: Công ty trà sữa ABC" [(ngModel)]="supplier" />
-        </ion-item>
+        @if (suppliers().length > 0 || supplierId === 'manual') {
+          <ion-item>
+            <ion-select label="Nhà cung cấp" labelPlacement="stacked" placeholder="Chọn NCC (hoặc nhập tay)" [(ngModel)]="supplierId" interface="action-sheet" cancelText="Đóng">
+              @for (s of suppliers(); track s.id) {
+                <ion-select-option [value]="s.id">{{ s.name }}{{ s.phone ? ' · ' + s.phone : '' }}</ion-select-option>
+              }
+              <ion-select-option value="manual">✏️ Nhập tên không lưu NCC…</ion-select-option>
+            </ion-select>
+            <ion-button slot="end" fill="clear" size="small" (click)="quickAddSupplier()">
+              <ion-icon slot="icon-only" name="add-outline" />
+            </ion-button>
+          </ion-item>
+        } @else {
+          <ion-item>
+            <ion-input label="Nhà cung cấp" labelPlacement="stacked" placeholder="VD: Công ty trà sữa ABC" [(ngModel)]="supplierManual" />
+            <ion-button slot="end" fill="clear" size="small" (click)="quickAddSupplier()">
+              <ion-icon slot="start" name="business-outline" />
+              Lưu NCC
+            </ion-button>
+          </ion-item>
+        }
+        @if (supplierId === 'manual') {
+          <ion-item>
+            <ion-input label="Tên NCC (tự do)" labelPlacement="stacked" placeholder="VD: Công ty trà sữa ABC" [(ngModel)]="supplierManual" />
+          </ion-item>
+        }
       </ion-list>
     </div>
 
@@ -73,11 +96,23 @@
         <ion-item>
           <ion-toggle [(ngModel)]="paid">
             <ion-label>
-              Đã trả tiền nhà cung cấp
-              <ion-note>Tự tạo giao dịch chi "Nhập hàng"</ion-note>
+              Đã trả đủ tiền nhà cung cấp
+              <ion-note>{{ paid ? 'Tự tạo giao dịch chi toàn bộ' : 'Ghi nợ phần chưa trả' }}</ion-note>
             </ion-label>
           </ion-toggle>
         </ion-item>
+        @if (!paid) {
+          <ion-item>
+            <ion-input label="Đã trả trước" labelPlacement="stacked" type="number" min="0" [max]="total" [(ngModel)]="paidAmount" placeholder="0 — trả hết sau" />
+            <ion-note slot="end">/ {{ formatMoney(total) }}</ion-note>
+          </ion-item>
+          <ion-item>
+            <ion-input label="Hạn thanh toán" labelPlacement="stacked" type="date" [(ngModel)]="dueDate" />
+          </ion-item>
+          <ion-item lines="none">
+            <ion-note color="medium">Phần chưa trả ({{ formatMoney(total - effectivePaid) }}) được ghi vào Công nợ NCC nếu đã chọn NCC.</ion-note>
+          </ion-item>
+        }
         <ion-item>
           <ion-input label="Ghi chú" labelPlacement="floating" [(ngModel)]="note" />
         </ion-item>
@@ -88,6 +123,12 @@
       <span>Tổng tiền nhập</span>
       <strong>{{ formatMoney(total) }}</strong>
     </div>
+    @if (!paid) {
+      <div class="total-box" style="margin-top: 4px;">
+        <span>Trả trước / Còn nợ</span>
+        <strong>{{ formatMoney(effectivePaid) }} / {{ formatMoney(total - effectivePaid) }}</strong>
+      </div>
+    }
 
     <ion-button expand="block" size="large" (click)="save()" [disabled]="busy()">
       <ion-icon slot="start" name="download-outline" />

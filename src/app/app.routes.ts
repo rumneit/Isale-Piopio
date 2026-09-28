@@ -59,6 +59,11 @@ export const routes: Routes = [
   // Received notes (nhập hàng)
   { path: 'received-note', loadComponent: () => import('./pages/received-notes/received-notes.page').then((m) => m.ReceivedNotesPage), canActivate: [authGuard, permissionGuard] },
   { path: 'received-note/add', loadComponent: () => import('./pages/received-notes/received-note-add.page').then((m) => m.ReceivedNoteAddPage), canActivate: [authGuard, permissionGuard] },
+  // Suppliers + công nợ NCC (v28)
+  { path: 'suppliers', loadComponent: () => import('./pages/suppliers/suppliers.page').then((m) => m.SuppliersPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'supplier-debts', loadComponent: () => import('./pages/suppliers/supplier-debts.page').then((m) => m.SupplierDebtsPage), canActivate: [authGuard, permissionGuard] },
+  // Nhận hàng phiếu chuyển in-transit (v28)
+  { path: 'transfer/receive/:id', loadComponent: () => import('./pages/transfers/transfer-receive.page').then((m) => m.TransferReceivePage), canActivate: [authGuard, permissionGuard] },
   // Delivery
   { path: 'delivery', loadComponent: () => import('./pages/delivery/delivery.page').then((m) => m.DeliveryPage), canActivate: [authGuard, permissionGuard] },
   // Quotes

@@ -1,0 +1,68 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Công nợ NCC</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="load()">
+        <ion-icon slot="icon-only" name="sync-outline" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="filter()" (ionChange)="onFilter($any($event))">
+      <ion-segment-button value="all">Tất cả</ion-segment-button>
+      <ion-segment-button value="overdue">Quá hạn @if (overdueCount() > 0) { ({{ overdueCount() }}) }</ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (totalRemaining() > 0) {
+      <div class="total-box" style="margin-bottom: 8px;">
+        <span>Còn phải trả (đang lọc)</span>
+        <strong style="color: var(--ion-color-danger);">{{ formatMoney(totalRemaining()) }}</strong>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (filtered().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="checkmark-circle-outline" /></div>
+        Không có khoản nợ NCC nào. Nhập hàng chưa trả đủ sẽ tự động ghi vào đây.
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (d of filtered(); track d.id) {
+            <ion-item>
+              <ion-icon slot="start" [name]="isOverdue(d) ? 'alert-circle-outline' : 'business-outline'" [color]="isOverdue(d) ? 'danger' : 'medium'" />
+              <ion-label>
+                <h3>{{ d.supplier_name }} — {{ formatMoney(d.remaining) }}</h3>
+                <p>{{ d.received_code ?? 'Nhập tay' }} · Đã trả {{ formatMoney(d.paid_amount) }}/{{ formatMoney(d.amount) }} · {{ dueLabel(d) }}</p>
+              </ion-label>
+              <ion-button slot="end" fill="clear" size="small" aria-label="Lịch sử trả" (click)="openPayments(d, $event)">
+                <ion-icon slot="icon-only" name="time-outline" />
+              </ion-button>
+              <ion-button slot="end" size="small" (click)="pay(d)">
+                <ion-icon slot="start" name="cash-outline" />
+                Trả
+              </ion-button>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">Mỗi lần trả tự tạo giao dịch chi "Trả NCC" (không sửa/xóa được) · Migration v28</ion-note>
+    }
+  </div>
+</ion-content>

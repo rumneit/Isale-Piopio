@@ -22,6 +22,9 @@ export interface ReceivedNote {
   paid: boolean;
   note: string | null;
   created_at: string;
+  supplier_id?: string | null;
+  paid_amount?: number;
+  due_date?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -64,7 +67,14 @@ export class ReceivedNotesService {
   }
 
   async create(
-    input: { supplier_name: string | null; paid: boolean; note: string | null },
+    input: {
+      supplier_name: string | null;
+      paid: boolean;
+      note: string | null;
+      supplier_id?: string | null;
+      paid_amount?: number;
+      due_date?: string | null;
+    },
     items: ReceivedNoteItem[]
   ): Promise<ReceivedNote> {
     const shopId = this.shopId;
@@ -72,17 +82,30 @@ export class ReceivedNotesService {
     if (!items.length) throw new Error('Phiếu nhập cần ít nhất một sản phẩm.');
 
     const total = items.reduce((s, i) => s + i.qty * i.cost, 0);
+    const paidAmount = Math.max(0, Math.min(Number(input.paid_amount ?? (input.paid ? total : 0)), total));
+
+    // Dò cột v28 (supplier_id/paid_amount/due_date) — chưa chạy migration thì gửi payload cũ
+    let row: Record<string, unknown> = {
+      shop_id: shopId,
+      code: this.newCode(),
+      supplier_name: input.supplier_name,
+      total,
+      items,
+      paid: input.paid,
+      note: input.note,
+    };
+    if (await this.detectDebtColumns()) {
+      row = {
+        ...row,
+        supplier_id: input.supplier_id ?? null,
+        paid_amount: paidAmount,
+        due_date: input.due_date || null,
+      };
+    }
+
     const { data, error } = await this.sb
       .from('received_notes')
-      .insert({
-        shop_id: shopId,
-        code: this.newCode(),
-        supplier_name: input.supplier_name,
-        total,
-        items,
-        paid: input.paid,
-        note: input.note,
-      })
+      .insert(row)
       .select()
       .single();
     if (error) throw error;
@@ -92,18 +115,54 @@ export class ReceivedNotesService {
     const applied = await this.ledger.applyNote('received_note', data.id, items);
     if (!applied) await this.legacyApplyStock(items);
 
-    // Ghi nhận chi tiền nếu đã trả nhà cung cấp
-    if (input.paid && total > 0) {
+    // Ghi nhận chi tiền phần ĐÃ TRẢ (toàn bộ nếu trả đủ, một phần nếu nợ)
+    if (paidAmount > 0) {
       await this.transactionsService.create({
         type: 'expense',
         category: 'Nhập hàng',
-        amount: total,
+        amount: paidAmount,
         note: `Nhập hàng ${data.code}${input.supplier_name ? ' — ' + input.supplier_name : ''}`,
         occurred_at: new Date().toISOString(),
       });
     }
 
+    // Công nợ NCC (AP) cho phần chưa trả — v28; chưa chạy migration thì bỏ qua
+    const remain = total - paidAmount;
+    if (input.supplier_id && remain > 0) {
+      try {
+        const { error: debtError } = await this.sb.from('supplier_debts').insert({
+          shop_id: shopId,
+          supplier_id: input.supplier_id,
+          received_note_id: data.id,
+          amount: remain,
+          paid_amount: 0,
+          due_date: input.due_date || null,
+          status: 'open',
+          note: `Nhập hàng ${data.code}`,
+          created_by: this.auth.displayName(),
+        });
+        if (debtError) throw debtError;
+      } catch (e: any) {
+        if (String(e?.code ?? '') === '42P01' || /relation .* does not exist|Could not find the table/i.test(String(e?.message))) {
+          console.warn('[debt] v28 chưa chạy — bỏ qua tạo công nợ NCC', e);
+        } else {
+          throw e;
+        }
+      }
+    }
+
     return data as ReceivedNote;
+  }
+
+  private debtColumnsPromise: Promise<boolean> | null = null;
+  /** Dò 1 lần (cache) xem received_notes đã có cột v28 chưa. */
+  private detectDebtColumns(): Promise<boolean> {
+    this.debtColumnsPromise ??= (async () => {
+      if (!this.sb.isConfigured) return false;
+      const { error } = await this.sb.from('received_notes').select('id, paid_amount, due_date, supplier_id').limit(1);
+      return !error;
+    })();
+    return this.debtColumnsPromise;
   }
 
   /** Đường cũ (chỉ dùng khi v27 chưa chạy): cộng tồn client-side từng dòng. */

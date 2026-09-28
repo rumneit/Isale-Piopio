@@ -166,6 +166,8 @@ export class HomePage implements OnInit {
       actions: [
         { id: 'products', label: 'Sản phẩm', icon: 'cart', color: '#e6bf00', path: '/product' },
         { id: 'received', label: 'Phiếu nhập kho', icon: 'clipboard', color: '#e6bf00', path: '/received-note' },
+        { id: 'suppliers', label: 'Nhà cung cấp', icon: 'business', color: '#00897b', path: '/suppliers' },
+        { id: 'supplier-debts', label: 'Công nợ NCC', icon: 'wallet-outline', color: '#e53935', path: '/supplier-debts' },
         { id: 'transfer', label: 'Phiếu chuyển kho', icon: 'arrow-redo', color: '#f88962', path: '/transfer' },
         { id: 'stock-check', label: 'Kiểm kê kho', icon: 'checkbox', color: '#184fc7', path: '/stock-check' },
         { id: 'category', label: 'Danh mục SP', icon: 'folder-open', color: '#ff7043', path: '/module/category' },

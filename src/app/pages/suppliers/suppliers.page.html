@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+      <ion-button (click)="openHome()">
+        <ion-icon slot="icon-only" name="home-outline" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Nhà cung cấp</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="addSupplier()">
+        <ion-icon slot="icon-only" name="add-outline" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Tìm theo tên hoặc số điện thoại" [debounce]="200" (ionInput)="onSearch($any($event))" />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="app-page-container">
+    @if (totalDebt() > 0) {
+      <div class="total-box" style="margin-bottom: 8px;">
+        <span>Tổng nợ phải trả NCC</span>
+        <strong style="color: var(--ion-color-danger);">{{ formatMoney(totalDebt()) }}</strong>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="page-loading"><ion-spinner name="crescent" /></div>
+    } @else if (filtered().length === 0) {
+      <div class="app-empty">
+        <div><ion-icon name="business-outline" /></div>
+        Chưa có nhà cung cấp nào. Nhấn + để thêm.
+      </div>
+    } @else {
+      <div class="app-card">
+        <ion-list lines="full">
+          @for (s of filtered(); track s.id) {
+            <ion-item button [detail]="debtOf(s.id).count > 0" (click)="debtOf(s.id).count > 0 && openDebts(s)">
+              <ion-icon slot="start" name="business-outline" [color]="debtOf(s.id).count > 0 ? 'danger' : 'medium'" />
+              <ion-label>
+                <h3>{{ s.name }}</h3>
+                <p>{{ s.phone ?? 'Chưa có SĐT' }}@if (s.note) { · {{ s.note }}}</p>
+              </ion-label>
+              @if (debtOf(s.id).count > 0) {
+                <ion-badge slot="end" color="danger">{{ formatMoney(debtOf(s.id).total) }}</ion-badge>
+              }
+              <ion-button slot="end" fill="clear" size="small" aria-label="Sửa NCC" (click)="editSupplier(s, $event)">
+                <ion-icon slot="icon-only" name="create-outline" />
+              </ion-button>
+              <ion-button slot="end" fill="clear" size="small" color="danger" aria-label="Xóa NCC" (click)="confirmDelete(s, $event)">
+                <ion-icon slot="icon-only" name="trash-outline" />
+              </ion-button>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+      <ion-note class="page-hint">NCC có nợ còn lại: nhấn để xem công nợ · Migration v28</ion-note>
+    }
+  </div>
+</ion-content>

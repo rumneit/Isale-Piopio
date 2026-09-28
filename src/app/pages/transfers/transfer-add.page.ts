@@ -192,11 +192,27 @@ export class TransferAddPage implements OnInit {
 
     this.busy.set(true);
     try {
-      const created = await this.svc.create<{ id: string; code: string }>('transfers', {
+      const payload = {
         code: this.svc.newCode('CH'),
         destination: this.destination.trim() || null,
-        items: this.items().map((i) => ({ product_id: i.product_id, name: i.name, qty: i.qty })),
         note: this.note.trim() || null,
+        items: this.items().map((i) => ({ product_id: i.product_id, name: i.name, qty: i.qty })),
+      };
+      // v28: 1 transaction — insert phiếu (in_transit) + trừ tồn nguồn qua ledger,
+      // chặn âm kho TRƯỚC khi tạo phiếu. Fallback: tạo phiếu rồi applyNote (v27)
+      // rồi trừ client-side (legacy).
+      const rpcId = await this.ledger.createTransfer(payload);
+      if (rpcId) {
+        this.toast('Đã tạo phiếu chuyển — hàng đang đi, tồn kho nguồn đã giảm');
+        this.router.navigateByUrl('/transfer', { replaceUrl: true });
+        return;
+      }
+
+      const created = await this.svc.create<{ id: string; code: string }>('transfers', {
+        code: payload.code,
+        destination: payload.destination,
+        items: payload.items,
+        note: payload.note,
       });
       // Giảm tồn kho QUA SỔ CÁI (v27): server khoá dòng SP + chặn âm kho +
       // idempotent. Fallback khi chưa chạy migration: trừ client-side (cũ).
