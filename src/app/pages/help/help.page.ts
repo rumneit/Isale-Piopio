@@ -30,7 +30,6 @@ import {
   restaurantOutline,
   cloudUploadOutline,
   linkOutline,
-  mailOutline,
   cardOutline,
 } from 'ionicons/icons';
 
@@ -130,14 +129,8 @@ export class HelpPage {
     {
       icon: 'link-outline',
       title: 'Tích hợp',
-      desc: 'Kết nối SePay, Zalo OA, SMS, Facebook Page, External API, AI bằng khóa API của bạn.',
+      desc: 'Kết nối SePay, Zalo OA, SMS, External API bằng khóa API của bạn.',
       path: '/integrations',
-    },
-    {
-      icon: 'mail-outline',
-      title: 'Hỗ trợ',
-      desc: 'Gửi yêu cầu hỗ trợ trực tiếp và đánh giá trải nghiệm PioPio.',
-      path: '/support',
     },
     {
       icon: 'document-text-outline',
@@ -164,7 +157,6 @@ export class HelpPage {
       restaurantOutline,
       cloudUploadOutline,
       linkOutline,
-      mailOutline,
       cardOutline,
     });
   }

@@ -91,7 +91,6 @@ export const routes: Routes = [
   { path: 'report/product', loadComponent: () => import('./pages/reports/report-product.page').then((m) => m.ReportProductPage), canActivate: [authGuard, permissionGuard] },
   { path: 'report/debt', loadComponent: () => import('./pages/reports/report-debt.page').then((m) => m.ReportDebtPage), canActivate: [authGuard, permissionGuard] },
   { path: 'integrations', loadComponent: () => import('./pages/integrations/integrations.page').then((m) => m.IntegrationsPage), canActivate: [authGuard] },
-  { path: 'support', loadComponent: () => import('./pages/support/support.page').then((m) => m.SupportPage), canActivate: [authGuard] },
   { path: 'org-chart', loadComponent: () => import('./pages/org-chart/org-chart.page').then((m) => m.OrgChartPage), canActivate: [authGuard] },
   // Notifications
   { path: 'notifications', loadComponent: () => import('./pages/notifications/notifications.page').then((m) => m.NotificationsPage), canActivate: [authGuard] },
@@ -115,14 +114,10 @@ export const routes: Routes = [
   { path: 'custom-table', loadComponent: () => import('./pages/custom-tables/custom-tables.page').then((m) => m.CustomTablesPage), canActivate: [authGuard] },
   { path: 'custom-table/:id', loadComponent: () => import('./pages/custom-tables/custom-table-detail.page').then((m) => m.CustomTableDetailPage), canActivate: [authGuard] },
   // Tích hợp theo nhà cung cấp
-  { path: 'fbpage', loadComponent: () => import('./pages/integrations/integration-config.page').then((m) => m.IntegrationConfigPage), canActivate: [authGuard], data: { provider: 'fbpage' } },
   { path: 'zbs-marketing', loadComponent: () => import('./pages/integrations/integration-config.page').then((m) => m.IntegrationConfigPage), canActivate: [authGuard], data: { provider: 'zbs' } },
   { path: 'sms-marketing', loadComponent: () => import('./pages/integrations/integration-config.page').then((m) => m.IntegrationConfigPage), canActivate: [authGuard], data: { provider: 'sms' } },
   { path: 'sepay-payment', loadComponent: () => import('./pages/integrations/integration-config.page').then((m) => m.IntegrationConfigPage), canActivate: [authGuard], data: { provider: 'sepay' } },
-  { path: 'ai-services', loadComponent: () => import('./pages/integrations/integration-config.page').then((m) => m.IntegrationConfigPage), canActivate: [authGuard], data: { provider: 'ai' } },
   { path: 'external-api', loadComponent: () => import('./pages/external-api/external-api.page').then((m) => m.ExternalApiPage), canActivate: [authGuard] },
-  { path: 'pricing', loadComponent: () => import('./pages/pricing/pricing.page').then((m) => m.PricingPage), canActivate: [authGuard] },
-  { path: 'request-pro', loadComponent: () => import('./pages/pricing/pricing.page').then((m) => m.PricingPage), canActivate: [authGuard] },
   // Stock check
   { path: 'stock-check', loadComponent: () => import('./pages/stock-check/stock-check.page').then((m) => m.StockCheckPage), canActivate: [authGuard, permissionGuard] },
   { path: 'stock-check/new', loadComponent: () => import('./pages/stock-check/stock-count-detail.page').then((m) => m.StockCountDetailPage), canActivate: [authGuard, permissionGuard] },
@@ -133,8 +128,6 @@ export const routes: Routes = [
   { path: 'shipping-partners', loadComponent: () => import('./pages/shipping-partners/shipping-partners.page').then((m) => m.ShippingPartnersPage), canActivate: [authGuard, permissionGuard] },
   { path: 'point-config', loadComponent: () => import('./pages/point-config/point-config.page').then((m) => m.PointConfigPage), canActivate: [authGuard, permissionGuard] },
   { path: 'level-config', loadComponent: () => import('./pages/level-config/level-config.page').then((m) => m.LevelConfigPage), canActivate: [authGuard, permissionGuard] },
-  { path: 'ai-dynamic-page', loadComponent: () => import('./pages/ai-dynamic-page/ai-dynamic-page.page').then((m) => m.AiDynamicPage), canActivate: [authGuard, permissionGuard] },
-  { path: 'ai-page/:id', loadComponent: () => import('./pages/ai-dynamic-page/ai-page-detail.page').then((m) => m.AiPageDetailPage), canActivate: [authGuard, permissionGuard] },
   { path: 'cyberlotus-tax', loadComponent: () => import('./pages/cyberlotus-tax/cyberlotus-tax.page').then((m) => m.CyberlotusTaxPage), canActivate: [authGuard, permissionGuard] },
   // Help
   { path: 'help', loadComponent: () => import('./pages/help/help.page').then((m) => m.HelpPage), canActivate: [authGuard] },

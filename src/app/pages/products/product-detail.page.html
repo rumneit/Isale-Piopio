@@ -158,10 +158,6 @@
                 }
               </span>
             </div>
-            <div class="pd-field" (click)="aiProcess()" role="button" tabindex="0">
-              <span class="pd-label">Xử lý ảnh với AI</span>
-              <span class="pd-val"><ion-icon name="sparkles-outline" class="ai-ic" /></span>
-            </div>
             @for (cf of customFields; track $index) {
               <div class="pd-field" (click)="customOpen.set(true)" role="button" tabindex="0">
                 <span class="pd-label">{{ cf.key }}</span>
@@ -284,9 +280,6 @@
         <!-- ============ TAB: ẢNH ============ -->
         @if (tab() === 'images') {
           <input #imgInput type="file" accept="image/*" multiple hidden (change)="onPickImages($event)" />
-          <ion-button expand="block" class="pd-ai-btn" (click)="aiProcess()">
-            <ion-icon slot="start" name="sparkles-outline" /> XỬ LÝ ẢNH VỚI AI
-          </ion-button>
           <div class="pd-gallery">
             @if (p.image) {
               <div class="pd-gallery-item" (click)="imageActions(-1)">

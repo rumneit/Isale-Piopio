@@ -9,15 +9,13 @@ import {
   inject,
 } from '@angular/core';
 import { NgIf } from '@angular/common';
-import { Router } from '@angular/router';
 import { IonFab, IonFabButton, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { add, sparklesOutline, caretUpOutline } from 'ionicons/icons';
+import { add, caretUpOutline } from 'ionicons/icons';
 
 /**
  * Bộ 3 nút nổi chuẩn ISale, dùng chung mọi trang danh sách:
  *  - FAB chính (giữa đáy): hành động thêm mới của trang
- *  - FAB AI (góc phải dưới): mở Dịch vụ AI
  *  - FAB lên đầu trang (góc phải dưới, hiện khi cuộn)
  */
 @Component({
@@ -26,11 +24,6 @@ import { add, sparklesOutline, caretUpOutline } from 'ionicons/icons';
     <ion-fab slot="fixed" vertical="bottom" horizontal="center" class="fab-main">
       <ion-fab-button (click)="mainAction.emit()" [attr.aria-label]="mainLabel">
         <ion-icon [name]="mainIcon" />
-      </ion-fab-button>
-    </ion-fab>
-    <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="fab-side">
-      <ion-fab-button size="small" (click)="openAi()" aria-label="Dịch vụ AI">
-        <ion-icon name="sparkles-outline" />
       </ion-fab-button>
     </ion-fab>
     <ion-fab
@@ -71,17 +64,15 @@ import { add, sparklesOutline, caretUpOutline } from 'ionicons/icons';
 export class FabTrioComponent implements AfterViewInit, OnDestroy {
   @Input() mainIcon: string = 'add';
   @Input() mainLabel: string = 'Thêm mới';
-  @Input() aiPath: string | null = '/module/ai-services';
   @Output() mainAction = new EventEmitter<void>();
 
   showScrollTop = false;
   private scrollHandler: ((e: CustomEvent) => void) | null = null;
 
   private el = inject(ElementRef);
-  private router = inject(Router);
 
   constructor() {
-    addIcons({ add, sparklesOutline, caretUpOutline });
+    addIcons({ add, caretUpOutline });
   }
 
   ngAfterViewInit(): void {
@@ -106,9 +97,5 @@ export class FabTrioComponent implements AfterViewInit, OnDestroy {
       scrollToTop: (d?: number) => Promise<void>;
     } | null;
     content?.scrollToTop(300);
-  }
-
-  openAi(): void {
-    if (this.aiPath) this.router.navigateByUrl(this.aiPath);
   }
 }

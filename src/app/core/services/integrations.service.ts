@@ -3,7 +3,7 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { LogService } from './log.service';
 
-export type IntegrationProvider = 'fbpage' | 'sms' | 'zbs' | 'sepay' | 'ai';
+export type IntegrationProvider = 'sms' | 'zbs' | 'sepay';
 
 export interface IntegrationSetting {
   id: string;
@@ -25,7 +25,7 @@ export interface ProviderMeta {
 }
 
 /**
- * Lưu cấu hình tích hợp (Fanpage / SMS / ZBS / SePay / AI) theo từng shop.
+ * Lưu cấu hình tích hợp (SMS / ZBS / SePay) theo từng shop.
  *
  * LƯU Ý TRUNG THỰC: module này quản lý CẤU HÌNH. Việc gửi tin thật / nhận webhook
  * cần một backend worker và API key của nhà cung cấp — ngoài phạm vi repo frontend này.
@@ -37,16 +37,6 @@ export class IntegrationsService {
   private logService = inject(LogService);
 
   readonly providers: ProviderMeta[] = [
-    {
-      provider: 'fbpage',
-      name: 'Quản lý Fanpage',
-      description: 'Kết nối Fanpage Facebook để đồng bộ hội thoại và đơn từ Messenger.',
-      fields: [
-        { key: 'page_id', label: 'Page ID', placeholder: '1234567890' },
-        { key: 'access_token', label: 'Page Access Token', type: 'password' },
-      ],
-      requirement: 'Cần Facebook App + webhook backend để nhận tin nhắn.',
-    },
     {
       provider: 'sms',
       name: 'SMS Marketing',
@@ -76,17 +66,6 @@ export class IntegrationsService {
         { key: 'webhook_token', label: 'Webhook Token', type: 'password' },
       ],
       requirement: 'Cần webhook backend công khai để SePay gọi vào.',
-    },
-    {
-      provider: 'ai',
-      name: 'Dịch vụ AI (ViLao)',
-      description: 'Tạo nội dung, gợi ý giá và mô tả sản phẩm bằng ViLao AI.',
-      fields: [
-        { key: 'base_url', label: 'API Base URL', placeholder: 'https://api.vilao.ai/v1' },
-        { key: 'model', label: 'Model', placeholder: 'DeepSeek V4.1 Flash / GLM 5.3' },
-        { key: 'api_key', label: 'API Key', type: 'password', placeholder: 'sk-...' },
-      ],
-      requirement: 'Cần API key của ViLao AI (lưu ở Supabase theo từng shop).',
     },
   ];
 

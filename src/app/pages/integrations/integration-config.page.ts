@@ -110,14 +110,14 @@ export class IntegrationConfigPage implements OnInit {
   readonly config = signal<Record<string, any>>({});
   readonly loading = signal(true);
 
-  private provider: IntegrationProvider = 'fbpage';
+  private provider: IntegrationProvider = 'sepay';
 
   constructor() {
     addIcons({ saveOutline, warningOutline, checkmarkCircleOutline, informationCircleOutline });
   }
 
   ngOnInit(): void {
-    this.provider = (this.route.snapshot.data['provider'] ?? 'fbpage') as IntegrationProvider;
+    this.provider = (this.route.snapshot.data['provider'] ?? 'sepay') as IntegrationProvider;
     this.meta.set(this.service.providerMeta(this.provider) ?? null);
     this.load();
   }
@@ -127,18 +127,8 @@ export class IntegrationConfigPage implements OnInit {
     try {
       const all = await this.service.list();
       const current = all.find((s) => s.provider === this.provider);
-      // Nếu chưa có config cho AI, điền sẵn giá trị mặc định từ ViLao
-      if (!current) {
-        this.enabled.set(false);
-        this.config.set({
-          base_url: 'https://api.vilao.ai/v1',
-          model: 'DeepSeek V4.1 Flash',
-          api_key: ''
-        });
-      } else {
-        this.enabled.set(current.enabled ?? false);
-        this.config.set(current.config ?? {});
-      }
+      this.enabled.set(current?.enabled ?? false);
+      this.config.set(current?.config ?? {});
     } catch (e: any) {
       console.error('load integration config failed', e);
     } finally {

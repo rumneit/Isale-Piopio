@@ -35,7 +35,6 @@ import {
   settingsOutline,
   chevronForwardOutline,
   chevronBackOutline,
-  sparklesOutline,
   addOutline,
   giftOutline,
 } from 'ionicons/icons';
@@ -121,7 +120,6 @@ export class CustomersPage implements OnInit {
       settingsOutline,
       chevronForwardOutline,
       chevronBackOutline,
-      sparklesOutline,
       addOutline,
       giftOutline,
     });

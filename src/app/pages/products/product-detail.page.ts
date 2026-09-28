@@ -37,7 +37,6 @@ import {
   calculatorOutline,
   trashOutline,
   funnelOutline,
-  sparklesOutline,
   cubeOutline,
   closeOutline,
   printOutline,
@@ -72,7 +71,6 @@ type FlagKey = 'active' | 'serial_managed' | 'dich_vu' | 'ngoai_te' | 'hien_tren
  *    lưới trường 2 cột + dàn toggle lưu ngay + panel mã vạch canvas (Code128)
  *  - Đơn vị khác: card đơn vị cơ bản + thẻ thay thế kèm phép quy đổi
  *  - Lịch sử: card lọc "Từ … đến …" + Tổng tiền, funnel làm mới
- *  - Ảnh: nút "XỬ LÝ ẢNH VỚI AI" + thư viện
  *  - Giá khách & CTV / Chiết khấu: card Tổng + (+) + danh sách + empty nét đứt
  */
 @Component({
@@ -171,7 +169,6 @@ export class ProductDetailPage implements OnInit {
       calculatorOutline,
       trashOutline,
       funnelOutline,
-      sparklesOutline,
       cubeOutline,
       closeOutline,
       printOutline,
@@ -350,10 +347,6 @@ export class ProductDetailPage implements OnInit {
   /** Mở tab Ảnh từ ô "Ảnh" trong lưới */
   openImagesTab() {
     this.tab.set('images');
-  }
-
-  aiProcess() {
-    void this.toast('Xử lý ảnh với AI đang hoàn thiện — sắp ra mắt!', 'primary', 2200);
   }
 
   // ===== Mã vạch (panel canvas Code128 như ISale) =====

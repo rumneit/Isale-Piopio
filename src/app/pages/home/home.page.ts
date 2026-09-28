@@ -35,9 +35,6 @@ import {
   readerOutline,
   reader,
   trendingUp,
-  logoFacebook,
-  sparkles,
-  colorWand,
   cart,
   clipboard,
   folderOpen,
@@ -154,9 +151,6 @@ export class HomePage implements OnInit {
         { id: 'quote', label: 'Quản lý Báo giá', icon: 'reader', color: '#ec407a', path: '/quote' },
         { id: 'delivery', label: 'Đơn vận chuyển', icon: 'boat', color: '#26c6da', path: '/delivery' },
         { id: 'report', label: 'Báo cáo, biểu đồ', icon: 'trending-up', color: '#2C3E50', path: '/report' },
-        { id: 'fanpage', label: 'Quản lý Fanpage', icon: 'logo-facebook', color: '#4267B2', path: '/module/fbpage' },
-        { id: 'ai-services', label: 'Dịch vụ AI', icon: 'sparkles', color: '#a855f7', path: '/module/ai-services', isNew: true },
-        { id: 'ai-page', label: 'Tạo trang với AI', icon: 'color-wand', color: '#ff6b9d', path: '/module/ai-dynamic-page', isNew: true },
       ],
     },
     {
@@ -223,7 +217,6 @@ export class HomePage implements OnInit {
     { label: 'Bảng dữ liệu tùy chỉnh', icon: 'grid-outline', path: '/module/custom-table' },
     { label: 'Ví/Tài khoản', icon: 'card-outline', path: '/money-account' },
     { label: 'Cấu hình shop', icon: 'settings-outline', path: '/config' },
-    { label: 'Nâng cấp gói', icon: 'rocket-outline', path: '/pricing' },
     { label: 'Trợ giúp', icon: 'help-circle-outline', path: '/help' },
   ];
 
@@ -243,9 +236,6 @@ export class HomePage implements OnInit {
       readerOutline,
       reader,
       trendingUp,
-      logoFacebook,
-      sparkles,
-      colorWand,
       cart,
       clipboard,
       folderOpen,

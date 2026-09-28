@@ -212,11 +212,6 @@ ion-button.ic-gray {
   }
 }
 
-.ai-ic {
-  font-size: 19px;
-  color: #7c3aed;
-}
-
 /* ---------- Panel mã vạch (canvas Code128) ---------- */
 .pd-barcode {
   background: #ffffff;
@@ -511,17 +506,7 @@ ion-button.ic-gray {
   }
 }
 
-/* ---------- Ảnh: nút AI + thư viện ---------- */
-.pd-ai-btn {
-  --border-radius: 10px;
-  --background: var(--ion-color-primary, #6030ff);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  margin: 4px 0 14px;
-  text-transform: uppercase;
-  font-size: 14px;
-}
-
+/* ---------- Ảnh: thư viện ---------- */
 .pd-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));

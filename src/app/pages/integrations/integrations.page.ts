@@ -8,7 +8,7 @@ import { IonButton,
 import { addIcons } from 'ionicons';
 import {
   hardwareChipOutline, cardOutline, chatbubbleEllipsesOutline, megaphoneOutline,
-  logoFacebook, codeSlashOutline, sparklesOutline, checkmarkCircleOutline,
+  codeSlashOutline, checkmarkCircleOutline,
 } from 'ionicons/icons';
 import { SettingsService } from '../../core/services/settings.service';
 import { SupabaseService } from '../../core/services/supabase.service';
@@ -17,11 +17,9 @@ import { Router } from '@angular/router';
 
 /** Ánh xạ khoá cấu hình cũ -> provider mới (bảng integration_settings). */
 const PROVIDER_BY_KEY: Record<string, IntegrationProvider> = {
-  fb_page_token: 'fbpage',
   zalo_oa_token: 'zbs',
   sms_api_key: 'sms',
   sepay_token: 'sepay',
-  ai_api_key: 'ai',
 };
 
 interface Integration {
@@ -111,18 +109,16 @@ export class IntegrationsPage implements OnInit {
   readonly enabledProviders = signal<Partial<Record<IntegrationProvider, boolean>>>({});
 
   readonly integrations: Integration[] = [
-    { key: 'fb_page_token', name: 'Facebook Fanpage', desc: 'Kết nối fanpage để nhận tin nhắn + đơn online', icon: 'logo-facebook', color: 'primary', keyLabel: 'Page Access Token', path: '/fbpage' },
     { key: 'zalo_oa_token', name: 'Zalo ZBS Marketing', desc: 'Gửi tin Zalo ZNS/ZBS chăm sóc khách hàng', icon: 'chatbubble-ellipses-outline', color: 'primary', keyLabel: 'Zalo OA Access Token', path: '/zbs-marketing' },
     { key: 'sms_api_key', name: 'SMS Brandname', desc: 'Gửi SMS marketing / OTP đến khách hàng', icon: 'megaphone-outline', color: 'tertiary', keyLabel: 'SMS API Key', path: '/sms-marketing' },
     { key: 'sepay_token', name: 'SePay', desc: 'Tự động đối soát chuyển khoản ngân hàng', icon: 'card-outline', color: 'primary', keyLabel: 'SePay API Token', path: '/sepay-payment' },
-    { key: 'ai_api_key', name: 'Trợ lý AI', desc: 'Phân tích doanh thu, gợi ý bán hàng bằng AI', icon: 'sparkles-outline', color: 'warning', keyLabel: 'AI API Key', path: '/ai-services' },
     { key: 'external_api_key', name: 'External API', desc: 'Cấp token cho hệ thống ngoài gọi dữ liệu PioPio', icon: 'code-slash-outline', color: 'medium', keyLabel: 'API Key', path: '/external-api' },
   ];
 
   constructor() {
     addIcons({
       hardwareChipOutline, cardOutline, chatbubbleEllipsesOutline, megaphoneOutline,
-      logoFacebook, codeSlashOutline, sparklesOutline, checkmarkCircleOutline,
+      codeSlashOutline, checkmarkCircleOutline,
     });
   }
 

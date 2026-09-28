@@ -106,7 +106,6 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   'activity-log': 'crm',
   // Báo cáo
   report: 'report',
-  'ai-dynamic-page': 'report',
 };
 
 /** Lấy quyền cần có cho một route, dựa vào phân đoạn đầu tiên của đường dẫn. */
