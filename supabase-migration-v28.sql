@@ -9,6 +9,7 @@
 --   6) RPC: inv_create_transfer (tạo phiếu + trừ tồn 1 transaction, chặn âm),
 --      inv_receive_transfer (đối soát + write-off/hoàn nguồn), sup_debts,
 --      sup_pay_debt (idempotent theo nonce), sup_debt_payments
+--   7) Nới ref_type của inventory_ledger (v27) thêm 'transfer_in'
 -- Bảo mật: RLS is_shop_member (chuẩn v26/v27); audit trigger tái dùng
 -- _inv_note_audit (generic). Idempotent: chạy lại an toàn.
 -- =============================================================
@@ -62,6 +63,27 @@ alter table public.transfers
   add column if not exists status text not null default 'completed',   -- legacy = completed (đã trừ tồn tức thì)
   add column if not exists received_at timestamptz,
   add column if not exists completed_by text;
+
+-- Mở rộng ref_type của sổ cái (v27): thêm 'transfer_in' — leg nhận hàng
+-- (constraint cũ chỉ có transfer_out/transfer_loss; không mở rộng thì
+-- inv_receive_transfer bị vi phạm check 23514 khi nhận hàng).
+-- Dò constraint theo ĐỊNH NGHĨA (không đoán tên) → idempotent, an toàn.
+do $$
+declare r record;
+begin
+  for r in
+    select conname from pg_constraint
+    where conrelid = 'public.inventory_ledger'::regclass
+      and contype = 'c'
+      and pg_get_constraintdef(oid) like '%ref_type%'
+  loop
+    execute format('alter table public.inventory_ledger drop constraint %I', r.conname);
+  end loop;
+end $$;
+alter table public.inventory_ledger
+  add constraint inventory_ledger_ref_type_check
+  check (ref_type in ('received_note', 'return_note', 'transfer_out', 'transfer_in',
+                      'transfer_loss', 'stock_count', 'sale', 'sale_return', 'manual_adjust'));
 
 -- ---------- 5. transfer_losses ----------
 create table if not exists public.transfer_losses (
@@ -161,9 +183,10 @@ language plpgsql
 security definer
 set search_path = public
 as $$
-declare v_code text; v_items_old jsonb; r record; v_old record;
+declare v_code text; v_items_old jsonb; r record;
         v_diff numeric; v_has_loss boolean := false;
-        v_out jsonb := '[]'::jsonb; v_resolver text; v_items_new jsonb := '[]'::jsonb;
+        v_out jsonb := '[]'::jsonb; v_resolver text; v_nm text;
+        v_items_new jsonb := '[]'::jsonb;
 begin
   perform public._inv_assert_member(p_shop);
   if p_resolution not in ('write_off', 'return_to_source') then
