@@ -1,0 +1,208 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="app-menu" auto-hide="false" />
+      <ion-button (click)="openHome()" class="ic-purple" aria-label="Trang chủ">
+        <ion-icon slot="icon-only" name="home" />
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Danh mục SP</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openCreate()" class="ic-purple" aria-label="Thêm danh mục">
+        <ion-icon slot="icon-only" name="add" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($any($event))">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  <div class="category-page">
+    @if (searchVisible()) {
+      <ion-searchbar
+        placeholder="Tìm theo tiêu đề"
+        [debounce]="250"
+        [value]="search()"
+        (ionInput)="onSearch($any($event))" />
+    }
+
+    @if (!editMode()) {
+      <div class="list-toolbar">
+        <div class="toolbar-summary">
+          <ion-button fill="clear" size="small" class="ic-purple" (click)="filterOpen.set(!filterOpen())" aria-label="Lọc">
+            <ion-icon slot="icon-only" name="funnel-outline" />
+            @if (hasActiveFilter()) { <span class="filter-count">1</span> }
+          </ion-button>
+          <ion-button fill="clear" size="small" class="ic-purple" (click)="toggleSearch()" [attr.aria-label]="searchVisible() ? 'Đóng tìm kiếm' : 'Tìm kiếm'">
+            <ion-icon slot="icon-only" [name]="searchVisible() ? 'close-outline' : 'search-outline'" />
+          </ion-button>
+          <span>Tổng: {{ filteredItems().length }} danh mục</span>
+        </div>
+        <div class="toolbar-actions">
+          <ion-button fill="clear" size="small" class="ic-green" (click)="toggleSelectMode()" aria-label="Chọn">
+            <ion-icon slot="icon-only" name="checkbox-outline" />
+          </ion-button>
+          <ion-button fill="clear" size="small" class="ic-orange" (click)="startBulkEdit()" aria-label="Sửa">
+            <ion-icon slot="icon-only" name="create-outline" />
+          </ion-button>
+          <ion-button fill="clear" size="small" class="ic-green" (click)="exportCsv()" aria-label="Xuất">
+            <ion-icon slot="icon-only" name="download-outline" />
+          </ion-button>
+          <label class="icon-file-button ic-purple" title="Nhập từ CSV">
+            <ion-icon name="cloud-upload-outline" />
+            <input type="file" accept=".csv,.txt,text/csv" (change)="importCsv($event)" [disabled]="importing()" />
+          </label>
+          <ion-button fill="clear" size="small" class="ic-purple" (click)="toggleView()" aria-label="Đổi chế độ xem">
+            <ion-icon slot="icon-only" [name]="viewMode() === 'card' ? 'grid-outline' : 'list-outline'" />
+          </ion-button>
+          <ion-button fill="clear" size="small" class="ic-gray" (click)="settingsOpen.set(!settingsOpen())" aria-label="Cài đặt hiển thị">
+            <ion-icon slot="icon-only" name="settings-outline" />
+          </ion-button>
+        </div>
+      </div>
+    } @else {
+      <div class="edit-toolbar">
+        <ion-button fill="clear" (click)="cancelBulkEdit()" aria-label="Bỏ qua"><ion-icon slot="icon-only" name="close-outline" /></ion-button>
+        <span>Sửa nhanh {{ filteredItems().length }} danh mục</span>
+        <ion-button fill="clear" (click)="saveBulkEdit()" [disabled]="saving()" aria-label="Lưu"><ion-icon slot="icon-only" name="save-outline" /></ion-button>
+      </div>
+    }
+
+    @if (filterOpen()) {
+      <section class="panel filter-panel" aria-label="Bộ lọc danh mục">
+        <div class="panel-head">
+          <strong>Bộ lọc</strong>
+          <button type="button" (click)="filterOpen.set(false)">×</button>
+        </div>
+        <label>
+          <span>Toán tử</span>
+          <select [ngModel]="filterOperator()" (ngModelChange)="filterOperator.set($event)">
+            <option value="equals">Bằng</option>
+            <option value="not-equals">Không bằng</option>
+            <option value="contains">Chứa</option>
+            <option value="starts">Bắt đầu bằng</option>
+            <option value="ends">Kết thúc bằng</option>
+            <option value="empty">Rỗng</option>
+            <option value="not-empty">Không rỗng</option>
+          </select>
+        </label>
+        @if (filterOperator() !== 'empty' && filterOperator() !== 'not-empty') {
+          <label>
+            <span>Giá trị</span>
+            <input [ngModel]="filterValue()" (ngModelChange)="filterValue.set($event)" placeholder="Nhập tên danh mục" />
+          </label>
+        }
+        <label>
+          <span>Sắp xếp</span>
+          <select [ngModel]="sortDirection()" (ngModelChange)="sortDirection.set($event)">
+            <option value="asc">Tăng dần</option>
+            <option value="desc">Giảm dần</option>
+          </select>
+        </label>
+        <div class="panel-actions">
+          <button type="button" class="secondary" (click)="clearFilter()">Xóa lọc</button>
+          <button type="button" class="primary" (click)="applyFilter()">Áp dụng</button>
+        </div>
+      </section>
+    }
+
+    @if (settingsOpen()) {
+      <section class="panel settings-panel" aria-label="Cài đặt hiển thị">
+        <div class="panel-head"><strong>Cấu hình cột</strong><button type="button" (click)="settingsOpen.set(false)">×</button></div>
+        <label class="setting-row"><span>Danh mục</span><input type="checkbox" checked disabled /></label>
+        <label class="setting-row"><span>Ngày tạo</span><input type="checkbox" [checked]="showCreatedAt()" (change)="showCreatedAt.set($any($event.target).checked); persistPreferences()" /></label>
+        <button type="button" class="template-button" (click)="downloadTemplate()"><ion-icon name="download-outline" /> Tải file mẫu CSV</button>
+      </section>
+    }
+
+    @if (hasActiveFilter()) {
+      <div class="active-filter">
+        <ion-icon name="funnel-outline" />
+        <span><strong>Đang lọc (1)</strong><small>Danh mục · {{ filterOperator() }} · {{ filterValue() || '—' }}</small></span>
+        <button type="button" (click)="clearFilter()" aria-label="Xóa bộ lọc">×</button>
+      </div>
+    }
+
+    @if (selectMode()) {
+      <div class="selection-bar">
+        <span>Đã chọn {{ selected().size }} bản ghi</span>
+        <ion-button size="small" color="danger" fill="outline" (click)="deleteSelected()" [disabled]="selected().size === 0">
+          <ion-icon slot="start" name="trash-outline" />Xóa
+        </ion-button>
+        <ion-button size="small" fill="clear" (click)="toggleSelectMode()">Đóng</ion-button>
+      </div>
+    }
+
+    @if (loading() || importing()) {
+      <div class="page-loading"><ion-spinner name="crescent" /><span>{{ importing() ? 'Đang nhập dữ liệu…' : 'Đang tải…' }}</span></div>
+    } @else if (filteredItems().length === 0) {
+      <div class="empty-state">
+        <ion-icon name="folder-open-outline" />
+        <h2>{{ items().length ? 'Không tìm thấy danh mục' : 'Chưa có danh mục sản phẩm' }}</h2>
+        <p>{{ items().length ? 'Hãy đổi từ khóa hoặc xóa bộ lọc.' : 'Tạo danh mục để tổ chức sản phẩm và lọc báo cáo chính xác hơn.' }}</p>
+        @if (!items().length) { <ion-button (click)="openCreate()"><ion-icon slot="start" name="add" />Thêm danh mục</ion-button> }
+      </div>
+    } @else if (viewMode() === 'card' && !editMode()) {
+      <div class="category-grid">
+        @for (item of filteredItems(); track item.id) {
+          <article class="category-card" [class.selected]="selected().has(item.id)" (click)="openEdit(item)">
+            @if (selectMode()) {
+              <ion-checkbox [checked]="selected().has(item.id)" (click)="$event.stopPropagation()" (ionChange)="toggleSelected(item.id)" />
+            }
+            <div class="folder"><ion-icon name="folder-open-outline" /></div>
+            <div class="category-copy"><h2>{{ item.name }}</h2>@if (showCreatedAt()) { <p>Tạo {{ formatDate(item.created_at) }}</p> }</div>
+            @if (!selectMode()) { <ion-icon class="edit-mark" name="create-outline" /> }
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="category-table-wrap">
+        <table class="category-table">
+          <thead><tr>
+            @if (selectMode()) { <th class="check"><input type="checkbox" [checked]="selected().size === filteredItems().length" (change)="toggleAll($any($event.target).checked)" /></th> }
+            <th>Danh mục</th>
+            @if (showCreatedAt()) { <th>Ngày tạo</th> }
+          </tr></thead>
+          <tbody>
+            @for (item of filteredItems(); track item.id) {
+              <tr [class.selected]="selected().has(item.id)" (click)="!editMode() && openEdit(item)">
+                @if (selectMode()) { <td class="check"><input type="checkbox" [checked]="selected().has(item.id)" (click)="$event.stopPropagation()" (change)="toggleSelected(item.id)" /></td> }
+                <td>
+                  @if (editMode()) { <input class="inline-edit" [value]="editDrafts()[item.id]" (input)="setEditDraft(item.id, $any($event.target).value)" /> }
+                  @else { {{ item.name }} }
+                </td>
+                @if (showCreatedAt()) { <td>{{ formatDate(item.created_at) }}</td> }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="center">
+    <ion-fab-button (click)="openCreate()" aria-label="Thêm danh mục"><ion-icon name="add" /></ion-fab-button>
+  </ion-fab>
+</ion-content>
+
+<ion-modal [isOpen]="formOpen()" (didDismiss)="closeForm()" class="category-form-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start"><ion-button (click)="closeForm()"><ion-icon name="close-outline" /> Bỏ qua</ion-button></ion-buttons>
+        <ion-title>{{ editing() ? 'Sửa danh mục' : 'Thêm danh mục' }}</ion-title>
+        <ion-buttons slot="end"><ion-button (click)="saveForm()" [disabled]="saving()"><ion-icon name="save-outline" /> Lưu</ion-button></ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="app-page">
+      <div class="category-form">
+        <label for="category-name">Danh mục <strong>*</strong></label>
+        <ion-input id="category-name" fill="outline" placeholder="Nhập giá trị" [value]="draftName()" (ionInput)="draftName.set($any($event).detail.value ?? '')" maxlength="120" />
+        <p>Tên nên ngắn, duy nhất và phản ánh cách bạn thực sự tìm hàng trong kho.</p>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

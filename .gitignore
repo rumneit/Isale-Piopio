@@ -72,8 +72,8 @@ Thumbs.db
 # Playwright MCP artifacts
 .playwright-mcp/
 
-# Ket qua audit Playwright — bao cao module, luu len repo (yeu cau upload toan bo)
-#/audit-output/
+# Kết quả audit có thể chứa response/dữ liệu của tài khoản mẫu; không đưa lên cloud.
+/audit-output/
 
 # Cau hinh OpenCode cua may ca nhan — chua API key, KHONG commit
 opencode.json
