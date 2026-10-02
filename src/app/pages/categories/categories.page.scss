@@ -69,6 +69,19 @@ ion-title { color: var(--category-purple); }
 .category-form label strong { color: #d43a3a; }
 .category-form p { color: var(--app-text-muted); font-size: 12px; line-height: 1.5; }
 
+/* Ionic's default modal is full-screen at this breakpoint. Without an explicit
+   height its projected ion-content can collapse to the toolbar height and hide
+   the form behind the modal host. Keep this short form in a bounded dialog. */
+ion-modal.category-form-modal {
+  --width: min(720px, calc(100vw - 32px));
+  --height: 270px;
+  --max-height: calc(100vh - 32px);
+  --border-radius: 16px;
+  --box-shadow: 0 24px 64px rgba(28, 22, 48, .28);
+}
+
+ion-modal.category-form-modal ion-content { --overflow: auto; }
+
 @media (max-width: 640px) {
   .category-page { padding-inline: 6px; }
   .list-toolbar { align-items: flex-start; }
@@ -76,4 +89,11 @@ ion-title { color: var(--category-purple); }
   .category-grid { grid-template-columns: 1fr; }
   .panel { left: 6px; width: calc(100vw - 12px); }
   .settings-panel { left: 6px; right: auto; }
+  ion-modal.category-form-modal {
+    --width: calc(100vw - 20px);
+    --height: 260px;
+    --max-height: calc(100vh - 20px);
+    --border-radius: 14px;
+  }
+  .category-form { padding: 22px 16px; }
 }
