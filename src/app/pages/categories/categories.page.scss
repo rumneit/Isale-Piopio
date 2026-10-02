@@ -80,7 +80,12 @@ ion-modal.category-form-modal {
   --box-shadow: 0 24px 64px rgba(28, 22, 48, .28);
 }
 
-ion-modal.category-form-modal ion-content { --overflow: auto; }
+.category-modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--app-page-bg);
+}
 
 @media (max-width: 640px) {
   .category-page { padding-inline: 6px; }

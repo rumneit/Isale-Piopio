@@ -197,12 +197,12 @@
         <ion-buttons slot="end"><ion-button (click)="saveForm()" [disabled]="saving()"><ion-icon name="save-outline" /> Lưu</ion-button></ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="app-page">
+    <div class="category-modal-body">
       <div class="category-form">
         <label for="category-name">Danh mục <strong>*</strong></label>
         <ion-input id="category-name" fill="outline" placeholder="Nhập giá trị" [value]="draftName()" (ionInput)="draftName.set($any($event).detail.value ?? '')" maxlength="120" />
         <p>Tên nên ngắn, duy nhất và phản ánh cách bạn thực sự tìm hàng trong kho.</p>
       </div>
-    </ion-content>
+    </div>
   </ng-template>
 </ion-modal>
