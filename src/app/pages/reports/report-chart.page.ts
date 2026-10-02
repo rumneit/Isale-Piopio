@@ -26,6 +26,7 @@ import {
   trendingUpOutline,
   trendingDownOutline,
   cartOutline,
+  homeOutline,
   podiumOutline,
 } from 'ionicons/icons';
 import { ReportsService, ReportRange, ReportResult } from '../../core/services/reports.service';
@@ -82,6 +83,7 @@ export class ReportChartPage implements OnInit {
       trendingUpOutline,
       trendingDownOutline,
       cartOutline,
+      homeOutline,
       podiumOutline,
     });
   }

@@ -36,6 +36,7 @@ import {
   cubeOutline,
   downloadOutline,
   informationCircleOutline,
+  homeOutline,
   peopleOutline,
   receiptOutline,
   readerOutline,
@@ -226,6 +227,7 @@ export class ReportDashboardPage implements OnInit {
       cubeOutline,
       downloadOutline,
       informationCircleOutline,
+      homeOutline,
       peopleOutline,
       receiptOutline,
       readerOutline,
@@ -242,6 +244,10 @@ export class ReportDashboardPage implements OnInit {
 
   ngOnInit(): void {
     void this.reload();
+  }
+
+  openHome(): void {
+    void this.router.navigateByUrl('/home');
   }
 
   // ================== kỳ & điều hướng ==================
