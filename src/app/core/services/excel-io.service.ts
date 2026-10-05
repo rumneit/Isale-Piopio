@@ -20,11 +20,19 @@ export class ExcelIoService {
     if (file.size > 10 * 1024 * 1024) {
       throw new Error('File vượt quá 10 MB. Hãy chia nhỏ dữ liệu rồi thử lại.');
     }
-    const workbook = XLSX.read(await file.arrayBuffer(), {
-      type: 'array',
-      cellDates: true,
-      dense: true,
-    });
+    // SheetJS guesses legacy code pages when CSV bytes are read as an
+    // ArrayBuffer. Reading CSV as text keeps UTF-8 Vietnamese headers intact.
+    const workbook = extension === 'csv'
+      ? XLSX.read((await file.text()).replace(/^\uFEFF/, ''), {
+          type: 'string',
+          cellDates: true,
+          dense: true,
+        })
+      : XLSX.read(await file.arrayBuffer(), {
+          type: 'array',
+          cellDates: true,
+          dense: true,
+        });
     const name = workbook.SheetNames[0];
     if (!name) throw new Error('File không có trang tính nào.');
     const sheet = workbook.Sheets[name];
