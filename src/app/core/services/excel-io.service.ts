@@ -47,6 +47,18 @@ export class ExcelIoService {
 
   download(filename: string, sheetName: string, rows: ExcelCell[][]): void {
     const sheet = XLSX.utils.aoa_to_sheet(rows);
+    const columnCount = rows.reduce((max, row) => Math.max(max, row.length), 0);
+    sheet['!cols'] = Array.from({ length: columnCount }, (_, columnIndex) => {
+      const width = rows.reduce((max, row) => {
+        const value = row[columnIndex];
+        const display = value instanceof Date ? 'yyyy-mm-dd hh:mm' : String(value ?? '');
+        return Math.max(max, display.length);
+      }, 0);
+      return { wch: Math.min(Math.max(width + 2, 12), 42) };
+    });
+    if (rows.length && columnCount) {
+      sheet['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length - 1, c: columnCount - 1 } }) };
+    }
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, sheet, sheetName.slice(0, 31));
     const bytes = XLSX.write(workbook, { type: 'array', bookType: 'xlsx', compression: true });
