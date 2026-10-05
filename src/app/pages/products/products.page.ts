@@ -45,6 +45,7 @@ import {
 } from 'ionicons/icons';
 import { ProductsService } from '../../core/services/products.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
+import { ProductExcelService } from '../../core/services/product-excel.service';
 import { Product } from '../../core/models/models';
 
 @Component({
@@ -75,6 +76,7 @@ import { Product } from '../../core/models/models';
 export class ProductsPage implements OnInit {
   private productsService = inject(ProductsService);
   private csvExport = inject(CsvExportService);
+  private productExcel = inject(ProductExcelService);
   private router = inject(Router);
   private toastCtrl = inject(ToastController);
   private actionSheetCtrl = inject(ActionSheetController);
@@ -413,7 +415,7 @@ export class ProductsPage implements OnInit {
   }
 
   openImport() {
-    this.router.navigateByUrl('/import');
+    this.router.navigateByUrl('/product/import');
   }
 
   openSettings() {
@@ -465,20 +467,10 @@ export class ProductsPage implements OnInit {
 
   async exportCsv() {
     try {
-      const all = await this.productsService.list(this.search);
-      const rows = all.map((p) => [
-        p.name,
-        p.sku ?? '',
-        p.unit ?? '',
-        this.csvExport.formatMoney(p.price),
-        this.csvExport.formatMoney(p.cost),
-        this.csvExport.formatMoney(p.stock),
-        p.active ? 'Đang bán' : 'Ngừng bán',
-        this.csvExport.formatDateTime(p.created_at),
-      ]);
-      this.csvExport.export('san-pham', ['Tên', 'Mã SP', 'Đơn vị', 'Giá bán', 'Giá nhập', 'Tồn kho', 'Trạng thái', 'Ngày tạo'], rows);
+      const count = await this.productExcel.export(this.search);
+      await this.toast(`Đã xuất ${count} sản phẩm ra Excel`);
     } catch (e: any) {
-      this.toast(e?.message ?? 'Xuất thất bại', 'danger');
+      await this.toast(e?.message ?? 'Xuất thất bại', 'danger');
     }
   }
   formatMoney(v: number | null | undefined): string {

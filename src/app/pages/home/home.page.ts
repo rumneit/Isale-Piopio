@@ -18,6 +18,7 @@ import {
   IonMenuButton,
   IonInput,
   ToastController,
+  LoadingController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -77,6 +78,7 @@ import {
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { MoneyAccountsService } from '../../core/services/money-accounts.service';
+import { ProductExcelService } from '../../core/services/product-excel.service';
 
 interface QuickAction {
   id: string;
@@ -128,6 +130,8 @@ export class HomePage implements OnInit {
   private moneyAccountsService = inject(MoneyAccountsService);
   private router = inject(Router);
   private toastCtrl = inject(ToastController);
+  private loadingCtrl = inject(LoadingController);
+  private productExcel = inject(ProductExcelService);
 
   readonly selectedTab = signal('selling');
   readonly tipDismissed = signal<Record<string, boolean>>({});
@@ -166,9 +170,9 @@ export class HomePage implements OnInit {
         { id: 'stock-check', label: 'Kiểm kê kho', icon: 'checkbox', color: '#184fc7', path: '/stock-check' },
         { id: 'category', label: 'Danh mục SP', icon: 'folder-open', color: '#ff7043', path: '/module/category' },
         { id: 'multi-shop', label: 'Q/l nhiều shop/kho', icon: 'business', color: '#5c6bc0', path: '/module/store' },
-        { id: 'import-products', label: 'Nhập SP từ Excel', icon: 'document-attach', color: '#ec407a', path: '/import' },
-        { id: 'export-products', label: 'Xuất SP ra Excel', icon: 'reader', color: '#26c6da', path: '/product' },
-        { id: 'import-received', label: 'Nhập Phiếu Nhập từ file Excel', icon: 'reader', color: '#8d6e63', path: '/module/received-note-import' },
+        { id: 'import-products', label: 'Nhập SP từ Excel', icon: 'document-attach', color: '#ec407a', path: '/product/import' },
+        { id: 'export-products', label: 'Xuất SP ra Excel', icon: 'reader', color: '#26c6da', path: '__export_products__' },
+        { id: 'import-received', label: 'Nhập Phiếu Nhập từ file Excel', icon: 'reader', color: '#8d6e63', path: '/received-note/import' },
         { id: 'inventory-report', label: 'Báo cáo, biểu đồ', icon: 'trending-up', color: '#2C3E50', path: '/report' },
       ],
     },
@@ -315,7 +319,24 @@ export class HomePage implements OnInit {
       this.openBarcodeModal();
       return;
     }
+    if (action.path === '__export_products__') {
+      void this.exportProducts();
+      return;
+    }
     this.router.navigateByUrl(action.path);
+  }
+
+  private async exportProducts(): Promise<void> {
+    const loading = await this.loadingCtrl.create({ message: 'Đang tạo file Excel…' });
+    await loading.present();
+    try {
+      const count = await this.productExcel.export();
+      await this.toast(`Đã xuất ${count} sản phẩm ra Excel.`);
+    } catch (error: any) {
+      await this.toast(error?.message ?? 'Xuất sản phẩm thất bại.', 'danger');
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   // ===== Modal quét mã vạch (giống bản gốc) =====

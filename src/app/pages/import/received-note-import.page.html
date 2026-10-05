@@ -1,0 +1,63 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" />
+      <ion-button (click)="openHome()" aria-label="Trang chủ"><ion-icon slot="icon-only" name="home-outline" /></ion-button>
+    </ion-buttons>
+    <ion-title>Nhập Phiếu từ file Excel</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-page">
+  <main class="excel-page">
+    <section class="excel-card intro-card">
+      <h1><ion-icon name="reader-outline" /> Nhập Phiếu từ file Excel</h1>
+      <p>Điền thông tin sản phẩm theo đúng file mẫu. Phiếu hợp lệ sẽ cập nhật tồn kho qua quy trình nhập hàng hiện có.</p>
+      <a class="template-button outline" href="assets/templates/mau-nhap-phieu-nhap.xlsx" download="mau-nhap-phieu-nhap.xlsx">
+        <ion-icon name="download-outline" /> TẢI MẪU EXCEL
+      </a>
+
+      <div class="required-box">
+        <h2><ion-icon name="warning-outline" /> Các trường bắt buộc</h2>
+        <p><strong>Tổng thanh toán, Mã SP, Tên SP, Đơn vị, Đơn giá, Số lượng, Thành tiền.</strong></p>
+        <p>Mã SP phải tồn tại trong hệ thống và không lặp lại trong cùng phiếu.</p>
+      </div>
+
+      <label class="drop-zone compact" (dragover)="$event.preventDefault()" (drop)="onDrop($event)">
+        <input type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" (change)="onFileInput($event)" />
+        @if (reading()) { <ion-spinner name="crescent" /><strong>Đang đọc file…</strong> }
+        @else { <ion-icon name="cloud-upload-outline" /><strong>{{ fileName() || 'UPLOAD PHIẾU' }}</strong><span>XLSX, XLS, CSV · tối đa 10 MB</span> }
+      </label>
+    </section>
+
+    @if (pageError()) { <div class="error-banner">{{ pageError() }}</div> }
+
+    @if (rows().length) {
+      <section class="excel-card preview-card">
+        <div class="preview-head">
+          <h2>Xem trước phiếu</h2>
+          <div class="result-counts"><span>{{ rows().length }} sản phẩm</span><span [class.bad]="invalidCount">{{ invalidCount }} lỗi</span></div>
+        </div>
+        <div class="note-summary"><span>Giá trị phiếu <strong>{{ total | number:'1.0-0' }} ₫</strong></span><span>Thanh toán <strong>{{ paidAmount | number:'1.0-0' }} ₫</strong></span></div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Dòng</th><th>Mã SP</th><th>Tên SP</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th><th>Trạng thái</th></tr></thead>
+            <tbody>
+              @for (row of rows(); track row.sourceRow) {
+                <tr [class.invalid]="row.errors.length">
+                  <td>{{ row.sourceRow }}</td><td>{{ row.sku || '—' }}</td><td>{{ row.name || '—' }}</td>
+                  <td>{{ row.cost | number:'1.0-0' }}</td><td>{{ row.qty | number:'1.0-2' }}</td><td>{{ row.amount | number:'1.0-0' }}</td>
+                  <td>@if (row.errors.length) { <span class="row-error">{{ row.errors.join(' · ') }}</span> } @else { <span class="row-ok">Sẵn sàng</span> }</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <ion-button expand="block" size="large" (click)="importNote()" [disabled]="invalidCount > 0 || importing()">
+          @if (importing()) { <ion-spinner slot="start" name="crescent" /> }
+          {{ importing() ? 'ĐANG TẠO PHIẾU…' : 'TẠO PHIẾU NHẬP' }}
+        </ion-button>
+      </section>
+    }
+  </main>
+</ion-content>

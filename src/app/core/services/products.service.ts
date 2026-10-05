@@ -230,6 +230,20 @@ export class ProductsService {
     return data as Product;
   }
 
+  /** Nhập Excel theo lô: một request duy nhất để tránh trạng thái nửa thành công. */
+  async createMany(inputs: Partial<Product>[]): Promise<Product[]> {
+    const shopId = this.shopId;
+    if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
+    if (!inputs.length) return [];
+    const rows = inputs.map((input) => ({ ...input, shop_id: shopId }));
+    const { data, error } = await this.sb.from('products').insert(rows).select();
+    if (error) throw error;
+    for (const product of (data ?? []) as Product[]) {
+      this.logService.log('create', 'product', product.name);
+    }
+    return (data ?? []) as Product[];
+  }
+
   async update(id: string, input: Partial<Product>): Promise<void> {
     const { error } = await this.sb
       .from('products')

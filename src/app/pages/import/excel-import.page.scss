@@ -1,0 +1,38 @@
+:host { --excel-purple: #6030ff; --excel-teal: #47bdb5; }
+ion-content { --background: #f6f7fb; }
+.excel-page { width: min(980px, 100%); margin: 0 auto; padding: 22px 16px 80px; }
+.excel-card { border-radius: 16px; background: #fff; box-shadow: 0 8px 28px rgba(41, 33, 72, .10); overflow: hidden; }
+.intro-card { padding: 22px; }
+.intro-card > h1 { display: flex; align-items: center; gap: 9px; margin: 0; color: var(--excel-purple); font-size: 21px; }
+.intro-card > h1 ion-icon { font-size: 25px; }
+.intro-card > p { margin: 8px 0 18px; color: #4d4858; line-height: 1.45; }
+.template-button { min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; background: var(--excel-teal); box-shadow: 0 8px 18px rgba(71, 189, 181, .28); color: white; font-size: 14px; font-weight: 700; text-decoration: none; }
+.template-button.outline { border: 2px solid var(--excel-teal); background: white; box-shadow: none; color: var(--excel-teal); }
+.required-box { margin: 24px 0; padding: 18px; border-radius: 10px; background: #f7f7fc; color: #494451; }
+.required-box h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: #322b3d; font-size: 15px; }
+.required-box h2 ion-icon { color: var(--excel-purple); }
+.required-box p { margin: 7px 0; font-size: 13px; line-height: 1.5; }
+.drop-zone { min-height: 150px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; border: 2px dashed #65616a; border-radius: 13px; background: #fbfbff; cursor: pointer; text-align: center; }
+.drop-zone:hover { border-color: var(--excel-purple); background: rgba(96, 48, 255, .035); }
+.drop-zone input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.drop-zone ion-icon { color: var(--excel-purple); font-size: 42px; }
+.drop-zone strong { color: var(--excel-purple); font-size: 14px; }
+.drop-zone span { padding: 0 12px; color: #6f6878; font-size: 12px; }
+.drop-zone.compact { min-height: 105px; }
+.error-banner { margin-top: 14px; padding: 13px 15px; border: 1px solid #f2b9bd; border-radius: 10px; background: #fff0f1; color: #9f2029; font-size: 13px; }
+.preview-card { margin-top: 18px; padding: 18px; }
+.preview-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.preview-head h2 { margin: 0; font-size: 16px; }
+.result-counts { display: flex; gap: 8px; }
+.result-counts span { padding: 5px 9px; border-radius: 999px; background: #edf8f3; color: #177454; font-size: 11px; font-weight: 700; }
+.result-counts span.bad { background: #fff0f1; color: #b4232e; }
+.table-scroll { margin-bottom: 16px; overflow: auto; border: 1px solid #e7e4eb; border-radius: 10px; }
+table { width: 100%; min-width: 760px; border-collapse: collapse; }
+th { padding: 11px 12px; background: #f4f1ff; color: #51446c; font-size: 11px; text-align: left; white-space: nowrap; }
+td { padding: 10px 12px; border-top: 1px solid #ece9ef; color: #302a37; font-size: 12px; }
+tr.invalid { background: #fff6f6; }
+.row-error { color: #b4232e; font-weight: 650; }
+.row-warning { color: #9a6411; }
+.row-ok { color: #16805b; font-weight: 650; }
+.note-summary { display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 0 0 14px; padding: 12px 14px; border-radius: 9px; background: #f7f7fc; color: #514b5c; font-size: 13px; }
+@media (max-width: 640px) { .excel-page { padding: 12px 10px 80px; } .intro-card, .preview-card { padding: 16px; } .intro-card > h1 { font-size: 18px; } }

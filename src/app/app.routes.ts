@@ -87,6 +87,8 @@ export const routes: Routes = [
   { path: 'transfer/add', loadComponent: () => import('./pages/transfers/transfer-add.page').then((m) => m.TransferAddPage), canActivate: [authGuard, permissionGuard] },
   { path: 'cafe-tables', loadComponent: () => import('./pages/cafe-tables/cafe-tables.page').then((m) => m.CafeTablesPage), canActivate: [authGuard, permissionGuard] },
   { path: 'import', loadComponent: () => import('./pages/import/import.page').then((m) => m.ImportPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'product/import', loadComponent: () => import('./pages/import/product-import.page').then((m) => m.ProductImportPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'received-note/import', loadComponent: () => import('./pages/import/received-note-import.page').then((m) => m.ReceivedNoteImportPage), canActivate: [authGuard, permissionGuard] },
   // Extended modules (đợt B)
   { path: 'crm-activities', loadComponent: () => import('./pages/crm/crm-activities.page').then((m) => m.CrmActivitiesPage), canActivate: [authGuard, permissionGuard] },
   { path: 'report/product', loadComponent: () => import('./pages/reports/report-product.page').then((m) => m.ReportProductPage), canActivate: [authGuard, permissionGuard] },
