@@ -210,7 +210,11 @@ ion-fab-button {
   /* Isale: FAB tròn đặc màu primary */
   --border-radius: 50%;
   --box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.4);
-  background: var(--ion-color-primary);
+  /* Màu thật được Ionic vẽ trong shadow button qua --background. Nếu tô
+     background lên host, phần vuông 56x56 sẽ lộ ra ngoài nút tròn. */
+  background: transparent;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 /* ---------- Segment ---------- */
@@ -488,4 +492,3 @@ ion-badge {
   padding: 5px 9px;
   border-radius: 8px;
 }
-

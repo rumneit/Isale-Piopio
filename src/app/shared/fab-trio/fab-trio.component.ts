@@ -41,16 +41,27 @@ import { add, caretUpOutline } from 'ionicons/icons';
   styles: [
     `
       .fab-main {
-        bottom: 76px;
+        /* app-fab-trio là một component trung gian nên slot="fixed" không còn
+           là con trực tiếp của ion-content. Cố định theo viewport để FAB luôn
+           đi theo màn hình khi cuộn, đúng hành vi của Isale. */
+        position: fixed;
+        bottom: calc(18px + env(safe-area-inset-bottom));
+        z-index: 1000;
       }
       .fab-side {
-        bottom: 76px;
+        position: fixed;
+        bottom: calc(18px + env(safe-area-inset-bottom));
+        z-index: 1000;
       }
       .fab-side.fab-top {
-        bottom: 138px;
+        bottom: calc(18px + env(safe-area-inset-bottom));
       }
       ion-fab-button {
+        --border-radius: 50%;
         --box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.4);
+        background: transparent;
+        border-radius: 50%;
+        overflow: hidden;
       }
       ion-fab-button[color='light'] {
         --background: var(--app-surface, #fff);
