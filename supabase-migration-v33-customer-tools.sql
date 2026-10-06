@@ -121,7 +121,9 @@ begin
   values(p_shop,p_idempotency_key,p_source_name,auth.uid())
   on conflict(shop_id,idempotency_key) do nothing;
 
-  for v_row in select value from jsonb_array_elements(p_rows) loop
+  for v_row in
+    select row_item from jsonb_array_elements(p_rows) as import_rows(row_item)
+  loop
     begin
       v_row_number := coalesce((v_row->>'rowNumber')::int, v_row_number);
       if length(btrim(coalesce(v_row->>'name',''))) < 2 then
@@ -200,11 +202,14 @@ begin
   if not found then raise exception 'Không tìm thấy bản ghi chính.'; end if;
   v_total_debt := coalesce(v_primary.debt,0);
 
-  foreach v_id in array p_duplicate_ids loop
+  for v_id in
+    select duplicate_id from unnest(p_duplicate_ids) as duplicate_rows(duplicate_id)
+  loop
     v_expected := nullif(p_expected_updated_at->>v_id::text,'')::timestamptz;
     perform 1 from public.customers where id=v_id and shop_id=p_shop and deleted_at is null
       and (v_expected is null or updated_at=v_expected) for update;
     if not found then raise exception 'Dữ liệu khách hàng đã thay đổi. Vui lòng quét lại trước khi hợp nhất.';
+    end if;
 
     select v_total_debt + coalesce(debt,0) into v_total_debt
     from public.customers where id=v_id and shop_id=p_shop;
