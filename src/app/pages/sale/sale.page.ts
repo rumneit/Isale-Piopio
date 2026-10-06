@@ -39,7 +39,6 @@ import {
   chevronForwardOutline,
   receiptOutline,
   refreshOutline,
-  personOutline,
   walletOutline,
   readerOutline,
 } from 'ionicons/icons';
@@ -47,9 +46,8 @@ import { ProductsService } from '../../core/services/products.service';
 import { OrdersService } from '../../core/services/orders.service';
 import { CustomersService } from '../../core/services/customers.service';
 import { TransactionsService } from '../../core/services/transactions.service';
-import { SupabaseService } from '../../core/services/supabase.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Product, Customer, MoneyAccount, Profile, Shop } from '../../core/models/models';
+import { Product, Customer, MoneyAccount, Shop } from '../../core/models/models';
 import { MoneyAccountsService } from '../../core/services/money-accounts.service';
 
 interface SaleItem {
@@ -67,7 +65,6 @@ interface SaleOrderSnap {
   selectedCustomerId: string | null;
   selectedCustomerName: string;
   selectedAccountId: string | null;
-  selectedStaffId: string | null;
   status: string;
   paymentMethod: string;
   customerShipPaid: boolean;
@@ -122,7 +119,6 @@ export class SalePage implements OnInit {
   private customersService = inject(CustomersService);
   private transactionsService = inject(TransactionsService);
   private moneyAccountsService = inject(MoneyAccountsService);
-  private sb = inject(SupabaseService);
   private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -134,7 +130,6 @@ export class SalePage implements OnInit {
   readonly products = signal<Product[]>([]);
   readonly customers = signal<Customer[]>([]);
   readonly accounts = signal<MoneyAccount[]>([]);
-  readonly staff = signal<Profile[]>([]);
   readonly items = signal<SaleItem[]>([]);
 
   // Tab chính
@@ -154,7 +149,6 @@ export class SalePage implements OnInit {
   selectedCustomerId: string | null = null;
   selectedCustomerName = '';
   selectedAccountId: string | null = null;
-  selectedStaffId: string | null = null;
   status = 'completed';
   customerShipPaid = false;
   discountPercent: number | null = 0;
@@ -239,7 +233,6 @@ export class SalePage implements OnInit {
       chevronForwardOutline,
       receiptOutline,
       refreshOutline,
-      personOutline,
       walletOutline,
       readerOutline,
     });
@@ -264,12 +257,6 @@ export class SalePage implements OnInit {
         .detectOrderExtras()
         .then((cols) => this.hasOrderExtras.set(cols))
         .catch(() => {});
-
-      const shopId = this.auth.shop()?.id;
-      if (shopId && this.sb.isConfigured) {
-        const { data } = await this.sb.from('profiles').select('*').eq('shop_id', shopId);
-        this.staff.set((data ?? []) as Profile[]);
-      }
 
       // Nếu mở từ nút "Tạo đơn: quét mã" → tự thêm sản phẩm theo mã vạch
       const barcode = this.route.snapshot.queryParamMap.get('barcode');
@@ -304,7 +291,6 @@ export class SalePage implements OnInit {
       selectedCustomerId: this.selectedCustomerId,
       selectedCustomerName: this.selectedCustomerName,
       selectedAccountId: this.selectedAccountId,
-      selectedStaffId: this.selectedStaffId,
       status: this.status,
       paymentMethod: this.paymentMethod,
       customerShipPaid: this.customerShipPaid,
@@ -331,7 +317,6 @@ export class SalePage implements OnInit {
     this.selectedCustomerId = s.selectedCustomerId;
     this.selectedCustomerName = s.selectedCustomerName;
     this.selectedAccountId = s.selectedAccountId;
-    this.selectedStaffId = s.selectedStaffId;
     this.status = s.status;
     this.paymentMethod = s.paymentMethod;
     this.customerShipPaid = s.customerShipPaid;
@@ -529,20 +514,6 @@ export class SalePage implements OnInit {
     await sheet.present();
   }
 
-  async selectStaff() {
-    const buttons = this.staff().map((s) => ({
-      text: s.full_name ?? 'Nhân viên',
-      handler: () => {
-        this.selectedStaffId = s.id;
-      },
-    }));
-    const sheet = await this.actionSheetCtrl.create({
-      header: 'Chọn NV/CTV',
-      buttons: [...buttons, { text: 'Hủy', role: 'cancel' }],
-    });
-    await sheet.present();
-  }
-
   async selectAccount() {
     const buttons = this.accounts().map((a) => ({
       text: a.name,
@@ -555,10 +526,6 @@ export class SalePage implements OnInit {
       buttons: [...buttons, { text: 'Hủy', role: 'cancel' }],
     });
     await sheet.present();
-  }
-
-  staffName(): string {
-    return this.staff().find((s) => s.id === this.selectedStaffId)?.full_name ?? 'Chọn NV/CTV';
   }
 
   accountName(): string {

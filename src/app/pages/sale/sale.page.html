@@ -68,12 +68,6 @@
             <span class="sale-label">Ngày</span>
             <ion-input type="datetime-local" [(ngModel)]="orderDate" class="sale-input" />
           </div>
-          <div class="sale-row">
-            <span class="sale-label">Nhân viên/CTV</span>
-            <button class="sale-btn" (click)="selectStaff()">
-              <ion-icon name="person-outline" /> {{ staffName() }}
-            </button>
-          </div>
           @if (hasPaymentMethodColumn) {
             <div class="sale-row">
               <span class="sale-label">Hình thức thanh toán</span>

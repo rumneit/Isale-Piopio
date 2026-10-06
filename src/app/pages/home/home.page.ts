@@ -178,31 +178,26 @@ export class HomePage implements OnInit {
     },
     {
       id: 'contacts',
-      label: 'Khách và Nhân viên',
+      label: 'Khách hàng',
       tip: 'Mẹo: Chia sẻ mã giới thiệu cho bạn bè để cả hai cùng nhận ưu đãi PRO.',
       actions: [
         { id: 'customers', label: 'Khách hàng', icon: 'people', color: '#3dc2ff', path: '/contact' },
-        { id: 'sales-route', label: 'Tuyến bán hàng', icon: 'flag', color: '#47bdb5', path: '/module/sales-route' },
-        { id: 'staff', label: 'Quản lý nhân viên', icon: 'person', color: '#e6bf00', path: '/staff' },
-        { id: 'points', label: 'Tích điểm', icon: 'star', color: '#2dd55b', path: '/point' },
         { id: 'notes', label: 'Ghi chú - Ảnh', icon: 'document-text', color: '#ff7043', path: '/note' },
         { id: 'import-customers', label: 'Nhập khách Excel', icon: 'document-attach', color: '#5c6bc0', path: '/import' },
         { id: 'export-customers', label: 'Xuất khách Excel', icon: 'reader', color: '#ec407a', path: '/contact' },
         { id: 'import-contacts', label: 'Nhập danh bạ', icon: 'cloud-upload', color: '#26c6da', path: '/module/contact-import' },
         { id: 'filter-dup', label: 'Lọc khách trùng', icon: 'copy', color: '#8d6e63', path: '/module/filter-duplicate' },
-        { id: 'shifts', label: 'Quản lý ca', icon: 'time', color: '#607d8b', path: '/shift' },
       ],
     },
     {
       id: 'crm',
       label: 'CRM',
-      tip: 'Mẹo: Kéo-thả khách giữa các cột trong Pipeline để cập nhật tiến độ chăm sóc.',
+      tip: 'Mẹo: Ghi lại hoạt động chăm sóc để theo dõi khách tiềm năng nhất quán.',
       actions: [
         { id: 'crm-help', label: 'CRM Help', icon: 'help-circle-outline', color: '#6030ff', path: '/help' },
         { id: 'crm-leads', label: 'Khách tiềm năng', icon: 'person-add-outline', color: '#47bdb5', path: '/crm' },
         { id: 'crm-activities', label: 'Hoạt động', icon: 'checkbox-outline', color: '#e6bf00', path: '/crm-activities' },
         { id: 'crm-sync', label: 'Đồng bộ điện thoại', icon: 'sync-outline', color: '#2dd55b', path: '/module/crm-device-sync' },
-        { id: 'crm-pipeline', label: 'Pipeline tiềm năng', icon: 'albums-outline', color: '#ff7043', path: '/crm/pipeline' },
       ],
     },
   ];
@@ -211,7 +206,6 @@ export class HomePage implements OnInit {
   readonly crmConfigItems: ConfigItem[] = [
     { label: 'Cài đặt CRM', icon: 'cog-outline', path: '/module/crm-settings' },
     { label: 'Quy trình tự động', icon: 'flash-outline', path: '/module/crm-flow-settings' },
-    { label: 'Sơ đồ tổ chức', icon: 'people-outline', path: '/org-chart' },
   ];
 
   /** Section Cấu hình — danh sách chip ngang */

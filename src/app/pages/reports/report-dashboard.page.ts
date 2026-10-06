@@ -35,13 +35,11 @@ import {
   closeCircleOutline,
   cubeOutline,
   downloadOutline,
-  informationCircleOutline,
   homeOutline,
   peopleOutline,
   receiptOutline,
   readerOutline,
   documentOutline,
-  personOutline,
   pieChartOutline,
   timeOutline,
   newspaperOutline,
@@ -67,7 +65,7 @@ import { ReportChartComponent, ReportChartDatum } from '../../core/components/re
 
 type RangeMode = 'today' | 'week' | 'month' | 'year' | 'custom';
 type Grain = 'day' | 'month';
-type TopTab = 'product' | 'customer' | 'staff';
+type TopTab = 'product' | 'customer';
 
 interface DrillBack {
   mode: RangeMode;
@@ -226,13 +224,11 @@ export class ReportDashboardPage implements OnInit {
       closeCircleOutline,
       cubeOutline,
       downloadOutline,
-      informationCircleOutline,
       homeOutline,
       peopleOutline,
       receiptOutline,
       readerOutline,
       documentOutline,
-      personOutline,
       pieChartOutline,
       timeOutline,
       newspaperOutline,

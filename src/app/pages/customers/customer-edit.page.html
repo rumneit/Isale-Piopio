@@ -78,22 +78,8 @@
             <ion-select-option value="lead">Tiềm năng</ion-select-option><ion-select-option value="active">Hoạt động</ion-select-option><ion-select-option value="inactive">Ngừng hoạt động</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item>
-          <ion-select label="Hạng khách hàng" labelPlacement="stacked" [(ngModel)]="tier">
-            <ion-select-option value="bronze">Đồng</ion-select-option><ion-select-option value="silver">Bạc</ion-select-option><ion-select-option value="gold">Vàng</ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-item><ion-input label="Điểm tích lũy" labelPlacement="stacked" type="number" min="0" [(ngModel)]="points" /></ion-item>
         <ion-item><ion-input label="Thẻ (cách nhau bằng dấu phẩy)" labelPlacement="stacked" placeholder="VIP, bán sỉ, cần chăm sóc" [(ngModel)]="tags" /></ion-item>
         <ion-item><label class="important-check"><input type="checkbox" [(ngModel)]="important" /> Khách hàng quan trọng</label></ion-item>
-        <ion-item>
-          <ion-select label="Tuyến bán hàng" labelPlacement="stacked" placeholder="Chưa gán" [(ngModel)]="routeId">
-            <ion-select-option [value]="null">— Chưa gán —</ion-select-option>
-            @for (r of routes(); track r.id) {
-              <ion-select-option [value]="r.id">{{ r.name }}</ion-select-option>
-            }
-          </ion-select>
-        </ion-item>
       </ion-list>
     </div>
 

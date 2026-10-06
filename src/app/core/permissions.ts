@@ -87,7 +87,6 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   promotion: 'sell',
   delivery: 'sell',
   trade: 'sell',
-  'sales-route': 'sell',
   'sales-channels': 'sell',
   'shipping-partners': 'sell',
   // Tiền
@@ -99,8 +98,6 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   'crm-activities': 'crm',
   contact: 'crm',
   point: 'crm',
-  'point-config': 'crm',
-  'level-config': 'crm',
   note: 'crm',
   calendar: 'crm',
   'activity-log': 'crm',

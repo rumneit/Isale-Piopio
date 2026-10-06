@@ -5,8 +5,8 @@ import { LogService } from './log.service';
 import { Customer, CustomerAttachment, CustomerDebtEntry, CustomerGroup, CustomerInteraction } from '../models/models';
 
 export interface CustomerFilters {
-  q?: string; debtMin?: number | null; groupId?: string | null; assignedTo?: string | null;
-  status?: string | null; tier?: string | null; createdFrom?: string | null; createdTo?: string | null;
+  q?: string; debtMin?: number | null; groupId?: string | null;
+  status?: string | null; createdFrom?: string | null; createdTo?: string | null;
   important?: boolean | null; sortBy?: 'created_at' | 'name' | 'debt' | 'total_spending' | 'last_activity';
   sortDirection?: 'asc' | 'desc'; page?: number; pageSize?: number;
 }
@@ -30,8 +30,7 @@ export class CustomersService {
     if (!this.sb.isConfigured || !shopId) return { items: [], total: 0, page, pageSize };
     const { data, error } = await this.sb.client.rpc('crm_list_customers', {
       p_shop: shopId, p_q: filters.q?.trim() || null, p_debt_min: filters.debtMin ?? null,
-      p_group_id: filters.groupId || null, p_assigned_to: filters.assignedTo || null,
-      p_status: filters.status || null, p_tier: filters.tier || null,
+      p_group_id: filters.groupId || null, p_status: filters.status || null,
       p_created_from: filters.createdFrom || null, p_created_to: filters.createdTo || null,
       p_important: filters.important ?? null, p_sort_by: filters.sortBy ?? 'created_at',
       p_sort_direction: filters.sortDirection ?? 'desc', p_page: page, p_page_size: pageSize,
@@ -177,7 +176,7 @@ export class CustomersService {
     if (input.debt != null && (!Number.isFinite(Number(input.debt)) || Number(input.debt) < 0)) throw new Error('Công nợ không hợp lệ.');
   }
   private legacyPayload(input: Partial<Customer>): Partial<Customer> {
-    const allowed: Array<keyof Customer> = ['name', 'code', 'phone', 'email', 'address', 'debt', 'points', 'gender', 'important', 'last_activity', 'route_id'];
+    const allowed: Array<keyof Customer> = ['name', 'code', 'phone', 'email', 'address', 'debt', 'gender', 'important', 'last_activity'];
     return Object.fromEntries(Object.entries(input).filter(([key]) => allowed.includes(key as keyof Customer)));
   }
   private isMissingFunction(error: any): boolean { return !!error && (error.code === 'PGRST202' || error.code === '42883' || /function .* does not exist|schema cache/i.test(error.message ?? '')); }

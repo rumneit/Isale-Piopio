@@ -175,14 +175,11 @@ export class ConfigPage implements OnInit {
     { key: 'hide_tax', label: 'Ẩn thuế khỏi đơn' },
     { key: 'print_large_invoice', label: 'In hóa đơn dạng Hóa đơn bán hàng (khổ lớn)' },
     { key: 'hide_discount_column', label: 'Ẩn cột chiết khấu khi in đơn' },
-    { key: 'show_staff_phone', label: 'Hiện SĐT nhân viên khi in đơn' },
-    { key: 'show_staff_sign', label: 'Hiện tên nhân viên dưới phần chữ ký' },
     { key: 'hide_product_code', label: 'Ẩn mã sản phẩm khi in đơn' },
     { key: 'profit_latest_cost', label: 'Tính lợi nhuận theo Chi phí mới nhất (không tích sổ tính theo thời điểm lên đơn)' },
     { key: 'sync_cost_from_received', label: 'Đồng bộ Giá Nhập từ Phiếu Nhập' },
     { key: 'stock_by_variant', label: 'Bật Tồn kho cho Phân loại sản phẩm' },
     { key: 'print_qr', label: 'In QR code khi in đơn' },
-    { key: 'enable_shift_close', label: 'Bật tính năng kết ca' },
     { key: 'auto_order_code', label: 'Mã đơn hàng tự động' },
     { key: 'auto_product_code', label: 'Mã SP tự động' },
     { key: 'sms_marketing', label: 'Bật tính năng SMS Marketing' },
@@ -453,7 +450,7 @@ export class ConfigPage implements OnInit {
     try {
       const tables = [
         'products', 'customers', 'money_accounts', 'orders', 'transactions',
-        'crm_leads', 'received_notes', 'promotions', 'materials', 'point_transactions',
+        'crm_leads', 'received_notes', 'promotions', 'materials',
       ];
       const dump: Record<string, unknown> = {
         exported_at: new Date().toISOString(),

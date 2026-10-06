@@ -32,7 +32,7 @@
     } @else {
       <div class="crm-grid-wrap">
         <table class="crm-grid">
-          <thead><tr><th class="check-col"><input type="checkbox" aria-label="Chọn tất cả" [checked]="allSelected()" (change)="toggleAll($any($event.target).checked)" /></th><th>Mã KH</th><th>Khách hàng</th><th>Nhóm</th><th class="money">Công nợ</th><th class="money">Tổng chi tiêu</th><th>Trạng thái</th><th>Hạng</th><th class="action-col">Thao tác</th></tr></thead>
+          <thead><tr><th class="check-col"><input type="checkbox" aria-label="Chọn tất cả" [checked]="allSelected()" (change)="toggleAll($any($event.target).checked)" /></th><th>Mã KH</th><th>Khách hàng</th><th>Nhóm</th><th class="money">Công nợ</th><th class="money">Tổng chi tiêu</th><th>Trạng thái</th><th class="action-col">Thao tác</th></tr></thead>
           <tbody>@for(item of items();track item.id){
             <tr (click)="openDetail(item)">
               <td class="check-col" (click)="$event.stopPropagation()"><input type="checkbox" [checked]="selected().has(item.id)" (change)="toggleOne(item.id,$any($event.target).checked)" /></td>
@@ -42,13 +42,12 @@
               <td class="money" [class.debt]="(item.debt||0)>0">{{ formatMoney(item.debt) }}</td>
               <td class="money">{{ formatMoney(item.total_spending) }}</td>
               <td><span class="status-badge" [attr.data-status]="item.status || 'active'">{{ statusLabel(item.status) }}</span></td>
-              <td><span class="tier-badge" [attr.data-tier]="item.tier || 'bronze'">{{ tierLabel(item.tier) }}</span></td>
               <td class="action-col"><button class="icon-btn" aria-label="Gọi khách hàng" (click)="call($event,item)" [disabled]="!item.phone"><ion-icon name="call-outline" /></button><button class="view-btn" (click)="$event.stopPropagation();openDetail(item)">Mở</button></td>
             </tr>
           }</tbody>
         </table>
       </div>
-      <div class="mobile-cards">@for(item of items();track item.id){<article (click)="openDetail(item)"><div class="customer-info"><div class="avatar">{{initial(item.name)}}</div><div><strong>{{item.name}}</strong><span>{{item.code||'—'}} · {{item.phone||'Chưa có SĐT'}}</span></div></div><div class="mobile-stats"><span>Nợ <b [class.debt]="(item.debt||0)>0">{{formatMoney(item.debt)}}</b></span><span>Chi tiêu <b>{{formatMoney(item.total_spending)}}</b></span></div><div class="card-foot"><span class="status-badge" [attr.data-status]="item.status||'active'">{{statusLabel(item.status)}}</span><span class="tier-badge" [attr.data-tier]="item.tier||'bronze'">{{tierLabel(item.tier)}}</span></div></article>}</div>
+      <div class="mobile-cards">@for(item of items();track item.id){<article (click)="openDetail(item)"><div class="customer-info"><div class="avatar">{{initial(item.name)}}</div><div><strong>{{item.name}}</strong><span>{{item.code||'—'}} · {{item.phone||'Chưa có SĐT'}}</span></div></div><div class="mobile-stats"><span>Nợ <b [class.debt]="(item.debt||0)>0">{{formatMoney(item.debt)}}</b></span><span>Chi tiêu <b>{{formatMoney(item.total_spending)}}</b></span></div><div class="card-foot"><span class="status-badge" [attr.data-status]="item.status||'active'">{{statusLabel(item.status)}}</span></div></article>}</div>
       <div class="pagination"><button (click)="prevPage()" [disabled]="page()<=1"><ion-icon name="chevron-back-outline" /></button><span>Trang {{page()}} / {{totalPages()}}</span><button (click)="nextPage()" [disabled]="page()>=totalPages()"><ion-icon name="chevron-forward-outline" /></button></div>
     }
     <app-fab-trio mainIcon="person-add" mainLabel="Thêm khách hàng" (mainAction)="openAdd()" />
@@ -62,7 +61,6 @@
         <label>Công nợ từ (₫)<input type="number" min="0" [value]="debtMin??''" (input)="debtMin=+$any($event.target).value||null" placeholder="VD: 100000" /></label>
         <label>Nhóm khách<select [value]="groupId" (change)="groupId=$any($event.target).value"><option value="">Tất cả nhóm</option>@for(group of groups();track group.id){<option [value]="group.id">{{group.name}}</option>}</select></label>
         <label>Trạng thái<select [value]="status" (change)="status=$any($event.target).value"><option value="">Tất cả</option><option value="lead">Tiềm năng</option><option value="active">Hoạt động</option><option value="inactive">Ngừng hoạt động</option></select></label>
-        <label>Hạng<select [value]="tier" (change)="tier=$any($event.target).value"><option value="">Tất cả</option><option value="bronze">Đồng</option><option value="silver">Bạc</option><option value="gold">Vàng</option></select></label>
         <div class="date-grid"><label>Tạo từ<input type="date" [value]="createdFrom" (change)="createdFrom=$any($event.target).value" /></label><label>Đến ngày<input type="date" [value]="createdTo" (change)="createdTo=$any($event.target).value" /></label></div>
         <label>Sắp xếp<select [value]="sortBy" (change)="sortBy=$any($event.target).value"><option value="created_at">Ngày tạo</option><option value="name">Tên khách</option><option value="debt">Công nợ</option><option value="total_spending">Tổng chi tiêu</option><option value="last_activity">Hoạt động cuối</option></select></label>
         <label>Hướng<select [value]="sortDirection" (change)="sortDirection=$any($event.target).value"><option value="desc">Giảm dần</option><option value="asc">Tăng dần</option></select></label>

@@ -3,7 +3,6 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { TransactionsService } from './transactions.service';
 import { ProductsService } from './products.service';
-import { PointsService } from './points.service';
 import { InventoryLedgerService } from './inventory-ledger.service';
 
 export interface ReturnNoteItem {
@@ -33,7 +32,6 @@ export class ReturnsService {
   private auth = inject(AuthService);
   private transactionsService = inject(TransactionsService);
   private productsService = inject(ProductsService);
-  private pointsService = inject(PointsService);
   private ledger = inject(InventoryLedgerService);
 
   private get shopId(): string | null {
@@ -133,15 +131,6 @@ export class ReturnsService {
         note: `Hoàn tiền trả hàng ${input.order_code} → ${data.code}`,
         occurred_at: new Date().toISOString(),
       });
-    }
-
-    // Trừ điểm tích lũy tương ứng phần trả
-    if (input.customer_id && total > 0) {
-      try {
-        await this.pointsService.revokeForReturn(input.customer_id, total, input.order_code);
-      } catch (e) {
-        console.error('revoke points failed', e);
-      }
     }
 
     return data as ReturnNote;

@@ -11,7 +11,6 @@ export class SettingsService {
   readonly values = signal<Record<string, string>>({});
   readonly loaded = signal(false);
 
-  readonly defaultPointRate = 10000;
   readonly defaultLowStockThreshold = 5;
 
   private get shopId(): string | null {
@@ -51,10 +50,6 @@ export class SettingsService {
     const raw = this.get(key);
     const n = Number(raw);
     return Number.isFinite(n) && n > 0 ? n : fallback;
-  }
-
-  pointRate(): number {
-    return this.numberValue('point_rate', this.defaultPointRate);
   }
 
   lowStockThreshold(): number {

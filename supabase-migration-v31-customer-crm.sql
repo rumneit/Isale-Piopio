@@ -21,9 +21,7 @@ alter table public.customers
   add column if not exists customer_group_id uuid references public.customer_groups(id) on delete set null,
   add column if not exists status text not null default 'active',
   add column if not exists total_spending numeric(16,2) not null default 0,
-  add column if not exists tier text not null default 'bronze',
   add column if not exists created_by uuid,
-  add column if not exists assigned_to uuid,
   add column if not exists tags text[] not null default '{}',
   add column if not exists updated_at timestamptz not null default now(),
   add column if not exists deleted_at timestamptz,
@@ -33,9 +31,6 @@ alter table public.customers
 do $$ begin
   if not exists (select 1 from pg_constraint where conname = 'customers_crm_status_check') then
     alter table public.customers add constraint customers_crm_status_check check (status in ('lead','active','inactive')) not valid;
-  end if;
-  if not exists (select 1 from pg_constraint where conname = 'customers_crm_tier_check') then
-    alter table public.customers add constraint customers_crm_tier_check check (tier in ('bronze','silver','gold')) not valid;
   end if;
   if not exists (select 1 from pg_constraint where conname = 'customers_crm_money_check') then
     alter table public.customers add constraint customers_crm_money_check check (debt >= 0 and total_spending >= 0) not valid;
@@ -80,7 +75,6 @@ create table if not exists public.customer_attachments (
 
 create index if not exists customers_crm_active_idx on public.customers(shop_id, created_at desc) where deleted_at is null;
 create index if not exists customers_crm_debt_idx on public.customers(shop_id, debt desc) where deleted_at is null and debt > 0;
-create index if not exists customers_crm_assigned_idx on public.customers(shop_id, assigned_to) where deleted_at is null;
 create index if not exists customers_crm_group_idx on public.customers(shop_id, customer_group_id) where deleted_at is null;
 create index if not exists customers_crm_search_idx on public.customers using gin(search_vector);
 create index if not exists customers_crm_name_trgm_idx on public.customers using gin(name gin_trgm_ops);
@@ -120,9 +114,11 @@ do $$ begin
   end if;
 end $$;
 
+drop function if exists public.crm_list_customers(uuid,text,numeric,uuid,uuid,text,text,date,date,boolean,text,text,integer,integer);
+
 create or replace function public.crm_list_customers(
   p_shop uuid, p_q text default null, p_debt_min numeric default null, p_group_id uuid default null,
-  p_assigned_to uuid default null, p_status text default null, p_tier text default null,
+  p_status text default null,
   p_created_from date default null, p_created_to date default null, p_important boolean default null,
   p_sort_by text default 'created_at', p_sort_direction text default 'desc', p_page int default 1, p_page_size int default 20
 ) returns jsonb language plpgsql security definer set search_path = public as $$
@@ -130,14 +126,13 @@ declare v_offset int := greatest(p_page-1,0) * least(greatest(p_page_size,1),100
 begin
   if not public.is_shop_member(p_shop) then raise exception 'Không có quyền truy cập cửa hàng.'; end if;
   with filtered as (
-    select c.*, g.name customer_group_name, p.full_name assigned_to_name
-    from public.customers c left join public.customer_groups g on g.id=c.customer_group_id left join public.profiles p on p.id=c.assigned_to
+    select c.*, g.name customer_group_name
+    from public.customers c left join public.customer_groups g on g.id=c.customer_group_id
     where c.shop_id=p_shop and c.deleted_at is null
       and (p_q is null or c.search_vector @@ websearch_to_tsquery('simple', p_q) or c.name ilike '%'||p_q||'%'
         or (nullif(regexp_replace(p_q,'[^0-9]','','g'),'') is not null and c.phone_normalized like '%'||regexp_replace(p_q,'[^0-9]','','g')||'%'))
       and (p_debt_min is null or c.debt >= p_debt_min) and (p_group_id is null or c.customer_group_id=p_group_id)
-      and (p_assigned_to is null or c.assigned_to=p_assigned_to) and (p_status is null or c.status=p_status)
-      and (p_tier is null or c.tier=p_tier) and (p_created_from is null or c.created_at>=p_created_from)
+      and (p_status is null or c.status=p_status) and (p_created_from is null or c.created_at>=p_created_from)
       and (p_created_to is null or c.created_at<p_created_to+1) and (p_important is null or c.important=p_important)
   ), counted as (select count(*) n from filtered), paged as (
     select * from filtered order by
@@ -162,8 +157,8 @@ declare v public.customers%rowtype; v_phone text := nullif(regexp_replace(coales
 begin
   if not public.is_shop_member(p_shop) then raise exception 'Không có quyền tạo khách hàng.'; end if;
   if v_phone is not null and exists(select 1 from public.customers where shop_id=p_shop and phone_normalized=v_phone and deleted_at is null) then raise exception 'Số điện thoại đã tồn tại trong hệ thống.' using errcode='23505'; end if;
-  insert into public.customers(shop_id,name,code,phone,email,address,dob,gender,avatar_url,customer_group_id,status,debt,points,tier,assigned_to,tags,important,route_id,created_by)
-  values(p_shop,p_input->>'name',nullif(p_input->>'code',''),nullif(p_input->>'phone',''),nullif(p_input->>'email',''),nullif(p_input->>'address',''),nullif(p_input->>'dob','')::date,nullif(p_input->>'gender',''),nullif(p_input->>'avatar_url',''),nullif(p_input->>'customer_group_id','')::uuid,coalesce(nullif(p_input->>'status',''),'active'),coalesce((p_input->>'debt')::numeric,0),coalesce((p_input->>'points')::numeric,0),coalesce(nullif(p_input->>'tier',''),'bronze'),nullif(p_input->>'assigned_to','')::uuid,coalesce(array(select jsonb_array_elements_text(coalesce(p_input->'tags','[]'))),'{}'),coalesce((p_input->>'important')::boolean,false),nullif(p_input->>'route_id','')::uuid,auth.uid()) returning * into v;
+  insert into public.customers(shop_id,name,code,phone,email,address,dob,gender,avatar_url,customer_group_id,status,debt,tags,important,created_by)
+  values(p_shop,p_input->>'name',nullif(p_input->>'code',''),nullif(p_input->>'phone',''),nullif(p_input->>'email',''),nullif(p_input->>'address',''),nullif(p_input->>'dob','')::date,nullif(p_input->>'gender',''),nullif(p_input->>'avatar_url',''),nullif(p_input->>'customer_group_id','')::uuid,coalesce(nullif(p_input->>'status',''),'active'),coalesce((p_input->>'debt')::numeric,0),coalesce(array(select jsonb_array_elements_text(coalesce(p_input->'tags','[]'))),'{}'),coalesce((p_input->>'important')::boolean,false),auth.uid()) returning * into v;
   return to_jsonb(v);
 end $$;
 
@@ -183,20 +178,17 @@ begin
     gender=case when p_input?'gender' then nullif(p_input->>'gender','') else c.gender end, avatar_url=case when p_input?'avatar_url' then nullif(p_input->>'avatar_url','') else c.avatar_url end,
     customer_group_id=case when p_input?'customer_group_id' then nullif(p_input->>'customer_group_id','')::uuid else c.customer_group_id end,
     status=case when p_input?'status' then p_input->>'status' else c.status end, debt=case when p_input?'debt' then (p_input->>'debt')::numeric else c.debt end,
-    points=case when p_input?'points' then (p_input->>'points')::numeric else c.points end, tier=case when p_input?'tier' then p_input->>'tier' else c.tier end,
-    assigned_to=case when p_input?'assigned_to' then nullif(p_input->>'assigned_to','')::uuid else c.assigned_to end,
     tags=case when p_input?'tags' then array(select jsonb_array_elements_text(p_input->'tags')) else c.tags end,
-    important=case when p_input?'important' then (p_input->>'important')::boolean else c.important end,
-    route_id=case when p_input?'route_id' then nullif(p_input->>'route_id','')::uuid else c.route_id end
+    important=case when p_input?'important' then (p_input->>'important')::boolean else c.important end
   where c.id=p_customer_id and c.shop_id=p_shop and c.deleted_at is null returning * into v;
   if p_input ? 'debt' and v.debt <> v_old.debt then
     insert into public.customer_debt_ledger(shop_id,customer_id,type,amount,balance_after,note,created_by)
     values(p_shop,p_customer_id,'adjustment',abs(v.debt-v_old.debt),v.debt,'Điều chỉnh từ hồ sơ khách hàng',auth.uid());
   end if;
-  if v.status is distinct from v_old.status or v.tier is distinct from v_old.tier or v.customer_group_id is distinct from v_old.customer_group_id then
+  if v.status is distinct from v_old.status or v.customer_group_id is distinct from v_old.customer_group_id then
     select full_name into v_name from public.profiles where id=auth.uid();
     insert into public.customer_interactions(shop_id,customer_id,type,content,metadata,created_by,created_by_name)
-    values(p_shop,p_customer_id,'system','Đã cập nhật phân loại/trạng thái khách hàng',jsonb_build_object('status',v.status,'tier',v.tier,'groupId',v.customer_group_id),auth.uid(),v_name);
+    values(p_shop,p_customer_id,'system','Đã cập nhật phân loại/trạng thái khách hàng',jsonb_build_object('status',v.status,'groupId',v.customer_group_id),auth.uid(),v_name);
   end if;
   return to_jsonb(v);
 end $$;

@@ -6,9 +6,9 @@
     <div class="avatar-large">{{initial(c.name)}}</div><h1>{{c.name}}</h1><div class="code">{{c.code||'Chưa có mã'}}</div>
     <div class="contact-line"><ion-icon name="call-outline" /><a [href]="c.phone?'tel:'+c.phone:null">{{c.phone||'Chưa có SĐT'}}</a>@if(c.phone){<button (click)="copyPhone()" aria-label="Sao chép SĐT"><ion-icon name="copy-outline" /></button>}</div>
     <div class="contact-line"><ion-icon name="mail-outline" /><span>{{c.email||'Chưa có email'}}</span></div>
-    <div class="badges"><span class="status" [attr.data-status]="c.status||'active'">{{statusLabel(c.status)}}</span><span class="tier" [attr.data-tier]="c.tier||'bronze'">Hạng {{tierLabel(c.tier)}}</span></div>
+    <div class="badges"><span class="status" [attr.data-status]="c.status||'active'">{{statusLabel(c.status)}}</span></div>
     <div class="tags"><div class="tag-list">@for(tag of c.tags||[];track tag){<button (click)="removeTag(tag)">{{tag}} ×</button>}</div><div class="tag-input"><input [(ngModel)]="tagDraft" (keyup.enter)="addTag()" placeholder="Thêm thẻ…" /><button (click)="addTag()"><ion-icon name="add-outline" /></button></div></div>
-    <div class="quick-stats"><div><span>Công nợ hiện tại</span><strong [class.debt]="(c.debt||0)>0">{{money(c.debt)}}</strong></div><div><span>Giá trị vòng đời</span><strong>{{money(c.total_spending)}}</strong></div><div><span>Điểm khả dụng</span><strong>{{c.points||0|number:'1.0-0'}}</strong></div></div>
+    <div class="quick-stats"><div><span>Công nợ hiện tại</span><strong [class.debt]="(c.debt||0)>0">{{money(c.debt)}}</strong></div><div><span>Giá trị vòng đời</span><strong>{{money(c.total_spending)}}</strong></div></div>
     <button class="edit-btn" (click)="openEdit()"><ion-icon name="create-outline" /> Chỉnh sửa hồ sơ</button>
   </aside>
   <main class="profile-main">

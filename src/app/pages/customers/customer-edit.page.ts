@@ -23,7 +23,6 @@ import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { saveOutline, trashOutline, closeOutline, homeOutline } from 'ionicons/icons';
 import { CustomersService } from '../../core/services/customers.service';
-import { SalesRoutesService, SalesRoute } from '../../core/services/sales-routes.service';
 import { Customer, CustomerGroup } from '../../core/models/models';
 
 @Component({
@@ -57,14 +56,12 @@ export class CustomerEditPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private customersService = inject(CustomersService);
-  private routesService = inject(SalesRoutesService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
 
   readonly customerId = signal<string | null>(null);
   readonly busy = signal(false);
   readonly deleting = signal(false);
-  readonly routes = signal<SalesRoute[]>([]);
   readonly groups = signal<CustomerGroup[]>([]);
   error = '';
 
@@ -76,13 +73,10 @@ export class CustomerEditPage implements OnInit {
   /** ISale: Không phân biệt (null) | Nam | Nữ — lưu đúng giá trị import */
   gender: string | null = null;
   debt: number | null = 0;
-  routeId: string | null = null;
   dob = '';
   avatarUrl = '';
   groupId: string | null = null;
   status: Customer['status'] = 'active';
-  tier: Customer['tier'] = 'bronze';
-  points = 0;
   tags = '';
   important = false;
 
@@ -95,10 +89,6 @@ export class CustomerEditPage implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.routesService
-      .list()
-      .then((r) => this.routes.set(r))
-      .catch((e) => console.error('load routes failed', e));
     this.customersService.groups().then((groups) => this.groups.set(groups)).catch(() => undefined);
 
     const id = this.route.snapshot.paramMap.get('id');
@@ -115,13 +105,10 @@ export class CustomerEditPage implements OnInit {
           this.address = c.address ?? '';
           this.gender = c.gender ?? null;
           this.debt = c.debt;
-          this.routeId = c.route_id ?? null;
           this.dob = c.dob ?? '';
           this.avatarUrl = c.avatar_url ?? '';
           this.groupId = c.customer_group_id ?? null;
           this.status = c.status ?? 'active';
-          this.tier = c.tier ?? 'bronze';
-          this.points = Number(c.points ?? 0);
           this.tags = (c.tags ?? []).join(', ');
           this.important = !!c.important;
         }
@@ -148,13 +135,10 @@ export class CustomerEditPage implements OnInit {
       address: this.address.trim() || null,
       gender: this.gender,
       debt: Number(this.debt ?? 0),
-      route_id: this.routeId || null,
       dob: this.dob || null,
       avatar_url: this.avatarUrl.trim() || null,
       customer_group_id: this.groupId || null,
       status: this.status,
-      tier: this.tier,
-      points: Math.max(0, Number(this.points || 0)),
       tags: this.tags.split(',').map((tag) => tag.trim()).filter(Boolean).slice(0, 20),
       important: this.important,
     };

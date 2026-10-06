@@ -180,7 +180,6 @@
       >
         <ion-segment-button value="product"><ion-label>Sản phẩm</ion-label></ion-segment-button>
         <ion-segment-button value="customer"><ion-label>Khách hàng</ion-label></ion-segment-button>
-        <ion-segment-button value="staff"><ion-label>Nhân viên</ion-label></ion-segment-button>
       </ion-segment>
 
       @switch (topTab()) {
@@ -232,16 +231,6 @@
           } @else {
             <p class="empty">Chưa có khách hàng nào mua trong kỳ</p>
           }
-        }
-        @case ('staff') {
-          <div class="empty staff-empty">
-            <ion-icon name="information-circle-outline" />
-            <p>
-              Chưa có doanh thu theo nhân viên: schema hiện tại chưa lưu
-              <code>staff_id</code> trên đơn hàng (chỉ có trên ca làm việc).
-              Cần bổ sung chọn NV khi bán hàng — đã ghi backlog.
-            </p>
-          </div>
         }
       }
     </div>

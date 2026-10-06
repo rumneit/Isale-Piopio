@@ -35,7 +35,6 @@ export class CustomerDetailPage implements OnInit {
   initial(name:string):string{return name?.trim().charAt(0).toUpperCase()||'?';}
   money(value:number|null|undefined):string{return new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND',maximumFractionDigits:0}).format(Number(value??0));}
   date(value:string|null|undefined):string{return value?new Intl.DateTimeFormat('vi-VN',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)):'—';}
-  tierLabel(tier:Customer['tier']):string{return ({bronze:'Đồng',silver:'Bạc',gold:'Vàng'} as any)[tier??'bronze']??'Đồng';}
   statusLabel(status:Customer['status']):string{return ({lead:'Tiềm năng',active:'Hoạt động',inactive:'Ngừng hoạt động'} as any)[status??'active']??'Hoạt động';}
   interactionLabel(type:CustomerInteraction['type']):string{return ({note:'Ghi chú',call:'Cuộc gọi',email:'Email',system:'Hệ thống',visit:'Ghé thăm'} as any)[type]??type;}
   goBack():void{void this.router.navigateByUrl('/contact',{replaceUrl:true});} openHome():void{void this.router.navigateByUrl('/home');}

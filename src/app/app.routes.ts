@@ -45,15 +45,13 @@ export const routes: Routes = [
   { path: 'online-order', loadComponent: () => import('./pages/online-order/online-order.page').then((m) => m.OnlineOrderPage), canActivate: [authGuard, permissionGuard] },
   // CRM
   { path: 'crm', loadComponent: () => import('./pages/crm/crm-list.page').then((m) => m.CrmListPage), canActivate: [authGuard, permissionGuard] },
-  { path: 'crm/pipeline', loadComponent: () => import('./pages/crm/crm-pipeline.page').then((m) => m.CrmPipelinePage), canActivate: [authGuard, permissionGuard] },
   { path: 'crm/deals', loadComponent: () => import('./pages/crm/crm-deals.page').then((m) => m.CrmDealsPage), canActivate: [authGuard, permissionGuard] },
   { path: 'crm/forecast', loadComponent: () => import('./pages/crm/crm-forecast.page').then((m) => m.CrmForecastPage), canActivate: [authGuard, permissionGuard] },
   { path: 'crm/quota', loadComponent: () => import('./pages/crm/crm-quota.page').then((m) => m.CrmQuotaPage), canActivate: [authGuard, permissionGuard] },
   { path: 'crm/approvals', loadComponent: () => import('./pages/crm/crm-approvals.page').then((m) => m.CrmApprovalsPage), canActivate: [authGuard, permissionGuard] },
   { path: 'crm/add', loadComponent: () => import('./pages/crm/crm-edit.page').then((m) => m.CrmEditPage), canActivate: [authGuard, permissionGuard] },
   { path: 'crm/:id', loadComponent: () => import('./pages/crm/crm-edit.page').then((m) => m.CrmEditPage), canActivate: [authGuard, permissionGuard] },
-  // Tuyến & kênh bán hàng
-  { path: 'sales-route', loadComponent: () => import('./pages/sales-routes/sales-routes.page').then((m) => m.SalesRoutesPage), canActivate: [authGuard, permissionGuard] },
+  // Kênh bán hàng
   { path: 'sales-channels', loadComponent: () => import('./pages/sales-channels/sales-channels.page').then((m) => m.SalesChannelsPage), canActivate: [authGuard, permissionGuard] },
   // Activity log + permissions
   { path: 'activity-log', loadComponent: () => import('./pages/activity-log/activity-log.page').then((m) => m.ActivityLogPage), canActivate: [authGuard, permissionGuard] },
@@ -76,14 +74,11 @@ export const routes: Routes = [
   { path: 'promotion/:id', loadComponent: () => import('./pages/promotions/promotion-edit.page').then((m) => m.PromotionEditPage), canActivate: [authGuard, permissionGuard] },
   // Materials
   { path: 'material', loadComponent: () => import('./pages/materials/materials.page').then((m) => m.MaterialsPage), canActivate: [authGuard, permissionGuard] },
-  // Loyalty points
-  { path: 'point', loadComponent: () => import('./pages/points/points.page').then((m) => m.PointsPage), canActivate: [authGuard, permissionGuard] },
   // Barcode scan
   { path: 'scan', loadComponent: () => import('./pages/scan/scan.page').then((m) => m.ScanPage), canActivate: [authGuard, permissionGuard] },
   // Extended modules (đợt A)
   { path: 'calendar', loadComponent: () => import('./pages/calendar/calendar.page').then((m) => m.CalendarPage), canActivate: [authGuard, permissionGuard] },
   { path: 'note', loadComponent: () => import('./pages/notes/notes.page').then((m) => m.NotesPage), canActivate: [authGuard, permissionGuard] },
-  { path: 'shift', loadComponent: () => import('./pages/shift/shift.page').then((m) => m.ShiftPage), canActivate: [authGuard] },
   { path: 'transfer', loadComponent: () => import('./pages/transfers/transfers.page').then((m) => m.TransfersPage), canActivate: [authGuard, permissionGuard] },
   { path: 'transfer/add', loadComponent: () => import('./pages/transfers/transfer-add.page').then((m) => m.TransferAddPage), canActivate: [authGuard, permissionGuard] },
   { path: 'cafe-tables', loadComponent: () => import('./pages/cafe-tables/cafe-tables.page').then((m) => m.CafeTablesPage), canActivate: [authGuard, permissionGuard] },
@@ -94,7 +89,6 @@ export const routes: Routes = [
   { path: 'report/product', loadComponent: () => import('./pages/reports/report-product.page').then((m) => m.ReportProductPage), canActivate: [authGuard, permissionGuard] },
   { path: 'report/debt', loadComponent: () => import('./pages/reports/report-debt.page').then((m) => m.ReportDebtPage), canActivate: [authGuard, permissionGuard] },
   { path: 'integrations', loadComponent: () => import('./pages/integrations/integrations.page').then((m) => m.IntegrationsPage), canActivate: [authGuard] },
-  { path: 'org-chart', loadComponent: () => import('./pages/org-chart/org-chart.page').then((m) => m.OrgChartPage), canActivate: [authGuard] },
   // Notifications
   { path: 'notifications', loadComponent: () => import('./pages/notifications/notifications.page').then((m) => m.NotificationsPage), canActivate: [authGuard] },
   // Reports
@@ -125,12 +119,8 @@ export const routes: Routes = [
   { path: 'stock-check', loadComponent: () => import('./pages/stock-check/stock-check.page').then((m) => m.StockCheckPage), canActivate: [authGuard, permissionGuard] },
   { path: 'stock-check/new', loadComponent: () => import('./pages/stock-check/stock-count-detail.page').then((m) => m.StockCountDetailPage), canActivate: [authGuard, permissionGuard] },
   { path: 'stock-check/:id', loadComponent: () => import('./pages/stock-check/stock-count-detail.page').then((m) => m.StockCountDetailPage), canActivate: [authGuard, permissionGuard] },
-  // Staff
-  { path: 'staff', loadComponent: () => import('./pages/staff/staff.page').then((m) => m.StaffPage), canActivate: [authGuard] },
   // Đợt 3 — module còn lại sau audit
   { path: 'shipping-partners', loadComponent: () => import('./pages/shipping-partners/shipping-partners.page').then((m) => m.ShippingPartnersPage), canActivate: [authGuard, permissionGuard] },
-  { path: 'point-config', loadComponent: () => import('./pages/point-config/point-config.page').then((m) => m.PointConfigPage), canActivate: [authGuard, permissionGuard] },
-  { path: 'level-config', loadComponent: () => import('./pages/level-config/level-config.page').then((m) => m.LevelConfigPage), canActivate: [authGuard, permissionGuard] },
   { path: 'cyberlotus-tax', loadComponent: () => import('./pages/cyberlotus-tax/cyberlotus-tax.page').then((m) => m.CyberlotusTaxPage), canActivate: [authGuard, permissionGuard] },
   // Help
   { path: 'help', loadComponent: () => import('./pages/help/help.page').then((m) => m.HelpPage), canActivate: [authGuard] },

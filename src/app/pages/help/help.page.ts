@@ -103,12 +103,6 @@ export class HelpPage {
       path: '/calendar',
     },
     {
-      icon: 'time-outline',
-      title: 'Ca làm việc',
-      desc: 'Mở ca khi bắt đầu, kết thúc ca khi đóng cửa — lưu lịch sử từng ca.',
-      path: '/shift',
-    },
-    {
       icon: 'arrow-redo-outline',
       title: 'Chuyển hàng',
       desc: 'Tạo phiếu chuyển đến kho phụ/chi nhánh — tự giảm tồn kho cửa hàng.',
