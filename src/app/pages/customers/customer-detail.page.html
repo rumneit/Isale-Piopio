@@ -1,0 +1,36 @@
+<ion-header><ion-toolbar><ion-buttons slot="start"><ion-button (click)="goBack()"><ion-icon slot="icon-only" name="arrow-back-outline" /></ion-button><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home-outline" /></ion-button></ion-buttons><ion-title>Hồ sơ khách hàng 360°</ion-title><ion-buttons slot="end"><ion-button (click)="openEdit()"><ion-icon slot="icon-only" name="create-outline" /></ion-button><ion-button color="danger" (click)="confirmDelete()" [disabled]="busy()"><ion-icon slot="icon-only" name="trash-outline" /></ion-button></ion-buttons></ion-toolbar></ion-header>
+<ion-content class="app-page">
+@if(loading()){<div class="loading"><ion-spinner name="crescent" /></div>}@else if(customer();as c){
+<div class="profile-layout">
+  <aside class="profile-card">
+    <div class="avatar-large">{{initial(c.name)}}</div><h1>{{c.name}}</h1><div class="code">{{c.code||'Chưa có mã'}}</div>
+    <div class="contact-line"><ion-icon name="call-outline" /><a [href]="c.phone?'tel:'+c.phone:null">{{c.phone||'Chưa có SĐT'}}</a>@if(c.phone){<button (click)="copyPhone()" aria-label="Sao chép SĐT"><ion-icon name="copy-outline" /></button>}</div>
+    <div class="contact-line"><ion-icon name="mail-outline" /><span>{{c.email||'Chưa có email'}}</span></div>
+    <div class="badges"><span class="status" [attr.data-status]="c.status||'active'">{{statusLabel(c.status)}}</span><span class="tier" [attr.data-tier]="c.tier||'bronze'">Hạng {{tierLabel(c.tier)}}</span></div>
+    <div class="tags"><div class="tag-list">@for(tag of c.tags||[];track tag){<button (click)="removeTag(tag)">{{tag}} ×</button>}</div><div class="tag-input"><input [(ngModel)]="tagDraft" (keyup.enter)="addTag()" placeholder="Thêm thẻ…" /><button (click)="addTag()"><ion-icon name="add-outline" /></button></div></div>
+    <div class="quick-stats"><div><span>Công nợ hiện tại</span><strong [class.debt]="(c.debt||0)>0">{{money(c.debt)}}</strong></div><div><span>Giá trị vòng đời</span><strong>{{money(c.total_spending)}}</strong></div><div><span>Điểm khả dụng</span><strong>{{c.points||0|number:'1.0-0'}}</strong></div></div>
+    <button class="edit-btn" (click)="openEdit()"><ion-icon name="create-outline" /> Chỉnh sửa hồ sơ</button>
+  </aside>
+  <main class="profile-main">
+    <nav class="detail-tabs"><button [class.active]="tab()==='overview'" (click)="setTab('overview')">Tổng quan & tương tác</button><button [class.active]="tab()==='orders'" (click)="setTab('orders')">Đơn hàng <b>{{orders().length}}</b></button><button [class.active]="tab()==='debt'" (click)="setTab('debt')">Công nợ</button><button [class.active]="tab()==='files'" (click)="setTab('files')">Tệp <b>{{files().length}}</b></button></nav>
+    @switch(tab()){
+      @case('overview'){
+        <section class="panel composer"><h2>Thêm ghi chú nhanh</h2><textarea [(ngModel)]="note" rows="3" maxlength="5000" placeholder="Ghi lại cuộc gọi, nhu cầu hoặc bước tiếp theo…"></textarea><div><span>{{note.length}}/5000</span><button (click)="addNote()" [disabled]="!note.trim()||noteSaving()"><ion-icon name="send-outline" /> {{noteSaving()?'Đang lưu…':'Thêm ghi chú'}}</button></div></section>
+        <section class="panel"><div class="panel-head"><div><h2>Dòng thời gian</h2><p>Lịch sử chăm sóc và thay đổi khách hàng</p></div></div>
+          @if(!interactions().length){<div class="empty"><ion-icon name="document-text-outline" /><h3>Chưa có tương tác</h3><p>Thêm ghi chú đầu tiên để đội ngũ cùng nắm thông tin.</p></div>}@else{<div class="timeline">@for(item of interactions();track item.id){<article><div class="dot" [attr.data-type]="item.type"></div><div class="event-card"><header><strong>{{interactionLabel(item.type)}}</strong><time>{{date(item.created_at)}}</time></header><p>{{item.content}}</p><small>{{item.created_by_name||'Nhân viên'}}</small></div></article>}</div>}
+        </section>
+      }
+      @case('orders'){
+        <section class="panel"><div class="panel-head"><div><h2>Lịch sử đơn hàng</h2><p>Tổng chi tiêu {{money(c.total_spending)}}</p></div></div>@if(!orders().length){<div class="empty">Chưa có đơn hàng.</div>}@else{<div class="mini-table"><div class="mini-head"><span>Mã đơn</span><span>Ngày</span><span>Trạng thái</span><span>Tổng tiền</span></div>@for(order of orders();track order.id){<button (click)="openOrder(order)"><span><b>{{order.code}}</b></span><span>{{date(order.created_at)}}</span><span><i [class.paid]="order.paid">{{order.paid?'Đã thanh toán':'Còn nợ'}}</i></span><span class="money">{{money(order.total)}}</span></button>}</div>}</section>
+      }
+      @case('debt'){
+        <section class="panel"><div class="debt-hero"><div><span>Dư nợ hiện tại</span><strong>{{money(c.debt)}}</strong></div><div><button class="charge" (click)="adjustDebt('charge')">+ Tăng nợ</button><button class="payment" (click)="adjustDebt('payment')">Ghi nhận thu nợ</button></div></div>@if(!ledger().length){<div class="empty">Chưa có sổ cái công nợ. Dữ liệu mới sẽ xuất hiện sau migration v31.</div>}@else{<div class="ledger"><div class="mini-head"><span>Thời gian</span><span>Loại</span><span>Số tiền</span><span>Số dư</span></div>@for(entry of ledger();track entry.id){<div><span>{{date(entry.created_at)}}</span><span>{{entry.type==='payment'?'Thanh toán':entry.type==='charge'?'Phát sinh nợ':'Điều chỉnh'}}</span><span [class.negative]="entry.type==='payment'">{{entry.type==='payment'?'-':'+'}}{{money(entry.amount)}}</span><span>{{money(entry.balance_after)}}</span></div>}</div>}</section>
+      }
+      @case('files'){
+        <section class="panel"><div class="panel-head"><div><h2>Tệp đính kèm</h2><p>Hợp đồng, hình ảnh và tài liệu liên quan</p></div><label class="upload-btn"><input type="file" (change)="upload($event)" [disabled]="uploadBusy()" /> <ion-icon name="attach-outline" /> {{uploadBusy()?'Đang tải…':'Tải tệp lên'}}</label></div>@if(!files().length){<div class="empty"><ion-icon name="attach-outline" /><h3>Chưa có tệp</h3><p>Tệp tối đa 10 MB, được lưu trong bucket riêng tư.</p></div>}@else{<div class="file-list">@for(file of files();track file.id){<button (click)="openFile(file)"><ion-icon name="document-text-outline" /><span><b>{{file.file_name}}</b><small>{{(file.size_bytes||0)/1024|number:'1.0-1'}} KB · {{date(file.created_at)}}</small></span><ion-icon name="download-outline" /></button>}</div>}</section>
+      }
+    }
+  </main>
+</div>
+}@else{<div class="empty page-empty">Không tìm thấy khách hàng.</div>}
+</ion-content>

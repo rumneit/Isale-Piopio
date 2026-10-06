@@ -1,156 +1,73 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button menu="app-menu" auto-hide="false" />
-      <ion-button (click)="openHome()">
-        <ion-icon slot="icon-only" name="home" />
-      </ion-button>
-    </ion-buttons>
+    <ion-buttons slot="start"><ion-menu-button menu="app-menu" auto-hide="false" /><ion-button (click)="openHome()"><ion-icon slot="icon-only" name="home" /></ion-button></ion-buttons>
     <ion-title>Quản lý khách hàng</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="openAdd()">
-        <ion-icon slot="icon-only" name="person-add" />
-      </ion-button>
-      <ion-button (click)="openSettings()">
-        <ion-icon slot="icon-only" name="apps" />
-      </ion-button>
-    </ion-buttons>
+    <ion-buttons slot="end"><ion-button (click)="openAdd()"><ion-icon slot="icon-only" name="person-add" /></ion-button><ion-button (click)="openSettings()"><ion-icon slot="icon-only" name="apps" /></ion-button></ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="app-page">
-  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))">
-    <ion-refresher-content />
-  </ion-refresher>
-
-  <div class="app-page-container customers-container">
-    <!-- Tab phân loại (ISale: 3 khối lớn, active nền tím đặc) -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($any($event))"><ion-refresher-content /></ion-refresher>
+  <div class="customers-shell">
     <div class="customer-tabs">
-      <button class="customer-tab" [class.active]="tab() === 'all'" (click)="selectTab('all')">
-        <ion-icon name="people" />
-        Tất cả
-      </button>
-      <button class="customer-tab" [class.active]="tab() === 'important'" (click)="selectTab('important')">
-        <ion-icon name="star" />
-        Quan trọng
-      </button>
-      <button class="customer-tab" [class.active]="tab() === 'recent'" (click)="selectTab('recent')">
-        <ion-icon name="time" />
-        Gần đây
-      </button>
+      <button [class.active]="tab()==='all'" (click)="selectTab('all')"><ion-icon name="people" />Tất cả</button>
+      <button [class.active]="tab()==='important'" (click)="selectTab('important')"><ion-icon name="star" />Quan trọng</button>
+      <button [class.active]="tab()==='recent'" (click)="selectTab('recent')"><ion-icon name="time" />Gần đây</button>
     </div>
 
-    @if (searchVisible()) {
-      <ion-searchbar placeholder="Tìm theo tên hoặc SĐT" [debounce]="300" (ionInput)="onSearch($any($event))" />
-    }
+    <section class="topbar">
+      <ion-searchbar aria-label="Tìm khách hàng" placeholder="Tìm tên, SĐT, mã khách hàng…" [debounce]="350" (ionInput)="onSearch($any($event))" />
+      <button class="secondary-btn" [class.has-filter]="hasFilters()" (click)="filterOpen.set(true)"><ion-icon name="filter-outline" /> Bộ lọc @if(hasFilters()){<span class="filter-dot"></span>}</button>
+      <button class="secondary-btn" (click)="openImport()"><ion-icon name="cloud-upload-outline" /> Nhập</button>
+      <button class="secondary-btn" (click)="exportCsv()"><ion-icon name="download-outline" /> Xuất</button>
+      <button class="primary-btn" (click)="openAdd()"><ion-icon name="person-add" /> Thêm khách hàng</button>
+    </section>
 
-    <!-- Toolbar -->
-    <div class="list-toolbar">
-      <div class="toolbar-left">
-        <ion-button fill="clear" size="small" (click)="toggleSearch()">
-          <ion-icon slot="icon-only" name="search-outline" />
-        </ion-button>
-        <span class="toolbar-total">Tổng: {{ filtered().length }} khách/đối tác</span>
-      </div>
-      <div class="toolbar-actions">
-        <ion-button fill="clear" size="small" (click)="toggleView()" [class.active-btn]="viewMode() === 'list'">
-          <ion-icon slot="icon-only" name="grid-outline" />
-        </ion-button>
-        <ion-button fill="clear" size="small" (click)="exportCsv()">
-          <ion-icon slot="icon-only" name="download-outline" />
-        </ion-button>
-        <ion-button fill="clear" size="small" (click)="openImport()">
-          <ion-icon slot="icon-only" name="cloud-upload-outline" />
-        </ion-button>
-      </div>
-    </div>
+    <div class="list-meta"><strong>{{ total() | number:'1.0-0' }}</strong> khách/đối tác @if(selected().size){<span>· Đã chọn {{ selected().size }}</span>}</div>
 
     @if (loading()) {
-      <div class="page-loading"><ion-spinner name="crescent" /></div>
-    } @else if (filtered().length === 0) {
-      <div class="app-empty">
-        <div><ion-icon name="people" /></div>
-        Chưa có khách hàng nào. Bấm nút + để thêm khách hàng đầu tiên.
-      </div>
+      <div class="skeleton-table">@for(row of [1,2,3,4,5,6];track row){<div class="skeleton-row"><i></i><i></i><i></i><i></i><i></i></div>}</div>
+    } @else if (!items().length) {
+      <div class="empty-state"><div class="empty-art"><ion-icon name="people" /></div><h2>Không tìm thấy khách hàng</h2><p>Thử thay đổi từ khóa hoặc bộ lọc, hoặc thêm khách hàng đầu tiên.</p><button class="primary-btn" (click)="openAdd()">Thêm khách hàng</button></div>
     } @else {
-      @if (viewMode() === 'card') {
-        <div class="customer-list">
-          @for (item of pagedItems(); track item.id) {
-            <div class="customer-card" (click)="openDetail(item)">
-              <h2 class="customer-name">{{ item.name }}</h2>
-              <div class="customer-fields">
-                <div class="field-row">
-                  <div class="field">
-                    <span class="field-label">Điện thoại</span>
-                    <span class="field-value phone-value">
-                      {{ item.phone ?? '—' }}
-                      @if (item.phone) {
-                        <button class="icon-action" (click)="callCustomer($event, item)">
-                          <ion-icon name="call-outline" />
-                        </button>
-                        <button class="icon-action" (click)="chatCustomer($event, item)">
-                          <ion-icon name="chatbox-outline" />
-                        </button>
-                      }
-                    </span>
-                  </div>
-                  <div class="field">
-                    <span class="field-label">Giới tính</span>
-                    <span class="field-value">{{ item.gender ?? '—' }}</span>
-                  </div>
-                </div>
-                <div class="field-row">
-                  <div class="field grow">
-                    <span class="field-label">Địa chỉ</span>
-                    <span class="field-value">{{ item.address ?? '—' }}</span>
-                  </div>
-                  <div class="field">
-                    <span class="field-label">Quan trọng</span>
-                    <ion-toggle
-                      [checked]="!!item.important"
-                      (ionChange)="toggleImportant(item, $any($event))"
-                      (click)="$event.stopPropagation()"
-                    />
-                  </div>
-                </div>
-                <div class="field-row">
-                  <div class="field">
-                    <span class="field-label">Hoạt động cuối</span>
-                    <span class="field-value">{{ formatDateTime(item.last_activity ?? item.created_at) }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      } @else {
-        <!-- ISale grid icon: danh sách gọn -->
-        <div class="customer-rows">
-          @for (item of pagedItems(); track item.id) {
-            <div class="customer-row" (click)="openDetail(item)">
-              <div class="row-main">
-                <span class="row-name">{{ item.name }}</span>
-                <span class="row-sub">{{ item.phone ?? '—' }}{{ item.gender ? ' · ' + item.gender : '' }}</span>
-              </div>
-              <span class="row-side">{{ formatDateTime(item.last_activity ?? item.created_at) }}</span>
-            </div>
-          }
-        </div>
-      }
-
-      <!-- Phân trang -->
-      <div class="pagination">
-        <ion-button fill="clear" size="small" (click)="prevPage()" [disabled]="page() <= 1">
-          <ion-icon slot="icon-only" name="chevron-back-outline" />
-        </ion-button>
-        <span>Trang {{ page() }}/{{ totalPages() }}</span>
-        <ion-button fill="clear" size="small" (click)="nextPage()" [disabled]="page() >= totalPages()">
-          <ion-icon slot="icon-only" name="chevron-forward-outline" />
-        </ion-button>
+      <div class="crm-grid-wrap">
+        <table class="crm-grid">
+          <thead><tr><th class="check-col"><input type="checkbox" aria-label="Chọn tất cả" [checked]="allSelected()" (change)="toggleAll($any($event.target).checked)" /></th><th>Mã KH</th><th>Khách hàng</th><th>Nhóm</th><th class="money">Công nợ</th><th class="money">Tổng chi tiêu</th><th>Trạng thái</th><th>Hạng</th><th class="action-col">Thao tác</th></tr></thead>
+          <tbody>@for(item of items();track item.id){
+            <tr (click)="openDetail(item)">
+              <td class="check-col" (click)="$event.stopPropagation()"><input type="checkbox" [checked]="selected().has(item.id)" (change)="toggleOne(item.id,$any($event.target).checked)" /></td>
+              <td><span class="code">{{ item.code || '—' }}</span></td>
+              <td><div class="customer-info"><div class="avatar">{{ initial(item.name) }}</div><div><strong>{{ item.name }}</strong><span>{{ item.phone || 'Chưa có SĐT' }}</span></div></div></td>
+              <td><span class="group-chip">{{ groupName(item) }}</span></td>
+              <td class="money" [class.debt]="(item.debt||0)>0">{{ formatMoney(item.debt) }}</td>
+              <td class="money">{{ formatMoney(item.total_spending) }}</td>
+              <td><span class="status-badge" [attr.data-status]="item.status || 'active'">{{ statusLabel(item.status) }}</span></td>
+              <td><span class="tier-badge" [attr.data-tier]="item.tier || 'bronze'">{{ tierLabel(item.tier) }}</span></td>
+              <td class="action-col"><button class="icon-btn" aria-label="Gọi khách hàng" (click)="call($event,item)" [disabled]="!item.phone"><ion-icon name="call-outline" /></button><button class="view-btn" (click)="$event.stopPropagation();openDetail(item)">Mở</button></td>
+            </tr>
+          }</tbody>
+        </table>
       </div>
+      <div class="mobile-cards">@for(item of items();track item.id){<article (click)="openDetail(item)"><div class="customer-info"><div class="avatar">{{initial(item.name)}}</div><div><strong>{{item.name}}</strong><span>{{item.code||'—'}} · {{item.phone||'Chưa có SĐT'}}</span></div></div><div class="mobile-stats"><span>Nợ <b [class.debt]="(item.debt||0)>0">{{formatMoney(item.debt)}}</b></span><span>Chi tiêu <b>{{formatMoney(item.total_spending)}}</b></span></div><div class="card-foot"><span class="status-badge" [attr.data-status]="item.status||'active'">{{statusLabel(item.status)}}</span><span class="tier-badge" [attr.data-tier]="item.tier||'bronze'">{{tierLabel(item.tier)}}</span></div></article>}</div>
+      <div class="pagination"><button (click)="prevPage()" [disabled]="page()<=1"><ion-icon name="chevron-back-outline" /></button><span>Trang {{page()}} / {{totalPages()}}</span><button (click)="nextPage()" [disabled]="page()>=totalPages()"><ion-icon name="chevron-forward-outline" /></button></div>
     }
-
-    <!-- Bộ 3 FAB chuẩn ISale -->
     <app-fab-trio mainIcon="person-add" mainLabel="Thêm khách hàng" (mainAction)="openAdd()" />
   </div>
+
+  @if(filterOpen()){
+    <div class="drawer-backdrop" (click)="filterOpen.set(false)"></div>
+    <aside class="filter-drawer" role="dialog" aria-modal="true" aria-label="Bộ lọc khách hàng">
+      <header><div><h2>Bộ lọc nâng cao</h2><p>Thu hẹp danh sách theo dữ liệu CRM</p></div><button (click)="filterOpen.set(false)"><ion-icon name="close-outline" /></button></header>
+      <div class="filter-body">
+        <label>Công nợ từ (₫)<input type="number" min="0" [value]="debtMin??''" (input)="debtMin=+$any($event.target).value||null" placeholder="VD: 100000" /></label>
+        <label>Nhóm khách<select [value]="groupId" (change)="groupId=$any($event.target).value"><option value="">Tất cả nhóm</option>@for(group of groups();track group.id){<option [value]="group.id">{{group.name}}</option>}</select></label>
+        <label>Trạng thái<select [value]="status" (change)="status=$any($event.target).value"><option value="">Tất cả</option><option value="lead">Tiềm năng</option><option value="active">Hoạt động</option><option value="inactive">Ngừng hoạt động</option></select></label>
+        <label>Hạng<select [value]="tier" (change)="tier=$any($event.target).value"><option value="">Tất cả</option><option value="bronze">Đồng</option><option value="silver">Bạc</option><option value="gold">Vàng</option></select></label>
+        <div class="date-grid"><label>Tạo từ<input type="date" [value]="createdFrom" (change)="createdFrom=$any($event.target).value" /></label><label>Đến ngày<input type="date" [value]="createdTo" (change)="createdTo=$any($event.target).value" /></label></div>
+        <label>Sắp xếp<select [value]="sortBy" (change)="sortBy=$any($event.target).value"><option value="created_at">Ngày tạo</option><option value="name">Tên khách</option><option value="debt">Công nợ</option><option value="total_spending">Tổng chi tiêu</option><option value="last_activity">Hoạt động cuối</option></select></label>
+        <label>Hướng<select [value]="sortDirection" (change)="sortDirection=$any($event.target).value"><option value="desc">Giảm dần</option><option value="asc">Tăng dần</option></select></label>
+      </div>
+      <footer><button class="secondary-btn" (click)="clearFilters()">Xóa bộ lọc</button><button class="primary-btn" (click)="applyFilters()">Áp dụng</button></footer>
+    </aside>
+  }
 </ion-content>

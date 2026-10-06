@@ -128,7 +128,61 @@ export interface Customer {
   important?: boolean;
   last_activity?: string | null;
   route_id?: string | null;
+  dob?: string | null;
+  avatar_url?: string | null;
+  customer_group_id?: string | null;
+  customer_group_name?: string | null;
+  status?: 'lead' | 'active' | 'inactive';
+  total_spending?: number;
+  tier?: 'bronze' | 'silver' | 'gold';
+  assigned_to?: string | null;
+  assigned_to_name?: string | null;
+  created_by?: string | null;
+  tags?: string[];
+  updated_at?: string;
+  deleted_at?: string | null;
   created_at?: string;
+}
+
+export interface CustomerGroup {
+  id: string;
+  shop_id: string;
+  name: string;
+  color: string;
+  description?: string | null;
+  created_at?: string;
+}
+
+export interface CustomerInteraction {
+  id: string;
+  shop_id: string;
+  customer_id: string;
+  type: 'note' | 'call' | 'email' | 'system' | 'visit';
+  content: string;
+  metadata?: Record<string, unknown>;
+  created_by?: string | null;
+  created_by_name?: string | null;
+  created_at: string;
+}
+
+export interface CustomerDebtEntry {
+  id: string;
+  customer_id: string;
+  type: 'charge' | 'payment' | 'adjustment';
+  amount: number;
+  balance_after: number;
+  note?: string | null;
+  created_at: string;
+}
+
+export interface CustomerAttachment {
+  id: string;
+  customer_id: string;
+  file_name: string;
+  file_path: string;
+  mime_type?: string | null;
+  size_bytes?: number | null;
+  created_at: string;
 }
 
 export interface Order {

@@ -21,10 +21,10 @@ import {
 } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { saveOutline, trashOutline, closeOutline } from 'ionicons/icons';
+import { saveOutline, trashOutline, closeOutline, homeOutline } from 'ionicons/icons';
 import { CustomersService } from '../../core/services/customers.service';
 import { SalesRoutesService, SalesRoute } from '../../core/services/sales-routes.service';
-import { Customer } from '../../core/models/models';
+import { Customer, CustomerGroup } from '../../core/models/models';
 
 @Component({
   selector: 'app-customer-edit',
@@ -65,6 +65,7 @@ export class CustomerEditPage implements OnInit {
   readonly busy = signal(false);
   readonly deleting = signal(false);
   readonly routes = signal<SalesRoute[]>([]);
+  readonly groups = signal<CustomerGroup[]>([]);
   error = '';
 
   name = '';
@@ -76,9 +77,17 @@ export class CustomerEditPage implements OnInit {
   gender: string | null = null;
   debt: number | null = 0;
   routeId: string | null = null;
+  dob = '';
+  avatarUrl = '';
+  groupId: string | null = null;
+  status: Customer['status'] = 'active';
+  tier: Customer['tier'] = 'bronze';
+  points = 0;
+  tags = '';
+  important = false;
 
   constructor() {
-    addIcons({ saveOutline, trashOutline, closeOutline });
+    addIcons({ saveOutline, trashOutline, closeOutline, homeOutline });
   }
 
   get isEdit(): boolean {
@@ -90,6 +99,7 @@ export class CustomerEditPage implements OnInit {
       .list()
       .then((r) => this.routes.set(r))
       .catch((e) => console.error('load routes failed', e));
+    this.customersService.groups().then((groups) => this.groups.set(groups)).catch(() => undefined);
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id && id !== 'add') {
@@ -106,6 +116,14 @@ export class CustomerEditPage implements OnInit {
           this.gender = c.gender ?? null;
           this.debt = c.debt;
           this.routeId = c.route_id ?? null;
+          this.dob = c.dob ?? '';
+          this.avatarUrl = c.avatar_url ?? '';
+          this.groupId = c.customer_group_id ?? null;
+          this.status = c.status ?? 'active';
+          this.tier = c.tier ?? 'bronze';
+          this.points = Number(c.points ?? 0);
+          this.tags = (c.tags ?? []).join(', ');
+          this.important = !!c.important;
         }
       } catch (e: any) {
         this.error = e?.message ?? 'Không tải được khách hàng.';
@@ -131,6 +149,14 @@ export class CustomerEditPage implements OnInit {
       gender: this.gender,
       debt: Number(this.debt ?? 0),
       route_id: this.routeId || null,
+      dob: this.dob || null,
+      avatar_url: this.avatarUrl.trim() || null,
+      customer_group_id: this.groupId || null,
+      status: this.status,
+      tier: this.tier,
+      points: Math.max(0, Number(this.points || 0)),
+      tags: this.tags.split(',').map((tag) => tag.trim()).filter(Boolean).slice(0, 20),
+      important: this.important,
     };
 
     this.busy.set(true);
