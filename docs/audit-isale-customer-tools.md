@@ -110,6 +110,7 @@ Migration v33 phải chạy **sau v31 và v32**. Chưa tự chạy trên Supabas
 - `npm run build`: **đạt**; còn warning có sẵn về import Ionic không dùng, browser cũ và CSS budget ở màn hình ngoài phạm vi.
 - `npm audit --omit=dev`: **0 lỗ hổng production** sau khi nâng Angular đồng bộ 22.2.1.
 - `npm run lint`: phần mới sạch sau sửa; repository vẫn còn 10 lỗi lint + 1 warning có sẵn ở debt/product/shipment/fab, ngoài phạm vi 5 công cụ.
+- Smoke test trên `https://quanlykhopiopio.vercel.app`: cả 5 route hiển thị; viewport 390×844 không tràn ngang; file CSV tiếng Việt được tự mapping, preview đúng và nút nhập được bật; editor ghi chú mở/đóng mà không ghi dữ liệu; console không có warning/error. Không nhấn “BẮT ĐẦU NHẬP” và không xuất dữ liệu khách thật.
 
 ## Checklist nghiệm thu
 
