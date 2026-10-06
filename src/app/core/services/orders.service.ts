@@ -3,6 +3,7 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { LogService } from './log.service';
 import { Order, OrderItem } from '../models/models';
+import { safeIlikeTerm } from '../utils/postgrest-search';
 
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
@@ -29,7 +30,7 @@ export class OrdersService {
       .order('created_at', { ascending: false });
 
     if (search.trim()) {
-      const term = `%${search.trim()}%`;
+      const term = `%${safeIlikeTerm(search)}%`;
       query = query.or(`code.ilike.${term},customer_name.ilike.${term}`);
     }
     if (status === 'paid') query = query.eq('paid', true);
@@ -184,7 +185,8 @@ export class OrdersService {
 
   async create(
     input: Partial<Order>,
-    items: Array<{ product_id: string | null; name: string; price: number; qty: number }>
+    items: Array<{ product_id: string | null; name: string; price: number; qty: number }>,
+    options: { recordIncome?: boolean; idempotencyKey?: string } = {}
   ): Promise<Order> {
     const shopId = this.shopId;
     if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
@@ -192,24 +194,19 @@ export class OrdersService {
     const total =
       input.total ??
       items.reduce((s, i) => s + i.price * i.qty, 0) - (input.discount ?? 0);
-    const { data: order, error } = await this.sb
-      .from('orders')
-      .insert({ ...input, shop_id: shopId, code: input.code ?? this.newCode(), total })
-      .select()
-      .single();
-    if (error) throw error;
-
-    if (items.length) {
-      const rows = items.map((i) => ({
-        order_id: order.id,
-        product_id: i.product_id,
-        name: i.name,
-        price: i.price,
-        qty: i.qty,
-        total: i.price * i.qty,
-      }));
-      const { error: itemsError } = await this.sb.from('order_items').insert(rows);
-      if (itemsError) throw itemsError;
+    const nonce = options.idempotencyKey ?? crypto.randomUUID();
+    const { data: order, error } = await this.sb.client.rpc('inv_create_order', {
+      p_shop: shopId,
+      p_order: { ...input, code: input.code ?? this.newCode(), total },
+      p_items: items,
+      p_nonce: nonce,
+      p_record_income: !!options.recordIncome,
+    });
+    if (error) {
+      if (error.code === 'PGRST202' || /inv_create_order|schema cache/i.test(error.message)) {
+        throw new Error('Cơ sở dữ liệu chưa có migration v34. Hãy chạy supabase-migration-v34-release-hardening.sql trước khi tạo đơn.');
+      }
+      throw error;
     }
     this.logService.log('create', 'order', order.code);
     return order as Order;

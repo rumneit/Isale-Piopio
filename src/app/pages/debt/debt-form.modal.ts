@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -192,7 +192,7 @@ function toDateInput(iso: string | null | undefined): string {
     `,
   ],
 })
-export class DebtFormModal {
+export class DebtFormModalComponent implements OnInit {
   private modalCtrl = inject(ModalController);
 
   readonly debtTypes = DEBT_TYPES;

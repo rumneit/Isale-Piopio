@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { LogService } from './log.service';
+import { safeIlikeTerm } from '../utils/postgrest-search';
 
 export type LoanType = 'loan' | 'debt' | 'borrowed' | 'lent' | 'payable' | 'receivable';
 
@@ -84,7 +85,7 @@ export class LoansService {
       .order('occurred_at', { ascending: false });
 
     if (search.trim()) {
-      const term = `%${search.trim()}%`;
+      const term = `%${safeIlikeTerm(search)}%`;
       query = query.or(`party_name.ilike.${term},note.ilike.${term},category.ilike.${term}`);
     }
 

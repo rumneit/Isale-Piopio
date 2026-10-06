@@ -28,7 +28,6 @@ import { saveOutline, closeOutline, addOutline, trashOutline, personOutline, cub
 import { OrdersService } from '../../core/services/orders.service';
 import { ProductsService } from '../../core/services/products.service';
 import { CustomersService } from '../../core/services/customers.service';
-import { TransactionsService } from '../../core/services/transactions.service';
 import { PromotionsService, Promotion } from '../../core/services/promotions.service';
 import { SalesChannelsService, SalesChannel } from '../../core/services/sales-channels.service';
 import { Product, Customer } from '../../core/models/models';
@@ -77,7 +76,6 @@ export class OrderAddPage implements OnInit {
   private ordersService = inject(OrdersService);
   private productsService = inject(ProductsService);
   private customersService = inject(CustomersService);
-  private transactionsService = inject(TransactionsService);
   readonly promotionsService = inject(PromotionsService);
   private channelsService = inject(SalesChannelsService);
   private toastCtrl = inject(ToastController);
@@ -194,20 +192,9 @@ export class OrderAddPage implements OnInit {
           note: this.note.trim() || null,
           channel_id: this.channelId || null,
         },
-        this.items()
+        this.items(),
+        { recordIncome: !this.isQuoteMode() && this.paid && this.recordIncome && this.total > 0 }
       );
-
-      if (!this.isQuoteMode() && this.paid && this.recordIncome && this.total > 0) {
-        await this.transactionsService.create({
-          type: 'income',
-          category: 'Bán hàng',
-          amount: this.total,
-          note: `Thu tiền đơn ${order.code}`,
-          occurred_at: new Date().toISOString(),
-          order_id: order.id,
-          source: 'order',
-        });
-      }
 
       this.toast('Đã tạo đơn hàng ' + order.code);
       this.router.navigateByUrl('/order', { replaceUrl: true });

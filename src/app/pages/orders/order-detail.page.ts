@@ -40,7 +40,7 @@ import { OrdersService } from '../../core/services/orders.service';
 import { ShipmentsService } from '../../core/services/shipments.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Order, OrderItem, Shop, Shipment } from '../../core/models/models';
-import { ShipmentFormModal } from '../shipments/shipment-form.modal';
+import { ShipmentFormModalComponent } from '../shipments/shipment-form.modal';
 import { ModalController } from '@ionic/angular';
 
 @Component({
@@ -242,7 +242,7 @@ export class OrderDetailPage implements OnInit {
       return;
     }
     const modal = await this.modalCtrl.create({
-      component: ShipmentFormModal,
+      component: ShipmentFormModalComponent,
       componentProps: {
         order: o,
         prefillTrackingCode: o.shipping_code ?? null,

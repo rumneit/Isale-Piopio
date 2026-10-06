@@ -3,6 +3,7 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { LogService } from './log.service';
 import { Product } from '../models/models';
+import { safeIlikeTerm } from '../utils/postgrest-search';
 
 /** Một dòng lịch sử Nhập/Xuất của sản phẩm */
 export interface ProductHistoryRow {
@@ -32,7 +33,7 @@ export class ProductsService {
       .order('created_at', { ascending: false });
 
     if (search.trim()) {
-      const term = `%${search.trim()}%`;
+      const term = `%${safeIlikeTerm(search)}%`;
       query = query.or(`name.ilike.${term},sku.ilike.${term}`);
     }
 
@@ -87,7 +88,7 @@ export class ProductsService {
     }
 
     if (search.trim()) {
-      const term = `%${search.trim()}%`;
+      const term = `%${safeIlikeTerm(search)}%`;
       query = query.or(`name.ilike.${term},sku.ilike.${term}`);
     }
 
@@ -136,12 +137,18 @@ export class ProductsService {
   /** Tải ảnh sản phẩm lên Storage bucket "products" (v18), trả về URL public */
   async uploadImage(file: File): Promise<string> {
     if (!this.sb.isConfigured) throw new Error('Chưa cấu hình Supabase.');
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-    const shop = this.shopId?.slice(0, 8) ?? 'shop';
+    const shop = this.shopId;
+    if (!shop) throw new Error('Không tìm thấy cửa hàng.');
+    const allowed: Record<string, string> = {
+      'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif',
+    };
+    const ext = allowed[file.type];
+    if (!ext) throw new Error('Chỉ chấp nhận ảnh JPEG, PNG, WebP hoặc AVIF.');
+    if (file.size <= 0 || file.size > 5 * 1024 * 1024) throw new Error('Ảnh phải nhỏ hơn hoặc bằng 5 MB.');
     const path = `${shop}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error } = await this.sb.client.storage
       .from('products')
-      .upload(path, file, { contentType: file.type || 'image/jpeg', upsert: true });
+      .upload(path, file, { contentType: file.type, upsert: false });
     if (error) throw error;
     const { data } = this.sb.client.storage.from('products').getPublicUrl(path);
     return data.publicUrl;

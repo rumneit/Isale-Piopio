@@ -23,12 +23,13 @@ export class AuthService {
   /**
    * Kiểm tra quyền của người dùng hiện tại.
    * - Chủ cửa hàng: luôn có toàn quyền.
-   * - Chưa có hồ sơ (đang tải / môi trường test): cho phép, tránh khoá nhầm.
+   * - Chưa có hồ sơ: từ chối. Route guard chỉ gọi sau khi khởi tạo
+   *   xong; fail-closed tránh lộ giao diện chức năng khi tải profile lỗi.
    * - Nhân viên: theo cờ quyền đã lưu ở profiles.permissions.
    */
   can(permission: string): boolean {
     const p = this.profile();
-    if (!p) return true;
+    if (!p) return false;
     if (p.role === 'owner') return true;
     const perms = (p.permissions ?? {}) as Record<string, boolean>;
     return !!perms[permission];
@@ -82,15 +83,10 @@ export class AuthService {
         .eq('id', userId)
         .maybeSingle();
 
-      if (!profile) {
-        const email = this.session()?.user?.email ?? '';
-        const inserted = await this.sb
-          .from('profiles')
-          .upsert({ id: userId, full_name: email.split('@')[0], role: 'owner' }, { onConflict: 'id' })
-          .select()
-          .maybeSingle();
-        profile = inserted.data ?? profile;
-      }
+      // Profile phải do trigger handle_new_user/service backend tạo. Không tự
+      // upsert role=owner từ client: policy cấu hình sai sẽ biến việc thiếu
+      // profile thành đường leo thang đặc quyền.
+      if (!profile) throw new Error('Tài khoản chưa có hồ sơ phân quyền. Vui lòng liên hệ quản trị viên.');
       this.profile.set(profile as Profile);
 
       // Danh sách cửa hàng user sở hữu (đa cửa hàng)
@@ -102,15 +98,30 @@ export class AuthService {
       const ownedShops = (owned ?? []) as Shop[];
       this.shopsOwned.set(ownedShops);
 
-      // Xác định shop đang hoạt động: override localStorage > profile.shop_id > shop đầu tiên
+      // Nhân viên không sở hữu shop, nhưng vẫn phải nạp shop trong
+      // profile.shop_id. Trước đây chỉ tìm trong ownedShops nên nhân viên bị
+      // mất ngữ cảnh shop và có thể bị auto-provision nhầm một shop mới.
+      let memberShop: Shop | null = null;
+      if (profile?.shop_id && !ownedShops.some((s) => s.id === profile.shop_id)) {
+        const { data: assignedShop, error: assignedShopError } = await this.sb
+          .from('shops')
+          .select('*')
+          .eq('id', profile.shop_id)
+          .maybeSingle();
+        if (assignedShopError) throw assignedShopError;
+        memberShop = (assignedShop as Shop | null) ?? null;
+      }
+
+      // Xác định shop đang hoạt động: override (chủ shop) >
+      // shop gán trong profile > shop sở hữu đầu tiên.
       const overrideId = localStorage.getItem('piopio-active-shop');
       let activeShop =
         (overrideId && ownedShops.find((s) => s.id === overrideId)) ||
-        (profile?.shop_id ? ownedShops.find((s) => s.id === profile.shop_id) : null) ||
+        (profile?.shop_id ? ownedShops.find((s) => s.id === profile.shop_id) ?? memberShop : null) ||
         ownedShops[0] ||
         null;
 
-      if (!activeShop) {
+      if (!activeShop && profile?.role === 'owner') {
         // Auto-provision a shop for the new owner
         const email = this.session()?.user?.email ?? 'Cửa hàng';
         const name = (email.split('@')[0] || 'Cửa hàng của tôi') + ' Store';

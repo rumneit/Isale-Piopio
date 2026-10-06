@@ -26,11 +26,13 @@ describe('permissions (RBAC)', () => {
     expect(permissionForRoute('/order')).toBe('sell');
     expect(permissionForRoute('/money-account')).toBe('money');
     expect(permissionForRoute('/report/stock')).toBe('report');
+    expect(permissionForRoute('/permission')).toBe('owner');
+    expect(permissionForRoute('/external-api')).toBe('owner');
   });
 
-  it('trả về null cho route không yêu cầu quyền', () => {
+  it('trả về null cho route công khai nội bộ và khóa config cho owner', () => {
     expect(permissionForRoute('/home')).toBeNull();
-    expect(permissionForRoute('/config')).toBeNull();
+    expect(permissionForRoute('/config')).toBe('owner');
     expect(permissionForRoute('')).toBeNull();
     expect(permissionForRoute(null)).toBeNull();
   });

@@ -41,7 +41,7 @@ import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 import { LoansService, Loan, LoanType, DEBT_TYPES } from '../../core/services/loans.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { TransactionsService } from '../../core/services/transactions.service';
-import { DebtFormModal } from './debt-form.modal';
+import { DebtFormModalComponent } from './debt-form.modal';
 
 interface MonthTab {
   label: string;
@@ -273,7 +273,7 @@ export class DebtPage implements OnInit {
 
   private async presentForm(loan?: Loan) {
     const modal = await this.modalCtrl.create({
-      component: DebtFormModal,
+      component: DebtFormModalComponent,
       componentProps: loan ? { loan } : {},
     });
     await modal.present();

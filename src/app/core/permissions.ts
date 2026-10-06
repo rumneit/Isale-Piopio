@@ -5,8 +5,8 @@
  * - ROLE_PRESETS: preset quyền theo vai trò chuẩn của kho.
  * - can(): owner luôn toàn quyền; nhân viên theo cờ đã lưu.
  *
- * Lưu ý an toàn: khi CHƯA xác định được hồ sơ (profile = null, ví dụ đang tải hoặc
- * môi trường test), can() trả về true để tránh khoá nhầm người dùng hợp lệ.
+ * Lưu ý an toàn: khi chưa xác định được profile, AuthService
+ * fail-closed. Guard chờ khởi tạo session/profile trước khi kiểm tra quyền.
  */
 
 export interface PermissionDef {
@@ -88,11 +88,11 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   delivery: 'sell',
   trade: 'sell',
   'sales-channels': 'sell',
-  'shipping-partners': 'sell',
+  'shipping-partners': 'owner',
   // Tiền
   'money-account': 'money',
   debt: 'money',
-  'cyberlotus-tax': 'money',
+  'cyberlotus-tax': 'owner',
   // CRM & khách hàng
   crm: 'crm',
   'crm-activities': 'crm',
@@ -103,6 +103,17 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   'activity-log': 'crm',
   // Báo cáo
   report: 'report',
+  // Cấu hình/secrets và phân quyền: chỉ owner. `owner` không
+  // nằm trong permissions nhân viên nên can() fail-closed cho staff.
+  permission: 'owner',
+  config: 'owner',
+  integrations: 'owner',
+  'external-api': 'owner',
+  fbpage: 'owner',
+  'zbs-marketing': 'owner',
+  'sms-marketing': 'owner',
+  'sepay-payment': 'owner',
+  'ai-services': 'owner',
 };
 
 /** Lấy quyền cần có cho một route, dựa vào phân đoạn đầu tiên của đường dẫn. */

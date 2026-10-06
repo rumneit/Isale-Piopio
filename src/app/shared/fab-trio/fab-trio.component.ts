@@ -8,7 +8,6 @@ import {
   Output,
   inject,
 } from '@angular/core';
-import { NgIf } from '@angular/common';
 import { IonFab, IonFabButton, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { add, caretUpOutline } from 'ionicons/icons';
@@ -26,17 +25,13 @@ import { add, caretUpOutline } from 'ionicons/icons';
         <ion-icon [name]="mainIcon" />
       </ion-fab-button>
     </ion-fab>
-    <ion-fab
-      *ngIf="showScrollTop"
-      slot="fixed"
-      vertical="bottom"
-      horizontal="end"
-      class="fab-side fab-top"
-    >
-      <ion-fab-button size="small" color="light" (click)="scrollTop()" aria-label="Lên đầu trang">
-        <ion-icon name="caret-up-outline" />
-      </ion-fab-button>
-    </ion-fab>
+    @if (showScrollTop) {
+      <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="fab-side fab-top">
+        <ion-fab-button size="small" color="light" (click)="scrollTop()" aria-label="Lên đầu trang">
+          <ion-icon name="caret-up-outline" />
+        </ion-fab-button>
+      </ion-fab>
+    }
   `,
   styles: [
     `
@@ -70,7 +65,7 @@ import { add, caretUpOutline } from 'ionicons/icons';
       }
     `,
   ],
-  imports: [IonFab, IonFabButton, IonIcon, NgIf],
+  imports: [IonFab, IonFabButton, IonIcon],
 })
 export class FabTrioComponent implements AfterViewInit, OnDestroy {
   @Input() mainIcon: string = 'add';

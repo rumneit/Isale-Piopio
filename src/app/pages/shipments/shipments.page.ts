@@ -40,7 +40,7 @@ import { ShipmentsService } from '../../core/services/shipments.service';
 import { ShippingPartnersService, ShippingPartner } from '../../core/services/shipping-partners.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Shipment } from '../../core/models/models';
-import { ShipmentFormModal } from './shipment-form.modal';
+import { ShipmentFormModalComponent } from './shipment-form.modal';
 import { printShipmentA6Label } from './shipment-label.print';
 
 @Component({
@@ -177,7 +177,7 @@ export class ShipmentsPage implements OnInit, OnDestroy {
       return;
     }
     const modal = await this.modalCtrl.create({
-      component: ShipmentFormModal,
+      component: ShipmentFormModalComponent,
     });
     await modal.present();
     const { role } = await modal.onWillDismiss();

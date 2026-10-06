@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { safeIlikeTerm } from '../utils/postgrest-search';
 
 export interface CrmLead {
   id: string;
@@ -48,7 +49,7 @@ export class CrmService {
 
     if (stage !== 'all') query = query.eq('stage', stage);
     if (search.trim()) {
-      const term = `%${search.trim()}%`;
+      const term = `%${safeIlikeTerm(search)}%`;
       query = query.or(`name.ilike.${term},phone.ilike.${term}`);
     }
 

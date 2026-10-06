@@ -76,7 +76,7 @@
             </div>
             <div class="pd-field" (click)="editField('cost')" role="button" tabindex="0">
               <span class="pd-label">Giá nhập</span>
-              <span class="pd-val money-field">{{ p.cost != null ? formatMoney(p.cost) : '—' }}</span>
+              <span class="pd-val money-field">{{ p.cost !== null && p.cost !== undefined ? formatMoney(p.cost) : '—' }}</span>
             </div>
             <div class="pd-field" (click)="editField('unit')" role="button" tabindex="0">
               <span class="pd-label">Đơn vị</span>
@@ -112,7 +112,7 @@
             </div>
             <div class="pd-field" (click)="editField('gia_nhap_nt')" role="button" tabindex="0">
               <span class="pd-label">Giá nhập (ngoại tệ)</span>
-              <span class="pd-val">{{ p.gia_nhap_nt != null ? p.gia_nhap_nt : '—' }}</span>
+              <span class="pd-val">{{ p.gia_nhap_nt !== null && p.gia_nhap_nt !== undefined ? p.gia_nhap_nt : '—' }}</span>
             </div>
             <div class="pd-field">
               <span class="pd-label">Hiện trên web</span>
@@ -197,7 +197,7 @@
             <div class="pd-card-rows">
               <div class="pd-row"><span>Đơn vị</span><b>{{ p.unit || '—' }}</b></div>
               <div class="pd-row"><span>Giá bán</span><b class="money">{{ formatMoney(p.price) }}</b></div>
-              <div class="pd-row"><span>Giá nhập</span><b class="money">{{ p.cost != null ? formatMoney(p.cost) : '—' }}</b></div>
+              <div class="pd-row"><span>Giá nhập</span><b class="money">{{ p.cost !== null && p.cost !== undefined ? formatMoney(p.cost) : '—' }}</b></div>
               <div class="pd-row"><span>Tỷ lệ quy đổi</span><b>1 {{ p.unit || 'SP' }} = 1 {{ p.unit || 'SP' }}</b></div>
             </div>
           </div>
@@ -213,12 +213,12 @@
               </div>
               <div class="pd-card-rows">
                 <div class="pd-row"><span>Đơn vị</span><b>{{ u.name }}</b></div>
-                <div class="pd-row"><span>Giá bán</span><b class="money">{{ u.price != null ? formatMoney(u.price) : '—' }}</b></div>
-                <div class="pd-row"><span>Giá nhập</span><b class="money">{{ u.cost != null ? formatMoney(u.cost) : '—' }}</b></div>
+                <div class="pd-row"><span>Giá bán</span><b class="money">{{ u.price !== null && u.price !== undefined ? formatMoney(u.price) : '—' }}</b></div>
+                <div class="pd-row"><span>Giá nhập</span><b class="money">{{ u.cost !== null && u.cost !== undefined ? formatMoney(u.cost) : '—' }}</b></div>
                 <div class="pd-row"><span>Tỷ lệ quy đổi</span><b>1 {{ u.name }} = {{ u.conversion }} {{ p.unit || 'SP' }}</b></div>
               </div>
               <p class="pd-note">Mỗi {{ u.name }} tương đương {{ u.conversion }} {{ p.unit || 'SP' }}</p>
-              @if (unitPerBase(u.price, u.conversion) != null) {
+              @if (unitPerBase(u.price, u.conversion) !== null) {
                 <p class="pd-calc">
                   <ion-icon name="calculator-outline" />
                   Giá trên đơn vị cơ bản: {{ formatNum(unitPerBase(u.price, u.conversion)!) }} ₫ mỗi {{ p.unit || 'SP' }},

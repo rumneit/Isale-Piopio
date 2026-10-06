@@ -207,7 +207,7 @@ import { Order, ShipmentStatus } from '../../core/models/models';
     FormsModule,
   ],
 })
-export class ShipmentFormModal implements OnInit {
+export class ShipmentFormModalComponent implements OnInit {
   /** Đơn hàng prefill (mở từ order-detail) */
   @Input() order: Order | null = null;
   /** Trạng thái đơn v22 nhập tay trước đó (prefill mã vận đơn nếu có) */

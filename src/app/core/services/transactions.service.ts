@@ -3,6 +3,7 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { LogService } from './log.service';
 import { Transaction, TradeCategory, RecurringTransaction } from '../models/models';
+import { safeIlikeTerm } from '../utils/postgrest-search';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionsService {
@@ -56,7 +57,7 @@ export class TransactionsService {
 
     if (type !== 'all') query = query.eq('type', type);
     if (search.trim()) {
-      const term = `%${search.trim()}%`;
+      const term = `%${safeIlikeTerm(search)}%`;
       query = query.or(`note.ilike.${term},category.ilike.${term}`);
     }
 

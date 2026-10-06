@@ -45,7 +45,6 @@ import {
 import { ProductsService } from '../../core/services/products.service';
 import { OrdersService } from '../../core/services/orders.service';
 import { CustomersService } from '../../core/services/customers.service';
-import { TransactionsService } from '../../core/services/transactions.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Product, Customer, MoneyAccount, Shop } from '../../core/models/models';
 import { MoneyAccountsService } from '../../core/services/money-accounts.service';
@@ -117,7 +116,6 @@ export class SalePage implements OnInit {
   private productsService = inject(ProductsService);
   private ordersService = inject(OrdersService);
   private customersService = inject(CustomersService);
-  private transactionsService = inject(TransactionsService);
   private moneyAccountsService = inject(MoneyAccountsService);
   private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
@@ -583,7 +581,7 @@ export class SalePage implements OnInit {
       const extras = this.hasOrderExtras();
       let saved = 0;
       for (const s of withItems) {
-        const order = await this.ordersService.create(
+        await this.ordersService.create(
           {
             code: s.orderCode || this.ordersService.newCode(),
             customer_id: s.selectedCustomerId,
@@ -606,22 +604,9 @@ export class SalePage implements OnInit {
             ...(extras.has('shipper_phone') ? { shipper_phone: s.shipperPhone.trim() || null } : {}),
             ...(extras.has('shipping_address') ? { shipping_address: s.shippingAddress.trim() || null } : {}),
           },
-          s.items.map((i) => ({ product_id: i.product_id, name: i.name, price: i.price, qty: i.qty }))
+          s.items.map((i) => ({ product_id: i.product_id, name: i.name, price: i.price, qty: i.qty })),
+          { recordIncome: this.dueOf(s) > 0 }
         );
-
-        // Ghi nhận thu tiền vào sổ
-        const due = this.dueOf(s);
-        if (due > 0) {
-          await this.transactionsService.create({
-            type: 'income',
-            category: 'Bán hàng',
-            amount: due,
-            note: `Thu tiền đơn ${order.code}`,
-            occurred_at: new Date().toISOString(),
-            order_id: order.id,
-            source: 'order',
-          });
-        }
         saved++;
       }
 

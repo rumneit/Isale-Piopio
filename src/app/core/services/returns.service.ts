@@ -1,9 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
-import { TransactionsService } from './transactions.service';
-import { ProductsService } from './products.service';
-import { InventoryLedgerService } from './inventory-ledger.service';
+import { safeIlikeTerm } from '../utils/postgrest-search';
 
 export interface ReturnNoteItem {
   product_id: string | null;
@@ -30,9 +28,6 @@ export interface ReturnNote {
 export class ReturnsService {
   private sb = inject(SupabaseService);
   private auth = inject(AuthService);
-  private transactionsService = inject(TransactionsService);
-  private productsService = inject(ProductsService);
-  private ledger = inject(InventoryLedgerService);
 
   private get shopId(): string | null {
     return this.auth.shop()?.id ?? null;
@@ -53,7 +48,7 @@ export class ReturnsService {
       .order('created_at', { ascending: false });
 
     if (search.trim()) {
-      const term = `%${search.trim()}%`;
+      const term = `%${safeIlikeTerm(search)}%`;
       query = query.or(`code.ilike.${term},order_code.ilike.${term}`);
     }
 
@@ -82,55 +77,24 @@ export class ReturnsService {
     if (!shopId) throw new Error('Không tìm thấy cửa hàng.');
     if (!items.length) throw new Error('Phiếu trả cần ít nhất một sản phẩm.');
 
-    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
-    const { data, error } = await this.sb
-      .from('return_notes')
-      .insert({
-        shop_id: shopId,
+    const { data, error } = await this.sb.client.rpc('inv_create_return_note', {
+      p_shop: shopId,
+      p_note: {
         order_id: input.order_id,
         order_code: input.order_code,
         code: this.newCode(),
         customer_id: input.customer_id,
-        items,
-        total,
         refunded: input.refunded,
         note: input.note,
-      })
-      .select()
-      .single();
-    if (error) throw error;
-
-    // Hoàn tồn kho QUA SỔ CÁI (v27). Fallback khi chưa chạy migration: cộng client-side.
-    const applied = await this.ledger.applyNote(
-      'return_note',
-      data.id,
-      items.map((i) => ({ product_id: i.product_id, name: i.name, qty: i.qty }))
-    );
-    if (!applied) {
-      for (const item of items) {
-        if (!item.product_id) continue;
-        try {
-          const product = await this.productsService.get(item.product_id);
-          if (product) {
-            await this.productsService.update(item.product_id, {
-              stock: Number(product.stock ?? 0) + item.qty,
-            });
-          }
-        } catch (e) {
-          console.error('stock revert failed for', item.name, e);
-        }
+      },
+      p_items: items,
+      p_nonce: crypto.randomUUID(),
+    });
+    if (error) {
+      if (error.code === 'PGRST202' || /inv_create_return_note|schema cache/i.test(error.message)) {
+        throw new Error('Cơ sở dữ liệu chưa có migration v34. Hãy cập nhật database trước khi trả hàng.');
       }
-    }
-
-    // Hoàn tiền cho khách (ghi giao dịch chi)
-    if (input.refunded && total > 0) {
-      await this.transactionsService.create({
-        type: 'expense',
-        category: 'Trả hàng',
-        amount: total,
-        note: `Hoàn tiền trả hàng ${input.order_code} → ${data.code}`,
-        occurred_at: new Date().toISOString(),
-      });
+      throw error;
     }
 
     return data as ReturnNote;

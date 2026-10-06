@@ -127,7 +127,7 @@
               @if (loan.category) {
                 <span class="meta-chip">{{ loan.category }}</span>
               }
-              @if (loan.interest_rate != null) {
+              @if (loan.interest_rate !== null && loan.interest_rate !== undefined) {
                 <span class="meta-chip">Lãi {{ loan.interest_rate }}%</span>
               }
               @if (loan.maturity_date) {

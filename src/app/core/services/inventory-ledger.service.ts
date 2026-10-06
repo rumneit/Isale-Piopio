@@ -7,9 +7,8 @@ import { AuthService } from './auth.service';
  *
  * Nguyên tắc: client KHÔNG cộng/trừ products.stock nữa — mọi biến động tồn
  * được ghi qua RPC server-side (một transaction, khoá dòng SP, idempotent,
- * chống âm kho cho xuất nội bộ). Fallback: nếu migration v27 chưa chạy
- * (RPC chưa tồn tại — lỗi PGRST202/schema cache) trả về `false` để caller
- * chạy đường cũ (cộng/trừ client-side), hệ thống vẫn hoạt động.
+ * chống âm kho cho xuất nội bộ). Không fallback cộng/trừ client-side:
+ * đường cũ không có transaction/row lock và có thể làm sai tồn khi race.
  */
 export type LedgerRefType = 'received_note' | 'return_note' | 'transfer_out';
 
@@ -99,8 +98,7 @@ export class InventoryLedgerService {
       return data !== false;
     } catch (e) {
       if (this.isMissingRpc(e)) {
-        console.warn('[ledger] v27 chưa chạy — fallback cộng/trừ stock client-side', e);
-        return false;
+        throw new Error('Thiếu migration sổ cái tồn kho v27. Thao tác đã dừng an toàn, không thay đổi tồn.');
       }
       throw e; // lỗi nghiệp vụ thật (âm kho, sai shop…) — dừng để user thấy
     }
@@ -120,8 +118,7 @@ export class InventoryLedgerService {
       return data !== false;
     } catch (e) {
       if (this.isMissingRpc(e)) {
-        console.warn('[ledger] v27 chưa chạy — fallback hoàn stock client-side', e);
-        return false;
+        throw new Error('Thiếu migration sổ cái tồn kho v27. Không thể đảo phiếu an toàn.');
       }
       throw e;
     }
@@ -153,8 +150,7 @@ export class InventoryLedgerService {
       };
     } catch (e) {
       if (this.isMissingRpc(e)) {
-        console.warn('[ledger] v27 chưa chạy — fallback chốt kiểm kê client-side', e);
-        return { fallback: true, already: false, items: null, total_diff: null };
+        throw new Error('Thiếu migration sổ cái tồn kho v27. Không thể chốt kiểm kê an toàn.');
       }
       throw e;
     }
@@ -208,8 +204,7 @@ export class InventoryLedgerService {
       return data as string;
     } catch (e) {
       if (this.isMissingRpc(e)) {
-        console.warn('[ledger] v28 chưa chạy — fallback tạo phiếu chuyển legacy', e);
-        return null;
+        throw new Error('Thiếu migration chuyển kho v28. Phiếu chưa được tạo.');
       }
       throw e;
     }
@@ -246,8 +241,7 @@ export class InventoryLedgerService {
       return { fallback: false, already: !!res.already, items: (res.items as any[]) ?? null };
     } catch (e) {
       if (this.isMissingRpc(e)) {
-        console.warn('[ledger] v28 chưa chạy — không thể nhận hàng in-transit', e);
-        return { fallback: true, already: false, items: null };
+        throw new Error('Thiếu migration chuyển kho v28. Không thể nhận hàng an toàn.');
       }
       throw e;
     }
