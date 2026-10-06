@@ -8,11 +8,22 @@ export interface ParsedExcelSheet {
   rows: ExcelCell[][];
 }
 
+export interface ParsedExcelWorkbook {
+  sheets: ParsedExcelSheet[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class ExcelIoService {
   readonly acceptedExtensions = ['xlsx', 'xls', 'csv'];
 
   async read(file: File): Promise<ParsedExcelSheet> {
+    const workbook = await this.readWorkbook(file);
+    const first = workbook.sheets[0];
+    if (!first) throw new Error('File không có trang tính nào.');
+    return first;
+  }
+
+  async readWorkbook(file: File): Promise<ParsedExcelWorkbook> {
     const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
     if (!this.acceptedExtensions.includes(extension)) {
       throw new Error('Chỉ hỗ trợ file .xlsx, .xls hoặc .csv.');
@@ -33,20 +44,23 @@ export class ExcelIoService {
           cellDates: true,
           dense: true,
         });
-    const name = workbook.SheetNames[0];
-    if (!name) throw new Error('File không có trang tính nào.');
-    const sheet = workbook.Sheets[name];
-    const rows = XLSX.utils.sheet_to_json<ExcelCell[]>(sheet, {
-      header: 1,
-      raw: true,
-      defval: null,
-      blankrows: false,
-    });
-    return { name, rows };
+    if (!workbook.SheetNames.length) throw new Error('File không có trang tính nào.');
+    return {
+      sheets: workbook.SheetNames.map((name) => ({
+        name,
+        rows: XLSX.utils.sheet_to_json<ExcelCell[]>(workbook.Sheets[name], {
+          header: 1,
+          raw: true,
+          defval: null,
+          blankrows: false,
+        }),
+      })),
+    };
   }
 
   download(filename: string, sheetName: string, rows: ExcelCell[][]): void {
-    const sheet = XLSX.utils.aoa_to_sheet(rows);
+    const safeRows = rows.map((row, rowIndex) => row.map((cell) => this.safeSpreadsheetCell(cell, rowIndex === 0)));
+    const sheet = XLSX.utils.aoa_to_sheet(safeRows);
     const columnCount = rows.reduce((max, row) => Math.max(max, row.length), 0);
     sheet['!cols'] = Array.from({ length: columnCount }, (_, columnIndex) => {
       const width = rows.reduce((max, row) => {
@@ -72,6 +86,11 @@ export class ExcelIoService {
     anchor.click();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  safeSpreadsheetCell(value: ExcelCell, isHeader = false): ExcelCell {
+    if (isHeader || typeof value !== 'string') return value;
+    return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
   }
 
   normalizeHeader(value: unknown): string {
@@ -128,6 +147,8 @@ export class ExcelIoService {
     const third = Number(match[3]);
     const [year, month, day] = first > 31 ? [first, second, third] : [third, second, first];
     if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31) return null;
+    const candidate = new Date(Date.UTC(year, month - 1, day));
+    if (candidate.getUTCFullYear() !== year || candidate.getUTCMonth() !== month - 1 || candidate.getUTCDate() !== day) return null;
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   }
 }

@@ -183,10 +183,10 @@ export class HomePage implements OnInit {
       actions: [
         { id: 'customers', label: 'Khách hàng', icon: 'people', color: '#3dc2ff', path: '/contact' },
         { id: 'notes', label: 'Ghi chú - Ảnh', icon: 'document-text', color: '#ff7043', path: '/note' },
-        { id: 'import-customers', label: 'Nhập khách Excel', icon: 'document-attach', color: '#5c6bc0', path: '/import' },
-        { id: 'export-customers', label: 'Xuất khách Excel', icon: 'reader', color: '#ec407a', path: '/contact' },
-        { id: 'import-contacts', label: 'Nhập danh bạ', icon: 'cloud-upload', color: '#26c6da', path: '/module/contact-import' },
-        { id: 'filter-dup', label: 'Lọc khách trùng', icon: 'copy', color: '#8d6e63', path: '/module/filter-duplicate' },
+        { id: 'import-customers', label: 'Nhập khách Excel', icon: 'document-attach', color: '#5c6bc0', path: '/contact/import' },
+        { id: 'export-customers', label: 'Xuất khách Excel', icon: 'reader', color: '#ec407a', path: '/contact/export' },
+        { id: 'import-contacts', label: 'Nhập danh bạ', icon: 'cloud-upload', color: '#26c6da', path: '/contact/import-device' },
+        { id: 'filter-dup', label: 'Lọc khách trùng', icon: 'copy', color: '#8d6e63', path: '/contact/filter-duplicate' },
       ],
     },
     {

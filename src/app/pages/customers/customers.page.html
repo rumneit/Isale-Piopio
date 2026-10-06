@@ -19,7 +19,7 @@
       <ion-searchbar aria-label="Tìm khách hàng" placeholder="Tìm tên, SĐT, mã khách hàng…" [debounce]="350" (ionInput)="onSearch($any($event))" />
       <button class="secondary-btn" [class.has-filter]="hasFilters()" (click)="filterOpen.set(true)"><ion-icon name="filter-outline" /> Bộ lọc @if(hasFilters()){<span class="filter-dot"></span>}</button>
       <button class="secondary-btn" (click)="openImport()"><ion-icon name="cloud-upload-outline" /> Nhập</button>
-      <button class="secondary-btn" (click)="exportCsv()"><ion-icon name="download-outline" /> Xuất</button>
+      <button class="secondary-btn" (click)="openExport()"><ion-icon name="download-outline" /> Xuất</button>
       <button class="primary-btn" (click)="openAdd()"><ion-icon name="person-add" /> Thêm khách hàng</button>
     </section>
 

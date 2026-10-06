@@ -3,6 +3,7 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { LogService } from './log.service';
 import { Customer, CustomerAttachment, CustomerDebtEntry, CustomerGroup, CustomerInteraction } from '../models/models';
+import { CustomerImportRow } from '../customer-tools';
 
 export interface CustomerFilters {
   q?: string; debtMin?: number | null; groupId?: string | null;
@@ -11,6 +12,7 @@ export interface CustomerFilters {
   sortDirection?: 'asc' | 'desc'; page?: number; pageSize?: number;
 }
 export interface CustomerPageResult { items: Customer[]; total: number; page: number; pageSize: number; }
+export interface CustomerImportResult { created: number; updated: number; skipped: number; failed: number; errors: Array<{ row: number; message: string }>; }
 
 @Injectable({ providedIn: 'root' })
 export class CustomersService {
@@ -21,6 +23,40 @@ export class CustomersService {
 
   async list(search = '', onlyDebt = false): Promise<Customer[]> {
     return (await this.listAdvanced({ q: search, debtMin: onlyDebt ? 0.000001 : null, pageSize: 500 })).items;
+  }
+
+  async listAll(filters: CustomerFilters = {}): Promise<Customer[]> {
+    const output: Customer[] = [];
+    let page = 1;
+    while (page <= 1000) {
+      const result = await this.listAdvanced({ ...filters, page, pageSize: 100 });
+      output.push(...result.items);
+      if (output.length >= result.total || result.items.length === 0) break;
+      page++;
+    }
+    if (page > 1000) throw new Error('Phạm vi có trên 100.000 khách hàng. Hãy dùng bộ lọc để chia nhỏ dữ liệu xuất.');
+    return output;
+  }
+
+  async importBatch(rows: CustomerImportRow[], strategy: 'skip' | 'update', idempotencyKey: string, sourceName: string): Promise<CustomerImportResult> {
+    const payload = rows;
+    const { data, error } = await this.sb.client.rpc('crm_import_customers', {
+      p_shop: this.requireShop(), p_rows: payload, p_strategy: strategy,
+      p_idempotency_key: idempotencyKey, p_source_name: sourceName,
+    });
+    if (error) throw error;
+    return data as CustomerImportResult;
+  }
+
+  async merge(primaryId: string, duplicates: Customer[], patch: Partial<Customer>): Promise<void> {
+    const expected = Object.fromEntries(duplicates.map((customer) => [customer.id, customer.updated_at ?? '']));
+    const { error } = await this.sb.client.rpc('crm_merge_customers', {
+      p_shop: this.requireShop(), p_primary_id: primaryId,
+      p_duplicate_ids: duplicates.map((customer) => customer.id),
+      p_expected_updated_at: expected, p_patch: patch,
+    });
+    if (error) throw error;
+    void this.logService.log('update', 'customer', `Hợp nhất ${duplicates.length + 1} hồ sơ khách hàng`);
   }
 
   async listAdvanced(filters: CustomerFilters = {}): Promise<CustomerPageResult> {

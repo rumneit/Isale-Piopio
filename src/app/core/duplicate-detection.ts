@@ -15,11 +15,15 @@ export interface DuplicateCandidate {
   phone: string | null;
   email: string | null;
   address: string | null;
+  code?: string | null;
+  debt?: number | null;
+  updated_at?: string | null;
+  created_at?: string | null;
 }
 
 export interface DuplicateGroup {
   key: string;
-  reason: 'phone' | 'name';
+  reason: 'phone' | 'email' | 'name';
   items: DuplicateCandidate[];
 }
 
@@ -50,6 +54,7 @@ export function normalizeEmail(email: string | null | undefined): string {
 export function findDuplicates(customers: DuplicateCandidate[]): DuplicateGroup[] {
   const groups: DuplicateGroup[] = [];
   const byPhone = new Map<string, DuplicateCandidate[]>();
+  const byEmail = new Map<string, DuplicateCandidate[]>();
   const byName = new Map<string, DuplicateCandidate[]>();
 
   for (const c of customers) {
@@ -65,10 +70,19 @@ export function findDuplicates(customers: DuplicateCandidate[]): DuplicateGroup[
       arr.push(c);
       byName.set(n, arr);
     }
+    const e = normalizeEmail(c.email);
+    if (e) {
+      const arr = byEmail.get(e) ?? [];
+      arr.push(c);
+      byEmail.set(e, arr);
+    }
   }
 
   for (const [key, items] of byPhone) {
     if (items.length > 1) groups.push({ key, reason: 'phone', items });
+  }
+  for (const [key, items] of byEmail) {
+    if (items.length > 1) groups.push({ key, reason: 'email', items });
   }
   for (const [key, items] of byName) {
     if (items.length > 1) {
@@ -86,8 +100,8 @@ export function findDuplicates(customers: DuplicateCandidate[]): DuplicateGroup[
   }
 
   // Loại nhóm trùng hoàn toàn theo SĐT khỏi nhóm tên (đã bắt ở byPhone)
-  const phoneIds = new Set(groups.filter((g) => g.reason === 'phone').flatMap((g) => g.items.map((i) => i.id)));
+  const exactIds = new Set(groups.filter((g) => g.reason === 'phone' || g.reason === 'email').flatMap((g) => g.items.map((i) => i.id)));
   return groups.filter(
-    (g) => g.reason === 'phone' || !g.items.every((i) => phoneIds.has(i.id))
+    (g) => g.reason !== 'name' || !g.items.every((i) => exactIds.has(i.id))
   );
 }

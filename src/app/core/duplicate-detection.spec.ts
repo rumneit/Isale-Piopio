@@ -41,13 +41,21 @@ describe('duplicate-detection', () => {
     expect(groups[0].items.map((i) => i.id).sort()).toEqual(['1', '2']);
   });
 
-  it('phát hiện trùng theo tên khi có thêm email/địa chỉ chung', () => {
+  it('phát hiện trùng theo email không phân biệt hoa thường', () => {
+    const groups = findDuplicates([
+      c({ id: '1', name: 'A', email: 'User@Example.com' }),
+      c({ id: '2', name: 'B', email: ' user@example.com ' }),
+    ]);
+    expect(groups.some((group) => group.reason === 'email')).toBe(true);
+  });
+
+  it('ưu tiên nhóm email chính xác khi cả tên và email đều trùng', () => {
     const groups = findDuplicates([
       c({ id: '1', name: 'Nguyễn Văn A', email: 'a@x.com' }),
       c({ id: '2', name: 'nguyen van a', email: 'A@X.com' }),
     ]);
     expect(groups).toHaveLength(1);
-    expect(groups[0].reason).toBe('name');
+    expect(groups[0].reason).toBe('email');
   });
 
   it('KHÔNG coi trùng khi chỉ trùng tên mà không có thông tin chung', () => {
@@ -56,6 +64,15 @@ describe('duplicate-detection', () => {
       c({ id: '2', name: 'Nguyễn Văn A', phone: '0900000002' }),
     ]);
     expect(groups).toHaveLength(0);
+  });
+
+  it('nhóm theo tên khi tên chuẩn hóa và địa chỉ cùng khớp', () => {
+    const groups = findDuplicates([
+      c({ id: '1', name: 'Nguyễn Văn A', address: '12 Nguyễn Huệ' }),
+      c({ id: '2', name: 'nguyen van a', address: '12 Nguyễn Huệ' }),
+    ]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].reason).toBe('name');
   });
 
   it('bỏ qua số điện thoại quá ngắn', () => {

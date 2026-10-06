@@ -5,7 +5,6 @@ import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonMenuButton, I
 import { addIcons } from 'ionicons';
 import { apps, callOutline, chevronBackOutline, chevronForwardOutline, closeOutline, cloudUploadOutline, downloadOutline, filterOutline, home, people, personAdd, searchOutline, star, time } from 'ionicons/icons';
 import { Customer, CustomerGroup } from '../../core/models/models';
-import { CsvExportService } from '../../core/services/csv-export.service';
 import { CustomerFilters, CustomersService } from '../../core/services/customers.service';
 import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 
@@ -15,7 +14,6 @@ import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 })
 export class CustomersPage implements OnInit {
   private readonly customers = inject(CustomersService);
-  private readonly csv = inject(CsvExportService);
   private readonly router = inject(Router);
   private readonly toastCtrl = inject(ToastController);
   readonly items = signal<Customer[]>([]);
@@ -69,16 +67,13 @@ export class CustomersPage implements OnInit {
   openDetail(item: Customer): void { void this.router.navigateByUrl(`/contact/detail/${item.id}`); }
   openAdd(): void { void this.router.navigateByUrl('/contact/add'); }
   openHome(): void { void this.router.navigateByUrl('/home'); }
-  openImport(): void { void this.router.navigateByUrl('/import'); }
+  openImport(): void { void this.router.navigateByUrl('/contact/import'); }
   openSettings(): void { void this.router.navigateByUrl('/custom-field'); }
   call(event: Event, customer: Customer): void { event.stopPropagation(); if (customer.phone) window.open(`tel:${customer.phone}`, '_self'); }
   formatMoney(value: number | null | undefined): string { return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(Number(value ?? 0)); }
   groupName(customer: Customer): string { return customer.customer_group_name || this.groups().find((group) => group.id === customer.customer_group_id)?.name || 'Chưa phân nhóm'; }
   statusLabel(status: Customer['status']): string { return ({ lead: 'Tiềm năng', active: 'Hoạt động', inactive: 'Ngừng hoạt động' } as any)[status ?? 'active'] ?? 'Hoạt động'; }
   initial(name: string): string { return name.trim().charAt(0).toUpperCase() || '?'; }
-  exportCsv(): void {
-    const rows = this.items().map((c) => [c.code ?? '', c.name, c.phone ?? '', c.email ?? '', this.groupName(c), c.debt ?? 0, c.total_spending ?? 0, this.statusLabel(c.status), c.created_at ?? '']);
-    this.csv.export('khach-hang', ['Mã KH', 'Họ tên', 'SĐT', 'Email', 'Nhóm', 'Công nợ', 'Tổng chi tiêu', 'Trạng thái', 'Ngày tạo'], rows);
-  }
+  openExport(): void { void this.router.navigate(['/contact/export'], { queryParams: this.selected().size ? { ids: [...this.selected()].join(',') } : {} }); }
   private async toast(message: string, color = 'success'): Promise<void> { const toast = await this.toastCtrl.create({ message, color, duration: 2200, position: 'bottom' }); await toast.present(); }
 }
