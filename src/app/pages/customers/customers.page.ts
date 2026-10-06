@@ -71,7 +71,7 @@ export class CustomersPage implements OnInit {
   openAdd(): void { void this.router.navigateByUrl('/contact/add'); }
   openHome(): void { void this.router.navigateByUrl('/home'); }
   openImport(): void { void this.router.navigateByUrl('/import'); }
-  openSettings(): void { void this.router.navigateByUrl('/config/custom-fields'); }
+  openSettings(): void { void this.router.navigateByUrl('/custom-field'); }
   call(event: Event, customer: Customer): void { event.stopPropagation(); if (customer.phone) window.open(`tel:${customer.phone}`, '_self'); }
   formatMoney(value: number | null | undefined): string { return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(Number(value ?? 0)); }
   groupName(customer: Customer): string { return customer.customer_group_name || this.groups().find((group) => group.id === customer.customer_group_id)?.name || 'Chưa phân nhóm'; }
