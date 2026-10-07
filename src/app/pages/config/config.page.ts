@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import {
   IonHeader,
@@ -32,6 +33,8 @@ import {
   globeOutline,
   settingsOutline,
   documentTextOutline,
+  receiptOutline,
+  shieldCheckmarkOutline,
   informationCircleOutline,
   cardOutline,
   cloudUploadOutline,
@@ -48,6 +51,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { SettingsService } from '../../core/services/settings.service';
+import {
+  DEFAULT_INVOICE_TEMPLATE,
+  DEFAULT_RECEIPT_TEMPLATE,
+  InvoiceTemplateKind,
+  InvoiceTemplateService,
+} from '../../core/services/invoice-template.service';
 
 interface ToggleSetting {
   key: string;
@@ -89,11 +98,14 @@ export class ConfigPage implements OnInit {
   private toastCtrl = inject(ToastController);
   private csvExport = inject(CsvExportService);
   private settingsService = inject(SettingsService);
+  private invoiceTemplates = inject(InvoiceTemplateService);
+  private sanitizer = inject(DomSanitizer);
 
   readonly busy = signal(false);
   readonly backingUp = signal(false);
   readonly changingPw = signal(false);
   readonly templateTab = signal<'edit' | 'preview'>('edit');
+  readonly templateKind = signal<InvoiceTemplateKind>('invoice');
   readonly tab = signal<'shop' | 'website' | 'other' | 'template'>('shop');
 
   // Thông tin shop
@@ -191,61 +203,19 @@ export class ConfigPage implements OnInit {
 
   // Template hóa đơn
   invoiceTemplate = '';
-  readonly defaultInvoiceTemplate = `{{!-- Mẫu hóa đơn mặc định của PioPio --}}
-{{#if shop.name}}
-<div style="border-bottom: 1px solid #000; padding-bottom: 8px;">
-  <div style="text-align: center;">
-    <strong style="font-size: 1.1em;">{{shop.name}}</strong><br>
-    {{#if shop.phone}}ĐT: {{shop.phone}}<br>{{/if}}
-    {{#if shop.address}}{{shop.address}}{{/if}}
-  </div>
-</div>
-{{/if}}
-<div style="text-align: center; margin: 8px 0;">
-  <h2 style="font-size: 18px; text-transform: uppercase;">HÓA ĐƠN BÁN HÀNG</h2>
-</div>
-<table style="width: 100%;">
-  <tr><td>Mã đơn:</td><td>{{order.orderCode}}</td></tr>
-  <tr><td>Ngày:</td><td>{{order.createdAt}}</td></tr>
-  <tr><td>Khách hàng:</td><td>{{customerName}}</td></tr>
-</table>
-<table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
-  <tr>
-    <th style="border: 1px solid #000; padding: 4px;">STT</th>
-    <th style="border: 1px solid #000; padding: 4px;">Tên</th>
-    <th style="border: 1px solid #000; padding: 4px;">SL</th>
-    <th style="border: 1px solid #000; padding: 4px;">Đơn giá</th>
-    <th style="border: 1px solid #000; padding: 4px;">Thành tiền</th>
-  </tr>
-  {{#each items}}
-  <tr>
-    <td style="border: 1px solid #000; padding: 4px; text-align: center;">{{index}}</td>
-    <td style="border: 1px solid #000; padding: 4px;">{{productName}}</td>
-    <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{count}}</td>
-    <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{priceFormatted}}</td>
-    <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{totalFormatted}}</td>
-  </tr>
-  {{/each}}
-  <tr>
-    <td colspan="4" style="border: 1px solid #000; padding: 4px;"><strong>TỔNG CỘNG</strong></td>
-    <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{order.totalFormatted}}</td>
-  </tr>
-</table>
-<div style="margin-top: 8px;">Số tiền viết bằng chữ: {{amountToText}}</div>
-<div style="margin-top: 16px;">
-  <table style="width: 100%;">
-    <tr>
-      <td style="width: 50%; text-align: center;"><strong>NGƯỜI MUA</strong><br>(Ký, ghi rõ họ tên)</td>
-      <td style="width: 50%; text-align: center;"><strong>NGƯỜI BÁN</strong><br>(Ký, ghi rõ họ tên)</td>
-    </tr>
-  </table>
-</div>`;
+  receiptTemplate = '';
+  private savedInvoiceTemplate = '';
+  private savedReceiptTemplate = '';
+  previewDocument: SafeHtml = '';
+  readonly defaultInvoiceTemplate = DEFAULT_INVOICE_TEMPLATE;
+  readonly defaultReceiptTemplate = DEFAULT_RECEIPT_TEMPLATE;
 
   readonly templateVars = [
     { group: 'Shop', vars: ['shop.name', 'shop.phone', 'shop.address', 'shop.email', 'shop.bankName'] },
     { group: 'Đơn hàng', vars: ['order.orderCode', 'order.createdAt', 'order.totalFormatted', 'amountToText'] },
     { group: 'Sản phẩm', vars: ['items', 'productName', 'count', 'priceFormatted', 'totalFormatted'] },
     { group: 'QR / Nhận', vars: ['showQr', 'qrCodeUrl', 'sellerName', 'customerName'] },
+    { group: 'Bill', vars: ['order.paidFormatted', 'order.changeFormatted', 'receiptCompact', 'totalWithCurrency'] },
   ];
 
   error = '';
@@ -258,6 +228,8 @@ export class ConfigPage implements OnInit {
       globeOutline,
       settingsOutline,
       documentTextOutline,
+      receiptOutline,
+      shieldCheckmarkOutline,
       informationCircleOutline,
       cardOutline,
       cloudUploadOutline,
@@ -322,7 +294,13 @@ export class ConfigPage implements OnInit {
     this.timeFormat = this.settingsService.get('time_format') ?? 'HH:mm';
     this.printNote = this.settingsService.get('print_note') ?? '';
     this.emptyRows = this.settingsService.numberValue('invoice_empty_rows', 2);
-    this.invoiceTemplate = this.settingsService.get('invoice_template') ?? this.defaultInvoiceTemplate;
+    this.invoiceTemplate = this.settingsService.get('invoice_template_large')
+      ?? this.settingsService.get('invoice_template')
+      ?? this.defaultInvoiceTemplate;
+    this.receiptTemplate = this.settingsService.get('invoice_template_receipt') ?? this.defaultReceiptTemplate;
+    this.savedInvoiceTemplate = this.invoiceTemplate;
+    this.savedReceiptTemplate = this.receiptTemplate;
+    this.refreshTemplatePreview();
 
     for (const t of this.toggleSettings) {
       const raw = this.settingsService.get(t.key);
@@ -377,8 +355,6 @@ export class ConfigPage implements OnInit {
       for (const t of this.toggleSettings) {
         await this.settingsService.set(t.key, String(!!this.toggleValues[t.key]));
       }
-      await this.settingsService.set('invoice_template', this.invoiceTemplate);
-
       await this.auth.reloadUserData();
       this.toast('Đã lưu cấu hình shop');
     } catch (e: any) {
@@ -411,17 +387,73 @@ export class ConfigPage implements OnInit {
     }
   }
 
+  get activeTemplate(): string {
+    return this.templateKind() === 'invoice' ? this.invoiceTemplate : this.receiptTemplate;
+  }
+
+  set activeTemplate(value: string) {
+    if (this.templateKind() === 'invoice') this.invoiceTemplate = value;
+    else this.receiptTemplate = value;
+  }
+
+  templateDirty(): boolean {
+    return this.templateKind() === 'invoice'
+      ? this.invoiceTemplate !== this.savedInvoiceTemplate
+      : this.receiptTemplate !== this.savedReceiptTemplate;
+  }
+
+  usingDefaultTemplate(): boolean {
+    return this.activeTemplate.trim() === this.invoiceTemplates.defaultFor(this.templateKind()).trim();
+  }
+
+  selectTemplateKind(kind: InvoiceTemplateKind): void {
+    this.templateKind.set(kind);
+    this.error = '';
+    if (this.templateTab() === 'preview') this.refreshTemplatePreview();
+  }
+
+  selectTemplateTab(tab: 'edit' | 'preview'): void {
+    this.templateTab.set(tab);
+    this.error = '';
+    if (tab === 'preview') this.refreshTemplatePreview();
+  }
+
+  async saveTemplate(): Promise<void> {
+    const kind = this.templateKind();
+    const template = this.activeTemplate;
+    const validation = this.invoiceTemplates.validate(template);
+    if (validation) { this.error = validation; return; }
+    this.busy.set(true);
+    this.error = '';
+    try {
+      const key = kind === 'invoice' ? 'invoice_template_large' : 'invoice_template_receipt';
+      if (template.trim() === this.invoiceTemplates.defaultFor(kind).trim()) await this.settingsService.remove(key);
+      else await this.settingsService.set(key, template);
+      // Dọn key đời cũ sau khi mẫu khổ lớn đã được chuyển sang cấu trúc hai template.
+      if (kind === 'invoice') await this.settingsService.remove('invoice_template');
+      if (kind === 'invoice') this.savedInvoiceTemplate = template;
+      else this.savedReceiptTemplate = template;
+      this.toast('Đã lưu template hóa đơn');
+    } catch (error: any) {
+      this.error = error?.message ?? 'Không thể lưu template.';
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
   resetTemplate() {
-    this.invoiceTemplate = this.defaultInvoiceTemplate;
-    this.toast('Đã khôi phục mẫu mặc định — nhấn ✓ để lưu');
+    this.activeTemplate = this.invoiceTemplates.defaultFor(this.templateKind());
+    this.error = '';
+    if (this.templateTab() === 'preview') this.refreshTemplatePreview();
+    this.toast('Đã dùng mẫu mặc định — nhấn LƯU TEMPLATE để xác nhận');
   }
 
   exportTemplate() {
-    const blob = new Blob([this.invoiceTemplate], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([this.activeTemplate], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'order-invoice-template.hbs';
+    a.download = this.invoiceTemplates.filenameFor(this.templateKind());
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -432,12 +464,43 @@ export class ConfigPage implements OnInit {
     const input = ev.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+    if (file.size > this.invoiceTemplates.maxTemplateBytes) {
+      this.error = 'File template vượt quá giới hạn 200 KB.';
+      input.value = '';
+      return;
+    }
+    if (!/\.(hbs|html|txt)$/i.test(file.name)) {
+      this.error = 'Chỉ chấp nhận file .hbs, .html hoặc .txt.';
+      input.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
-      this.invoiceTemplate = String(reader.result ?? '');
+      const value = String(reader.result ?? '');
+      const validation = this.invoiceTemplates.validate(value);
+      if (validation) { this.error = validation; input.value = ''; return; }
+      this.activeTemplate = value;
+      this.error = '';
       this.toast('Đã nạp template — nhấn ✓ để lưu');
+      input.value = '';
     };
+    reader.onerror = () => { this.error = 'Không thể đọc file template.'; input.value = ''; };
     reader.readAsText(file, 'utf-8');
+  }
+
+  refreshTemplatePreview(): void {
+    try {
+      const rendered = this.invoiceTemplates.render(
+        this.activeTemplate,
+        this.invoiceTemplates.previewContext(this.auth.shop(), this.printNote, Number(this.emptyRows ?? 0)),
+      );
+      this.previewDocument = this.sanitizer.bypassSecurityTrustHtml(
+        this.invoiceTemplates.document(rendered, this.templateKind()),
+      );
+      this.error = '';
+    } catch (error: any) {
+      this.error = error?.message ?? 'Không thể dựng bản xem trước.';
+    }
   }
 
   async backupData() {

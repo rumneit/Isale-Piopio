@@ -6,6 +6,7 @@
       </ion-button>
     </ion-buttons>
     <ion-title>Cấu hình shop</ion-title>
+    @if (tab() !== 'template') {
     <ion-buttons slot="end">
       <ion-button (click)="save()" [disabled]="busy()" aria-label="Lưu cấu hình">
         @if (busy()) {
@@ -15,6 +16,7 @@
         }
       </ion-button>
     </ion-buttons>
+    }
   </ion-toolbar>
   <ion-toolbar>
     <ion-segment [value]="tab()" (ionChange)="selectTab($any($event.detail.value))" [scrollable]="true">
@@ -270,8 +272,34 @@
 
     <!-- TAB: Template hóa đơn -->
     @if (tab() === 'template') {
-      <ion-toolbar class="template-toolbar">
-        <ion-segment [value]="templateTab()" (ionChange)="templateTab.set($any($event.detail.value))">
+      <section class="template-shell" aria-labelledby="invoice-template-title">
+        <div class="template-heading">
+          <div class="template-title-row">
+            <h2 id="invoice-template-title">Template in hóa đơn bán hàng</h2>
+            <span class="template-status">
+              <ion-icon name="shield-checkmark-outline" />
+              {{ usingDefaultTemplate() ? 'Đang dùng mẫu mặc định' : 'Đang dùng mẫu tùy chỉnh' }}
+            </span>
+          </div>
+          <button class="template-save" type="button" (click)="saveTemplate()" [disabled]="busy() || !templateDirty()">
+            @if (busy()) { <ion-spinner name="crescent" /> } @else { <ion-icon name="checkmark-outline" /> }
+            LƯU TEMPLATE
+          </button>
+        </div>
+
+        <div class="template-kinds" role="tablist" aria-label="Khổ hóa đơn">
+          <button type="button" role="tab" [attr.aria-selected]="templateKind() === 'invoice'" [class.active]="templateKind() === 'invoice'" (click)="selectTemplateKind('invoice')">
+            <span class="kind-icon"><ion-icon name="document-text-outline" /></span>
+            <strong>Hóa đơn khổ lớn</strong>
+          </button>
+          <button type="button" role="tab" [attr.aria-selected]="templateKind() === 'receipt'" [class.active]="templateKind() === 'receipt'" (click)="selectTemplateKind('receipt')">
+            <span class="kind-icon"><ion-icon name="receipt-outline" /></span>
+            <strong>Bill (khổ nhỏ)</strong>
+          </button>
+        </div>
+
+        <ion-toolbar class="template-toolbar">
+        <ion-segment [value]="templateTab()" (ionChange)="selectTemplateTab($any($event.detail.value))">
           <ion-segment-button value="edit">
             <ion-icon name="code-slash-outline" slot="start" />
             <ion-label>Soạn thảo</ion-label>
@@ -283,70 +311,54 @@
         </ion-segment>
       </ion-toolbar>
 
-      <div class="template-actions">
-        <label class="template-icon-btn" title="Nạp template">
-          <ion-icon name="cloud-upload-outline" />
-          <input type="file" accept=".hbs,.html,.txt" (change)="importTemplate($any($event))" hidden />
-        </label>
-        <button class="template-icon-btn" (click)="exportTemplate()" title="Tải template">
-          <ion-icon name="download-outline" />
-        </button>
-        <button class="template-icon-btn" (click)="resetTemplate()" title="Khôi phục mặc định">
-          <ion-icon name="refresh-outline" />
-        </button>
-      </div>
-
       @if (templateTab() === 'edit') {
-        <div class="app-card">
-          <div class="app-card-title"><h4><ion-icon name="code-slash-outline" /> Mẫu hóa đơn (Handlebars)</h4></div>
-          <ion-textarea
-            class="template-editor"
-            [(ngModel)]="invoiceTemplate"
-            [rows]="18"
-            [autoGrow]="false"
-            spellcheck="false"
-          ></ion-textarea>
+        <div class="code-editor">
+          <div class="code-editor-head">
+            <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <code>{{ templateKind() === 'invoice' ? 'order-invoice.hbs' : 'order-receipt.hbs' }}</code>
+            <div class="template-actions">
+              <label class="template-icon-btn" title="Upload file HTML" aria-label="Upload file HTML">
+                <ion-icon name="cloud-upload-outline" />
+                <input type="file" accept=".hbs,.html,.txt" (change)="importTemplate($any($event))" hidden />
+              </label>
+              <button type="button" class="template-icon-btn" (click)="exportTemplate()" title="Tải mẫu hiện tại" aria-label="Tải mẫu hiện tại">
+                <ion-icon name="download-outline" />
+              </button>
+              <button type="button" class="template-icon-btn" (click)="resetTemplate()" title="Dùng mẫu mặc định" aria-label="Dùng mẫu mặc định">
+                <ion-icon name="refresh-outline" />
+              </button>
+            </div>
+          </div>
+          <textarea class="template-editor" [(ngModel)]="activeTemplate" spellcheck="false" aria-label="Nội dung template Handlebars"></textarea>
         </div>
 
-        <div class="app-card">
-          <div class="app-card-title"><h4><ion-icon name="code-slash-outline" /> Biến template (Handlebars)</h4></div>
+        <div class="template-vars-card">
+          <h3><ion-icon name="code-slash-outline" /> Biến template (Handlebars)</h3>
+          <p>Một số biến thường dùng:</p>
           @for (g of templateVars; track g.group) {
+            @if (g.group !== 'Bill' || templateKind() === 'receipt') {
             <div class="var-group">
-              <h5>{{ g.group }}</h5>
+              <h4>{{ g.group.toUpperCase() }}</h4>
               <div class="var-chips">
                 @for (v of g.vars; track v) {
                   <code>{{ '{{' + v + '}}' }}</code>
                 }
               </div>
             </div>
+            }
           }
+          <p class="default-hint">Nội dung trùng mẫu mặc định khi Lưu sẽ được coi là dùng mẫu hệ thống (không lưu bản copy).</p>
         </div>
       } @else {
-        <div class="app-card">
-          <div class="app-card-title"><h4><ion-icon name="eye-outline" /> Xem trước</h4></div>
-          <div class="template-preview">
-            <div class="preview-title">HÓA ĐƠN BÁN HÀNG</div>
-            <div class="preview-shop">{{ shopName || 'Tên cửa hàng' }}</div>
-            @if (shopPhone) { <div class="preview-line">ĐT: {{ shopPhone }}</div> }
-            @if (shopAddress) { <div class="preview-line">{{ shopAddress }}</div> }
-            <div class="preview-sep"></div>
-            <div class="preview-line">Mã đơn: DH-XXXX</div>
-            <div class="preview-line">Ngày: {{ todayLabel }}</div>
-            <div class="preview-sep"></div>
-            <table class="preview-table">
-              <tr><th>STT</th><th>Tên</th><th>SL</th><th>Thành tiền</th></tr>
-              <tr><td>1</td><td>Sản phẩm mẫu</td><td>1</td><td>{{ '15.000 ₫' }}</td></tr>
-              <tr><td colspan="3"><strong>TỔNG CỘNG</strong></td><td><strong>{{ '15.000 ₫' }}</strong></td></tr>
-            </table>
-            @if (printNote) { <div class="preview-note">{{ printNote }}</div> }
-            <div class="preview-sign">
-              <span>NGƯỜI MUA</span>
-              <span>NGƯỜI BÁN</span>
-            </div>
-          </div>
-          <ion-note class="config-hint">Đây là bản xem trước mô phỏng. Hóa đơn thật in theo template ở tab Soạn thảo.</ion-note>
+        <div class="preview-tools">
+          <p>Xem trước dùng thông tin shop thật; dòng sản phẩm là dữ liệu mẫu.</p>
+          <button type="button" (click)="refreshTemplatePreview()"><ion-icon name="refresh-outline" /> LÀM MỚI XEM TRƯỚC</button>
+        </div>
+        <div class="template-preview-stage" [class.receipt]="templateKind() === 'receipt'">
+          <iframe class="template-preview-frame" sandbox="" [srcdoc]="previewDocument" title="Xem trước template hóa đơn"></iframe>
         </div>
       }
+      </section>
     }
   </div>
 </ion-content>

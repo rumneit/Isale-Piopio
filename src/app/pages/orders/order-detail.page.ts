@@ -42,6 +42,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { Order, OrderItem, Shop, Shipment } from '../../core/models/models';
 import { ShipmentFormModalComponent } from '../shipments/shipment-form.modal';
 import { ModalController } from '@ionic/angular';
+import { SettingsService } from '../../core/services/settings.service';
+import { InvoiceTemplateService, InvoiceTemplateKind } from '../../core/services/invoice-template.service';
 
 @Component({
   selector: 'app-order-detail',
@@ -79,6 +81,8 @@ export class OrderDetailPage implements OnInit {
   private actionSheetCtrl = inject(ActionSheetController);
   private auth = inject(AuthService);
   private modalCtrl = inject(ModalController);
+  private settings = inject(SettingsService);
+  private invoiceTemplates = inject(InvoiceTemplateService);
 
   readonly order = signal<Order | null>(null);
   readonly items = signal<OrderItem[]>([]);
@@ -101,6 +105,7 @@ export class OrderDetailPage implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    await this.settings.load();
     this.hasPaymentMethod = await this.ordersService.detectPaymentMethod().catch(() => false);
     this.extras.set(await this.ordersService.detectOrderExtras().catch(() => new Set<string>()));
     await this.load();
@@ -321,92 +326,25 @@ export class OrderDetailPage implements OnInit {
   printInvoice() {
     const o = this.order();
     if (!o) return;
-    const items = this.items();
-    const shopName = this.auth.shop()?.name ?? 'PioPio';
-    const esc = (s: any) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const money = (v: number) => new Intl.NumberFormat('vi-VN').format(Math.round(v)) + '₫';
-
-    const rows = items
-      .map(
-        (i) => `<tr>
-          <td class="l">${esc(i.name)}<br><small>${i.qty} × ${money(i.price)}</small></td>
-          <td class="r">${money(i.total)}</td>
-        </tr>`
-      )
-      .join('');
-
-    const qr = this.qrUrlFor(o);
-    const shipFee = Number(o.ship_fee ?? 0);
-    const shipHtml =
-      this.hasShippingInfo(o) && shipFee > 0
-        ? `<tr><td class="l">Phi van chuyen${o.ship_fee_by_customer ? '' : ' (shop tra)'}</td><td class="r">${money(shipFee)}</td></tr>`
-        : '';
-    const shipInfo =
-      this.hasShippingInfo(o)
-        ? `<hr>
-  <table>
-    ${o.shipping_code ? `<tr><td class="l">Ma van don: <b>${esc(o.shipping_code)}</b>${o.shipping_partner ? ' - ' + esc(o.shipping_partner) : ''}</td></tr>` : ''}
-    ${o.shipper_name ? `<tr><td class="l">Shipper: ${esc(o.shipper_name)}${o.shipper_phone ? ' - ' + esc(o.shipper_phone) : ''}</td></tr>` : ''}
-    ${o.shipping_address ? `<tr><td class="l">Giao den: ${esc(o.shipping_address)}</td></tr>` : ''}
-  </table>`
-        : '';
-    const qrHtml = qr
-      ? `<hr>
-  <p class="center"><img src="${qr}" alt="QR thanh toan" width="180" height="180"></p>
-  <p class="center muted">Quet ma QR de thanh toan</p>`
-      : '';
-
-    const html = `<!DOCTYPE html>
-<html lang="vi"><head><meta charset="utf-8"><title>Hoa don ${esc(o.code)}</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Courier New', monospace; font-size: 13px; padding: 10px; width: 320px; color: #000; }
-  h1 { font-size: 17px; text-align: center; margin-bottom: 2px; }
-  .center { text-align: center; }
-  .muted { font-size: 11px; }
-  hr { border: none; border-top: 1px dashed #000; margin: 8px 0; }
-  table { width: 100%; border-collapse: collapse; }
-  td { padding: 3px 0; vertical-align: top; }
-  .l { text-align: left; } .r { text-align: right; white-space: nowrap; }
-  .total { font-size: 15px; font-weight: bold; }
-  .thanks { margin-top: 10px; text-align: center; }
-  @media print { body { width: 100%; } }
-</style></head>
-<body>
-  <h1>${esc(shopName)}</h1>
-  <p class="center muted">Hoa don ban hang</p>
-  <hr>
-  <table>
-    <tr><td class="l">So: <b>${esc(o.code)}</b></td><td class="r">${esc(this.fmtDate(o.created_at))}</td></tr>
-    <tr><td class="l">Khach: <b>${esc(o.customer_name ?? 'Khach le')}</b>${o.customer_phone ? ' - ' + esc(o.customer_phone) : ''}</td><td class="r">${o.paid ? 'DA THANH TOAN' : 'CON NO'}</td></tr>
-    <tr><td class="l">Trang thai: <b>${esc(this.statusLabel(o.status))}</b></td><td class="r">${esc(this.paymentLabel(o.payment_method))}</td></tr>
-  </table>
-  <hr>
-  <table>${rows}</table>
-  <hr>
-  <table>
-    ${o.discount ? `<tr><td class="l">Giam gia</td><td class="r">-${money(o.discount)}</td></tr>` : ''}
-    ${shipHtml}
-    <tr class="total"><td class="l">TONG CONG</td><td class="r">${money(o.total)}</td></tr>
-  </table>${shipInfo}${qrHtml}
-  <p class="thanks muted">Cam on quy khach — Hen gap lai!</p>
-  <script>window.onload = function () { window.print(); };</script>
-</body></html>`;
-
-    const w = window.open('', '_blank', 'width=380,height=640');
-    if (!w) {
-      this.toast('Trình chặn popup đang bật. Hãy cho phép popup để in.', 'warning');
-      return;
+    const kind: InvoiceTemplateKind = this.settings.booleanValue('print_large_invoice') ? 'invoice' : 'receipt';
+    const key = kind === 'invoice' ? 'invoice_template_large' : 'invoice_template_receipt';
+    const legacy = kind === 'invoice' ? this.settings.get('invoice_template') : null;
+    const template = this.settings.get(key) ?? legacy ?? this.invoiceTemplates.defaultFor(kind);
+    try {
+      const opened = this.invoiceTemplates.openPrint(template, kind, this.invoiceTemplates.context({
+        order: o,
+        items: this.items(),
+        shop: this.auth.shop(),
+        qrCodeUrl: this.settings.booleanValue('print_qr') ? this.qrUrlFor(o) : '',
+        printNote: this.settings.get('print_note') ?? '',
+        emptyRows: this.settings.numberValue('invoice_empty_rows', 2),
+        hideDiscountColumn: this.settings.booleanValue('hide_discount_column'),
+        staffDisplay: this.auth.profile()?.full_name ?? '',
+      }));
+      if (!opened) this.toast('Trình chặn popup đang bật. Hãy cho phép popup để in.', 'warning');
+    } catch (error: any) {
+      this.toast(error?.message ?? 'Không thể dựng template hóa đơn.', 'danger');
     }
-    w.document.write(html);
-    w.document.close();
-  }
-
-  private fmtDate(iso: string | null | undefined): string {
-    if (!iso) return '';
-    const d = new Date(iso);
-    const p = (n: number) => String(n).padStart(2, '0');
-    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
   }
 
   formatMoney(v: number | null | undefined): string {

@@ -54,7 +54,7 @@ export class SettingsService {
   numberValue(key: string, fallback: number): number {
     const raw = this.get(key);
     const n = Number(raw);
-    return Number.isFinite(n) && n > 0 ? n : fallback;
+    return Number.isFinite(n) && n >= 0 ? n : fallback;
   }
 
   booleanValue(key: string, fallback = false): boolean {
@@ -73,5 +73,17 @@ export class SettingsService {
       .upsert({ shop_id: shopId, key, value, updated_at: new Date().toISOString() }, { onConflict: 'shop_id,key' });
     if (error) throw error;
     this.values.update((v) => ({ ...v, [key]: value }));
+  }
+
+  async remove(key: string): Promise<void> {
+    const shopId = this.shopId;
+    if (!shopId) throw new Error('Không tìm thấy cửa hàng.');
+    const { error } = await this.sb.from('settings').delete().eq('shop_id', shopId).eq('key', key);
+    if (error) throw error;
+    this.values.update((values) => {
+      const next = { ...values };
+      delete next[key];
+      return next;
+    });
   }
 }
