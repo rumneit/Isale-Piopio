@@ -180,7 +180,7 @@ export class A11yLabelService {
       const restore = this.focusBeforeDialog;
       this.activeCustomDialog = null;
       this.focusBeforeDialog = null;
-      restore?.focus();
+      if (restore) this.focusElement(restore);
       return;
     }
     this.focusBeforeDialog = document.activeElement instanceof HTMLElement ? document.activeElement : null;
