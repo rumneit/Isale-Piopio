@@ -1,16 +1,16 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="goBack()">
+      <ion-button (click)="goBack()" aria-label="Quay lại">
         <ion-icon slot="icon-only" name="arrow-back-outline" />
       </ion-button>
-      <ion-button (click)="openHome()">
+      <ion-button (click)="openHome()" aria-label="Về trang chủ">
         <ion-icon slot="icon-only" name="home-outline" />
       </ion-button>
     </ion-buttons>
     <ion-title>Bán hàng</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="save()" [disabled]="busy()">
+      <ion-button (click)="save()" [disabled]="busy()" aria-label="Lưu đơn hàng">
         @if (busy()) {
           <ion-spinner name="crescent" />
         } @else {
@@ -27,7 +27,7 @@
         <button class="order-tab" [class.active]="i === activeOrderIdx()" (click)="switchOrderTab(i)">
           Đơn hàng {{ i + 1 }}
           @if (orderTabs().length > 1) {
-            <span class="order-tab-remove" (click)="removeOrderTab(i); $event.stopPropagation()" role="button" aria-label="Xóa đơn này" (keydown.enter)="removeOrderTab(i)"><ion-icon name="close-outline" /></span>
+            <span class="order-tab-remove" tabindex="0" (click)="removeOrderTab(i); $event.stopPropagation()" role="button" aria-label="Xóa đơn này" (keydown.enter)="removeOrderTab(i); $event.stopPropagation()" (keydown.space)="removeOrderTab(i); $event.preventDefault(); $event.stopPropagation()"><ion-icon name="close-outline" /></span>
           }
         </button>
       }
@@ -53,6 +53,12 @@
     <div class="page-loading"><ion-spinner name="crescent" /></div>
   } @else {
     <div class="app-page-container sale-container">
+      @if (allowNegativeStock()) {
+        <div class="app-banner-warning" role="status">
+          <ion-icon name="warning-outline" />
+          <span>Đang bật bán âm kho. Đơn hoàn tất có thể làm tồn sản phẩm nhỏ hơn 0.</span>
+        </div>
+      }
       <!-- TAB THANH TOÁN -->
       @if (tab() === 'payment') {
         <div class="sale-split">
@@ -61,12 +67,12 @@
         <div class="app-card">
           <div class="sale-row">
             <span class="sale-label">Mã đơn</span>
-            <ion-input [(ngModel)]="orderCode" class="sale-input" />
-            <button class="icon-btn" (click)="resetCode()"><ion-icon name="refresh-outline" /></button>
+            <ion-input [(ngModel)]="orderCode" class="sale-input" aria-label="Mã đơn hàng" />
+            <button class="icon-btn" (click)="resetCode()" aria-label="Tạo mã đơn mới"><ion-icon name="refresh-outline" /></button>
           </div>
           <div class="sale-row">
             <span class="sale-label">Ngày</span>
-            <ion-input type="datetime-local" [(ngModel)]="orderDate" class="sale-input" />
+            <ion-input type="datetime-local" [(ngModel)]="orderDate" class="sale-input" aria-label="Ngày tạo đơn" />
           </div>
           @if (hasPaymentMethodColumn) {
             <div class="sale-row">
@@ -103,7 +109,7 @@
               placeholder="Mã vạch: chọn ô này, dùng đầu đọc hoặc nhập tay"
               class="barcode-input"
             />
-            <button class="icon-btn" (click)="addByBarcode()"><ion-icon name="barcode-outline" /></button>
+            <button class="icon-btn" (click)="addByBarcode()" aria-label="Thêm sản phẩm theo mã vạch"><ion-icon name="barcode-outline" /></button>
           </div>
 
           @if (items().length === 0) {
@@ -120,12 +126,12 @@
                     <div class="sale-item-meta">{{ item.unit ?? '—' }} · {{ formatMoney(item.price) }}</div>
                   </div>
                   <div class="qty-ctrl">
-                    <button class="qty-btn" (click)="decQty(i)"><ion-icon name="remove-outline" /></button>
-                    <span class="qty-val">{{ item.qty }}</span>
-                    <button class="qty-btn" (click)="incQty(i)"><ion-icon name="add-outline" /></button>
+                    <button class="qty-btn" (click)="decQty(i)" [attr.aria-label]="'Giảm số lượng ' + item.name"><ion-icon name="remove-outline" /></button>
+                    <span class="qty-val" [attr.aria-label]="'Số lượng ' + item.qty">{{ item.qty }}</span>
+                    <button class="qty-btn" (click)="incQty(i)" [attr.aria-label]="'Tăng số lượng ' + item.name"><ion-icon name="add-outline" /></button>
                   </div>
                   <span class="sale-item-total">{{ formatMoney(item.price * item.qty) }}</span>
-                  <button class="icon-btn danger" (click)="removeItem(i)"><ion-icon name="trash-outline" /></button>
+                  <button class="icon-btn danger" (click)="removeItem(i)" [attr.aria-label]="'Xóa ' + item.name + ' khỏi đơn'"><ion-icon name="trash-outline" /></button>
                 </div>
               }
             </div>
@@ -173,7 +179,7 @@
                           <img [src]="p.image" [alt]="p.name" loading="lazy" (error)="hideImg($event)" />
                         }
                         <span class="tile-name">{{ p.name }}</span>
-                        <span class="tile-add" (click)="quickAdd($event, p)" title="Thêm nhanh vào đơn"><ion-icon name="add-outline" /></span>
+                        <span class="tile-add" aria-hidden="true" (click)="quickAdd($event, p)" title="Thêm nhanh vào đơn"><ion-icon name="add-outline" /></span>
                       </span>
                       <span class="tile-meta">
                         <span class="tile-price">{{ formatMoney(p.price) }}</span>
@@ -187,11 +193,11 @@
 
             @if (pickerFiltered().length > 0) {
               <div class="picker-pager">
-                <button class="qty-btn" (click)="prevPickerPage()" [disabled]="pickerPage() <= 1">
+                <button class="qty-btn" (click)="prevPickerPage()" [disabled]="pickerPage() <= 1" aria-label="Trang sản phẩm trước">
                   <ion-icon name="chevron-back-outline" />
                 </button>
                 <span>Trang {{ pickerPage() }} / {{ pickerTotalPages() }}</span>
-                <button class="qty-btn" (click)="nextPickerPage()" [disabled]="pickerPage() >= pickerTotalPages()">
+                <button class="qty-btn" (click)="nextPickerPage()" [disabled]="pickerPage() >= pickerTotalPages()" aria-label="Trang sản phẩm sau">
                   <ion-icon name="chevron-forward-outline" />
                 </button>
               </div>
@@ -226,7 +232,7 @@
           </div>
           <div class="sale-row">
             <span class="sale-label">Khách trả ship?</span>
-            <input type="checkbox" [(ngModel)]="customerShipPaid" class="sale-check" />
+            <input type="checkbox" [(ngModel)]="customerShipPaid" class="sale-check" aria-label="Khách hàng trả phí vận chuyển" />
           </div>
           <div class="sale-row">
             <span class="sale-label">Chiết khấu</span>
@@ -343,7 +349,7 @@
       <!-- Overlay QR VietQR thanh toán -->
       @if (qrOpen()) {
         <div class="qr-overlay" (click)="closeQr()">
-          <div class="qr-card" (click)="$event.stopPropagation()" role="dialog" aria-label="QR Code thanh toán">
+          <div class="qr-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="QR Code thanh toán">
             <div class="qr-head">
               <strong>Quét để thanh toán</strong>
               <button class="icon-btn" (click)="closeQr()" aria-label="Đóng QR"><ion-icon name="close-outline" /></button>

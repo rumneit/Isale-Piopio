@@ -1,8 +1,9 @@
 <ion-app>
+  <a class="skip-link" href="#main-content">Bỏ qua menu, đến nội dung chính</a>
   <!-- Main content PHẢI đứng trước menu để ion-menu tìm thấy content lúc khởi tạo -->
-  <div id="main-content" class="app-main">
+  <main id="main-content" class="app-main" tabindex="-1">
     <router-outlet />
-  </div>
+  </main>
 
   <ion-menu class="app-menu" contentId="main-content" side="start" type="overlay" id="app-menu" menu-id="app-menu">
     <ion-header>

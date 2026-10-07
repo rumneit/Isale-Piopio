@@ -2,6 +2,11 @@ import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 
+export function parseBooleanSetting(raw: string | null | undefined, fallback = false): boolean {
+  if (raw == null) return fallback;
+  return ['true', '1', 'yes', 'on'].includes(raw.trim().toLowerCase());
+}
+
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
   private sb = inject(SupabaseService);
@@ -50,6 +55,10 @@ export class SettingsService {
     const raw = this.get(key);
     const n = Number(raw);
     return Number.isFinite(n) && n > 0 ? n : fallback;
+  }
+
+  booleanValue(key: string, fallback = false): boolean {
+    return parseBooleanSetting(this.get(key), fallback);
   }
 
   lowStockThreshold(): number {

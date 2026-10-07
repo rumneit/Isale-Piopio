@@ -98,18 +98,19 @@
   <!-- Modal quét mã vạch (giống bản gốc) -->
   @if (barcodeModalOpen()) {
     <div class="barcode-overlay" (click)="closeBarcodeModal()"></div>
-    <div class="barcode-modal">
+    <div class="barcode-modal" role="dialog" aria-modal="true" aria-labelledby="barcode-modal-title">
       <div class="barcode-modal-head">
-        <button class="barcode-close" (click)="closeBarcodeModal()">
+        <button class="barcode-close" (click)="closeBarcodeModal()" aria-label="Đóng quét mã vạch">
           <ion-icon name="close-outline" />
         </button>
-        <span>Mã vạch</span>
+        <span id="barcode-modal-title">Mã vạch</span>
       </div>
       <div class="barcode-modal-body">
         <ion-input
           class="barcode-modal-input"
           [(ngModel)]="barcodeValue"
           (keyup.enter)="confirmBarcode()"
+          aria-label="Mã vạch sản phẩm"
           placeholder="Chọn ô này, sử dụng đầu đọc hoặc nhập tay"
         />
         <div class="barcode-modal-actions">

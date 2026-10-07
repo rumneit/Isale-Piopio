@@ -104,10 +104,13 @@ const ICON_LABELS: Record<string, string> = {
 export class A11yLabelService {
   private observer: MutationObserver | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
+  private activeCustomDialog: HTMLElement | null = null;
+  private focusBeforeDialog: HTMLElement | null = null;
 
   start(): void {
     if (this.observer || typeof document === 'undefined') return;
     this.scan();
+    document.addEventListener('keydown', (event) => this.trapDialogFocus(event), true);
     this.observer = new MutationObserver(() => this.schedule());
     this.observer.observe(document.body, { childList: true, subtree: true });
   }
@@ -123,7 +126,7 @@ export class A11yLabelService {
   private scan(): void {
     try {
       const candidates = document.querySelectorAll<HTMLElement>(
-        'ion-button, ion-fab-button, button, a, [role="button"]'
+        'ion-button, ion-fab-button, ion-menu-button, button, a, [role="button"]'
       );
       for (const el of Array.from(candidates)) {
         if (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title')) continue;
@@ -131,7 +134,7 @@ export class A11yLabelService {
         const box = el.getBoundingClientRect();
         if (box.width === 0 && box.height === 0) continue;
         const icon = el.querySelector('ion-icon')?.getAttribute('name') ?? '';
-        const label = ICON_LABELS[icon] ?? this.humanize(icon);
+        const label = el.tagName === 'ION-MENU-BUTTON' ? 'Mở menu' : (ICON_LABELS[icon] ?? this.humanize(icon));
         if (!label) continue;
         this.apply(el, label);
       }
@@ -146,9 +149,75 @@ export class A11yLabelService {
         if (!ph) continue;
         this.apply(inp, ph);
       }
+      // WCAG 1.3.1 + 4.1.3: cấu trúc tiêu đề và thông báo động nhất quán.
+      for (const title of Array.from(document.querySelectorAll<HTMLElement>('ion-title'))) {
+        if (!title.getAttribute('role')) title.setAttribute('role', 'heading');
+        if (!title.getAttribute('aria-level')) title.setAttribute('aria-level', '1');
+      }
+      for (const alert of Array.from(document.querySelectorAll<HTMLElement>('.form-error, .login-error'))) {
+        if (!alert.getAttribute('role')) alert.setAttribute('role', 'alert');
+        alert.setAttribute('aria-live', 'assertive');
+      }
+      for (const status of Array.from(document.querySelectorAll<HTMLElement>('.form-success, .login-success'))) {
+        if (!status.getAttribute('role')) status.setAttribute('role', 'status');
+        status.setAttribute('aria-live', 'polite');
+      }
+      this.syncCustomDialogFocus();
     } catch {
       // a11y an toàn lưới — không bao giờ làm vỡ app
     }
+  }
+
+  private syncCustomDialogFocus(): void {
+    const dialog = Array.from(document.querySelectorAll<HTMLElement>(
+      '.editor[role="dialog"][aria-modal="true"], .filter-drawer[role="dialog"][aria-modal="true"], .barcode-modal[role="dialog"][aria-modal="true"], .qr-card[role="dialog"][aria-modal="true"]'
+    )).find((element) => {
+      const rect = element.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0;
+    }) ?? null;
+    if (dialog === this.activeCustomDialog) return;
+    if (!dialog) {
+      const restore = this.focusBeforeDialog;
+      this.activeCustomDialog = null;
+      this.focusBeforeDialog = null;
+      restore?.focus();
+      return;
+    }
+    this.focusBeforeDialog = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    this.activeCustomDialog = dialog;
+    if (!dialog.hasAttribute('tabindex')) dialog.setAttribute('tabindex', '-1');
+    setTimeout(() => (this.dialogFocusables(dialog)[0] ?? dialog).focus(), 0);
+  }
+
+  private trapDialogFocus(event: KeyboardEvent): void {
+    if (event.key !== 'Tab' || !this.activeCustomDialog) return;
+    const focusable = this.dialogFocusables(this.activeCustomDialog);
+    if (!focusable.length) {
+      event.preventDefault();
+      this.activeCustomDialog.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  private dialogFocusables(dialog: HTMLElement): HTMLElement[] {
+    const selector = [
+      '[autofocus]', 'button:not([disabled])', 'a[href]', 'input:not([disabled])',
+      'textarea:not([disabled])', 'select:not([disabled])', 'ion-button:not([disabled])',
+      'ion-input:not([disabled])', 'ion-select:not([disabled])', '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+    return Array.from(dialog.querySelectorAll<HTMLElement>(selector)).filter((element) => {
+      const rect = element.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0 && getComputedStyle(element).visibility !== 'hidden';
+    });
   }
 
   /** Gán aria-label lên host lẫn phần tử thật trong shadow DOM (nếu có) */

@@ -17,6 +17,40 @@ body {
   font-family: var(--ion-font-family);
 }
 
+/* WCAG 2.2 AA: bàn phím luôn có dấu focus đủ tương phản, không phụ thuộc màu. */
+:where(button, a, input, textarea, select, [role='button'], [tabindex]:not([tabindex='-1'])):focus-visible,
+:where(ion-button, ion-fab-button, ion-input, ion-textarea, ion-select, ion-toggle):focus-within {
+  outline: 3px solid #0b57d0;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 100000;
+  inset: 8px auto auto 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111111;
+  border: 2px solid #0b57d0;
+  font-weight: 700;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ---------- Ionic CSS utilities tự cung cấp (app không import css utilities của Ionic) ---------- */
 .ion-text-wrap {
   white-space: normal !important;

@@ -1,13 +1,13 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="openHome()">
+      <ion-button (click)="openHome()" aria-label="Về trang chủ">
         <ion-icon slot="icon-only" name="home-outline" />
       </ion-button>
     </ion-buttons>
     <ion-title>Cấu hình shop</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="save()" [disabled]="busy()">
+      <ion-button (click)="save()" [disabled]="busy()" aria-label="Lưu cấu hình">
         @if (busy()) {
           <ion-spinner name="crescent" />
         } @else {
@@ -197,6 +197,11 @@
                 <ion-label class="setting-label">{{ t.label }}</ion-label>
               </ion-toggle>
             </ion-item>
+            @if (t.key === 'allow_negative_stock') {
+              <ion-note class="stock-rule-note">
+                Khi bật, đơn bán có thể làm tồn kho nhỏ hơn 0. Chỉ nên dùng khi cửa hàng cho phép bán trước, nhập hàng sau.
+              </ion-note>
+            }
           }
           <ion-item>
             <ion-input

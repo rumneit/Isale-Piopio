@@ -166,7 +166,7 @@ export class ConfigPage implements OnInit {
 
   // Cấu hình khác — danh sách switch (khớp bản gốc)
   readonly toggleSettings: ToggleSetting[] = [
-    { key: 'no_sell_zero_qty', label: 'Số lượng 0, không thể bán' },
+    { key: 'allow_negative_stock', label: 'Cho phép bán âm kho' },
     { key: 'hide_materials', label: 'Ẩn tính năng Nguyên Vật Liệu' },
     { key: 'hide_table', label: 'Ẩn tính năng Đặt bàn' },
     { key: 'hide_booking', label: 'Ẩn tính năng Đặt lịch' },

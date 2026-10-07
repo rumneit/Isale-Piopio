@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
+import { Component, HostListener, OnInit, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -41,6 +41,7 @@ import {
   refreshOutline,
   walletOutline,
   readerOutline,
+  warningOutline,
 } from 'ionicons/icons';
 import { ProductsService } from '../../core/services/products.service';
 import { OrdersService } from '../../core/services/orders.service';
@@ -48,6 +49,7 @@ import { CustomersService } from '../../core/services/customers.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Product, Customer, MoneyAccount, Shop } from '../../core/models/models';
 import { MoneyAccountsService } from '../../core/services/money-accounts.service';
+import { SettingsService } from '../../core/services/settings.service';
 
 interface SaleItem {
   product_id: string | null;
@@ -109,6 +111,10 @@ interface SaleOrderSnap {
   ],
 })
 export class SalePage implements OnInit {
+  @HostListener('document:keydown.escape')
+  closeQrOnEscape(): void {
+    if (this.qrOpen()) this.closeQr();
+  }
   openHome() {
     this.router.navigateByUrl('/home');
   }
@@ -117,6 +123,7 @@ export class SalePage implements OnInit {
   private ordersService = inject(OrdersService);
   private customersService = inject(CustomersService);
   private moneyAccountsService = inject(MoneyAccountsService);
+  private settingsService = inject(SettingsService);
   private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -129,6 +136,7 @@ export class SalePage implements OnInit {
   readonly customers = signal<Customer[]>([]);
   readonly accounts = signal<MoneyAccount[]>([]);
   readonly items = signal<SaleItem[]>([]);
+  readonly allowNegativeStock = signal(false);
 
   // Tab chính
   readonly tab = signal<'payment' | 'customer' | 'note' | 'shipping'>('payment');
@@ -233,6 +241,7 @@ export class SalePage implements OnInit {
       refreshOutline,
       walletOutline,
       readerOutline,
+      warningOutline,
     });
   }
 
@@ -246,7 +255,9 @@ export class SalePage implements OnInit {
         this.productsService.list(),
         this.customersService.list(),
         this.moneyAccountsService.list(),
+        this.settingsService.load(),
       ]);
+      this.allowNegativeStock.set(this.settingsService.booleanValue('allow_negative_stock'));
       this.products.set(products);
       this.customers.set(customers);
       this.accounts.set(accounts);
@@ -261,8 +272,7 @@ export class SalePage implements OnInit {
       if (barcode) {
         const found = this.products().find((p) => (p.sku ?? '').toLowerCase() === barcode.toLowerCase());
         if (found) {
-          this.addProduct(found);
-          this.toast(`Đã thêm: ${found.name}`);
+          if (this.addProduct(found)) this.toast(`Đã thêm: ${found.name}`);
         } else {
           this.barcodeInput = barcode;
           this.toast(`Không tìm thấy sản phẩm mã "${barcode}"`, 'danger');
@@ -441,22 +451,27 @@ export class SalePage implements OnInit {
     this.pickerPage.set(1);
   }
 
-  addProduct(p: Product, qty: number = 1) {
+  addProduct(p: Product, qty: number = 1): boolean {
     const current = [...this.items()];
     const existing = current.find((i) => i.product_id === p.id);
+    const nextQty = (existing?.qty ?? 0) + qty;
+    if (!this.allowNegativeStock() && nextQty > Number(p.stock ?? 0)) {
+      this.toast(`Không đủ tồn kho cho "${p.name}". Còn ${p.stock}, cần ${nextQty}.`, 'danger');
+      return false;
+    }
     if (existing) {
       existing.qty += qty;
     } else {
       current.push({ product_id: p.id, name: p.name, unit: p.unit, price: Number(p.price), qty });
     }
     this.items.set(current);
+    return true;
   }
 
   /** Nút + trên thẻ: thêm nhanh 1 sản phẩm */
   quickAdd(ev: Event, p: Product) {
     ev.stopPropagation();
-    this.addProduct(p);
-    this.toast(`Đã thêm: ${p.name}`);
+    if (this.addProduct(p)) this.toast(`Đã thêm: ${p.name}`);
   }
 
   addByBarcode() {
@@ -464,8 +479,7 @@ export class SalePage implements OnInit {
     if (!code) return;
     const found = this.products().find((p) => (p.sku ?? '').toLowerCase() === code.toLowerCase());
     if (found) {
-      this.addProduct(found);
-      this.toast(`Đã thêm: ${found.name}`);
+      if (this.addProduct(found)) this.toast(`Đã thêm: ${found.name}`);
     } else {
       this.toast(`Không tìm thấy sản phẩm mã "${code}"`, 'danger');
     }
@@ -474,6 +488,12 @@ export class SalePage implements OnInit {
 
   incQty(index: number) {
     const current = [...this.items()];
+    const item = current[index];
+    const product = this.products().find((p) => p.id === item.product_id);
+    if (product && !this.allowNegativeStock() && item.qty + 1 > Number(product.stock ?? 0)) {
+      this.toast(`Không đủ tồn kho cho "${item.name}". Còn ${product.stock}.`, 'danger');
+      return;
+    }
     current[index].qty += 1;
     this.items.set(current);
   }
@@ -574,6 +594,24 @@ export class SalePage implements OnInit {
     if (!withItems.length) {
       this.toast('Chưa có sản phẩm nào trong đơn', 'danger');
       return;
+    }
+    if (!this.allowNegativeStock()) {
+      const requested = new Map<string, { name: string; qty: number }>();
+      for (const order of withItems.filter((s) => !['draft', 'quote', 'cancelled'].includes(s.status))) {
+        for (const item of order.items) {
+          if (!item.product_id) continue;
+          const current = requested.get(item.product_id) ?? { name: item.name, qty: 0 };
+          current.qty += item.qty;
+          requested.set(item.product_id, current);
+        }
+      }
+      for (const [productId, request] of requested) {
+        const stock = Number(this.products().find((p) => p.id === productId)?.stock ?? 0);
+        if (request.qty > stock) {
+          this.toast(`Không đủ tồn kho cho "${request.name}". Còn ${stock}, cần ${request.qty}.`, 'danger');
+          return;
+        }
+      }
     }
     const empties = batch.length - withItems.length;
     this.busy.set(true);

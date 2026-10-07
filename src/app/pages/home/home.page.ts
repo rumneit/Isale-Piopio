@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -126,6 +126,10 @@ interface ConfigItem {
   ],
 })
 export class HomePage implements OnInit {
+  @HostListener('document:keydown.escape')
+  closeBarcodeOnEscape(): void {
+    if (this.barcodeModalOpen()) this.closeBarcodeModal();
+  }
   readonly auth = inject(AuthService);
   private moneyAccountsService = inject(MoneyAccountsService);
   private router = inject(Router);

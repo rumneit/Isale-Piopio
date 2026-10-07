@@ -107,7 +107,7 @@ export const routes: Routes = [
   // Money accounts
   { path: 'money-account', loadComponent: () => import('./pages/money-accounts/money-accounts.page').then((m) => m.MoneyAccountsPage), canActivate: [authGuard, permissionGuard] },
   // Config
-  { path: 'config', loadComponent: () => import('./pages/config/config.page').then((m) => m.ConfigPage), canActivate: [authGuard] },
+  { path: 'config', loadComponent: () => import('./pages/config/config.page').then((m) => m.ConfigPage), canActivate: [authGuard, permissionGuard] },
   { path: 'change-password', loadComponent: () => import('./pages/config/change-password.page').then((m) => m.ChangePasswordPage), canActivate: [authGuard] },
   { path: 'custom-field', loadComponent: () => import('./pages/config/custom-fields.page').then((m) => m.CustomFieldsPage), canActivate: [authGuard] },
   // Bảng dữ liệu tùy chỉnh
