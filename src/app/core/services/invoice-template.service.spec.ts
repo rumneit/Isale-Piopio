@@ -14,8 +14,40 @@ describe('InvoiceTemplateService', () => {
 
     expect(invoice).toContain('DH-PREVIEW');
     expect(invoice).toContain('Sản phẩm mẫu A');
+    expect(invoice).toContain('Nhân viên bán hàng');
     expect(receipt).toContain('900.900');
     expect(receipt).toContain('Khách hàng (mẫu)');
+    expect(receipt).toContain('Thuế:');
+  });
+
+  it('renders every optional payment branch without inventing values', () => {
+    const order = {
+      id: 'order-1', shop_id: 'shop-1', code: 'DH-001', customer_id: null,
+      customer_name: 'Nguyễn Văn A', status: 'completed', total: 126500,
+      discount: 10000, paid: true, note: 'Giao giờ hành chính', ship_fee: 5000,
+      created_at: '2026-10-08T08:00:00.000Z',
+    };
+    const context = service.context({
+      order,
+      items: [{ id: 'item-1', order_id: 'order-1', product_id: null, name: 'Sản phẩm', price: 150000, qty: 1, total: 150000 }],
+      shop: { id: 'shop-1', name: 'PioPio', owner_id: 'owner-1', bank_name: 'MB Bank', bank_owner: 'PIOPIO', bank_account: '0123456789' },
+      promotionDiscount: 12000,
+      pointPayment: 6500,
+      taxAmount: 0,
+      showTax: true,
+      oldDebt: 20000,
+      staffDisplay: 'Thu ngân A',
+      receiptCompact: false,
+    });
+
+    const receipt = service.render(service.defaultFor('receipt'), context);
+    expect(receipt).toContain('Khuyến mại:');
+    expect(receipt).toContain('Thanh toán bằng điểm:');
+    expect(receipt).toContain('Thuế:');
+    expect(receipt).toContain('Phí vận chuyển:');
+    expect(receipt).toContain('Công nợ cũ:');
+    expect(receipt).toContain('MB Bank');
+    expect(receipt).toContain('C.khấu');
   });
 
   it('escapes business data supplied to a template', () => {

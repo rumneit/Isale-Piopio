@@ -4,8 +4,10 @@ import { Order, OrderItem, Shop } from '../models/models';
 
 export type InvoiceTemplateKind = 'invoice' | 'receipt';
 
-export const DEFAULT_INVOICE_TEMPLATE = `{{#if shop.name}}
+export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
+{{#if shop.name}}
 <header class="shop-head">
+  {{#if shop.iconUrl}}<img class="shop-logo" src="{{shop.iconUrl}}" alt="Logo {{shop.name}}">{{/if}}
   <strong class="shop-name">{{shop.nameUpper}}</strong>
   {{#if shop.shortDescription}}<em>{{shop.shortDescription}}</em>{{/if}}
   <div class="shop-grid">
@@ -38,26 +40,74 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{#if shop.name}}
     {{#each items}}<tr><td class="center">{{index}}</td><td>{{productName}}</td><td class="center">{{unit}}</td><td class="number">{{count}}</td><td class="number">{{priceFormatted}}</td>{{#unless ../hideDiscountColumn}}<td class="number">{{discountText}}</td>{{/unless}}<td class="number">{{totalFormatted}}</td></tr>{{/each}}
     {{#each emptyRows}}<tr><td class="center">{{inc this}}</td><td>&nbsp;</td><td></td><td></td><td></td>{{#unless ../hideDiscountColumn}}<td></td>{{/unless}}<td></td></tr>{{/each}}
     <tr><td colspan="3"><b>{{labels.totalAmount}}</b></td><td class="number">{{totalProductsQuantity}}</td>{{#unless hideDiscountColumn}}<td></td>{{/unless}}<td></td><td class="number">{{totalProductsAmountFormatted}}</td></tr>
+    {{#if hasPromotionDiscount}}<tr><td colspan="{{totalColspan}}">{{labels.totalPromotionDiscount}}</td><td class="number">-{{order.totalPromotionDiscountFormatted}}</td></tr>{{/if}}
     {{#if hasDiscountOnTotal}}<tr><td colspan="{{totalColspan}}">{{labels.discount}}</td><td class="number">-{{order.discountOnTotalFormatted}}</td></tr>{{/if}}
+    {{#if hasNetValueDiff}}<tr><td colspan="{{totalColspan}}">{{labels.netValue}}</td><td class="number">{{order.netValueFormatted}}</td></tr>{{/if}}
+    {{#if hasPointPayment}}<tr><td colspan="{{totalColspan}}">{{labels.payByPoint}}</td><td class="number">-{{order.amountFromPointFormatted}}</td></tr>{{/if}}
+    {{#if showTax}}<tr><td colspan="{{totalColspan}}">{{labels.tax}}</td><td class="number">+{{order.taxFormatted}}</td></tr>{{/if}}
     {{#if hasShipping}}<tr><td colspan="{{totalColspan}}">{{labels.shippingFee}}</td><td class="number">+{{order.shippingFeeFormatted}}</td></tr>{{/if}}
     <tr><td colspan="{{totalColspan}}"><b>{{labels.total}}</b></td><td class="number"><b>{{order.totalFormatted}}</b></td></tr>
+    {{#if hasOldDebt}}<tr><td colspan="{{totalColspan}}">{{labels.oldDebt}}</td><td class="number">{{order.oldDebtFormatted}}</td></tr>{{/if}}
   </tbody>
 </table>
 <div class="written">{{labels.totalWritten}} <span class="dot-line">{{amountToText}}</span></div>
 {{#if hasOrderNote}}<div>{{labels.note}} <span class="dot-line">{{order.note}}</span></div>{{/if}}
 {{#if hasOrderPrintNote}}<p><em>{{orderPrintNote}}</em></p>{{/if}}
 {{#if showQr}}<div class="qr"><img src="{{qrCodeUrl}}" alt="QR"><span>{{labels.qrPayment}}</span></div>{{/if}}
-<footer class="signatures"><div><b>{{labels.customerTitle}}</b><br><small>({{labels.signHint}})</small></div><div><b>{{labels.buyer}}</b><br><small>({{labels.signHint}})</small></div></footer>`;
+<footer class="signatures"><div><b>{{labels.customerTitle}}</b><br><small>({{labels.signHint}})</small></div><div><b>{{labels.buyer}}</b><br><small>({{labels.signHint}})</small>{{#if showStaffNameUnderSign}}<strong class="staff-sign">{{staffDisplay}}</strong>{{/if}}</div></footer>`;
 
-export const DEFAULT_RECEIPT_TEMPLATE = `{{#if shop.name}}
-<header class="receipt-head"><b>{{shop.name}}</b>{{#if shop.shortDescription}}<em>{{shop.shortDescription}}</em>{{/if}}{{#if shop.phone}}<span>{{labels.shopPhone}} {{shop.phone}}</span>{{/if}}{{#if shop.email}}<span>{{labels.shopEmail}} {{shop.email}}</span>{{/if}}{{#if shop.facebook}}<span>{{labels.shopFacebook}} {{shop.facebook}}</span>{{/if}}{{#if shop.address}}<span>{{labels.shopAddress}} {{shop.address}}</span>{{/if}}</header><hr>
+export const DEFAULT_RECEIPT_TEMPLATE = `{{!-- Mẫu bill khổ nhỏ --}}
+{{#if shop.name}}
+<header class="receipt-head">
+  {{#if shop.iconUrl}}<img class="receipt-logo" src="{{shop.iconUrl}}" alt="Logo {{shop.name}}">{{/if}}
+  <b>{{shop.name}}</b>
+  {{#if shop.shortDescription}}<em>{{shop.shortDescription}}</em>{{/if}}
+  {{#if shop.phone}}<span>{{labels.shopPhone}} {{shop.phone}}</span>{{/if}}
+  {{#if shop.email}}<span>{{labels.shopEmail}} {{shop.email}}</span>{{/if}}
+  {{#if shop.facebook}}<span>{{labels.shopFacebook}} {{shop.facebook}}</span>{{/if}}
+  {{#if shop.address}}<span>{{labels.shopAddress}} {{shop.address}}</span>{{/if}}
+</header>
 {{/if}}
 <h1>{{labels.orderPrintTitle}}</h1>
-<div class="receipt-meta"><div><b>{{labels.orderCode}}</b> {{order.orderCode}}</div><div>{{labels.date}} {{order.createdAt}}</div><div>{{labels.customer}} {{customerName}}{{#if customerPhone}} | {{customerPhone}}{{/if}}</div>{{#if customerAddress}}<div>{{labels.address}} {{customerAddress}}</div>{{/if}}</div>
-{{#if shop.bankName}}<div class="receipt-meta"><div><b>{{labels.bankName}}</b> {{shop.bankName}}</div>{{#if shop.bankAccountName}}<div>{{labels.bankAccountName}}: {{shop.bankAccountName}}</div>{{/if}}{{#if shop.bankAccountNumber}}<div>{{labels.bankAccountNumber}}: {{shop.bankAccountNumber}}</div>{{/if}}</div>{{/if}}
-<hr><table class="receipt-items"><thead><tr><th>{{labels.headPriceShort}}</th><th>{{labels.headQtyShort}}</th><th>{{labels.headAmountShort}}</th></tr></thead><tbody>{{#each items}}<tr class="item-name"><td colspan="3">{{index}}. {{productName}}</td></tr><tr><td>{{priceFormatted}}</td><td class="number">× {{count}} {{unit}}</td><td class="number">{{totalFormatted}}</td></tr>{{/each}}<tr class="subtotal"><td colspan="2"><b>{{labels.totalAmount}}</b></td><td class="number"><b>{{totalProductsAmountFormatted}}</b></td></tr></tbody></table>
-<hr><table class="receipt-total">{{#if hasDiscountOnTotal}}<tr><td>{{labels.discount}}:</td><td>-{{order.discountOnTotalFormatted}}</td></tr>{{/if}}{{#if hasShipping}}<tr><td>{{labels.shippingFee}}:</td><td>+{{order.shippingFeeFormatted}}</td></tr>{{/if}}<tr><td>{{labels.netValue}}:</td><td>{{order.netValueFormatted}}</td></tr><tr class="grand"><td>{{labels.total}}:</td><td>{{order.totalFormatted}}</td></tr><tr><td>{{labels.cash}}:</td><td>{{order.paidFormatted}}</td></tr><tr><td>{{labels.change}}:</td><td>{{order.changeFormatted}}</td></tr></table>
-{{#if hasOrderPrintNote}}<p class="thanks"><em>{{orderPrintNote}}</em></p>{{/if}}{{#if showQr}}<div class="qr"><img src="{{qrCodeUrl}}" alt="QR"><span>{{labels.paid}} {{totalWithCurrency}}</span></div>{{/if}}`;
+<div class="receipt-meta">
+  <div><b>{{labels.orderCode}}</b> {{order.orderCode}}</div>
+  {{#if hasStaff}}<div>{{labels.staff}} {{staffDisplay}}</div>{{/if}}
+  <div>{{labels.date}} {{order.createdAt}}</div>
+  <div>{{labels.customer}} {{customerName}}{{#if customerPhone}} - {{customerPhone}}{{/if}}</div>
+  {{#if customerAddress}}<div>{{labels.address}} {{customerAddress}}</div>{{/if}}
+  {{#if hasOrderNote}}<div>{{labels.note}} {{order.note}}</div>{{/if}}
+</div>
+{{#if bank.name}}
+<div class="receipt-bank">
+  <div><b>{{labels.bankName}}</b> {{bank.name}}</div>
+  {{#if bankAccount}}<div>{{labels.bankAccountName}}: {{bankAccount}}</div>{{/if}}
+  {{#if bankNumber}}<div>{{labels.bankAccountNumber}}: {{bankNumber}}</div>{{/if}}
+</div>
+{{/if}}
+<table class="receipt-items">
+  <thead><tr><th>{{labels.headPriceShort}}</th><th>{{labels.headQtyShort}}</th>{{#unless receiptCompact}}<th>{{labels.headDiscountShort}}</th>{{/unless}}<th>{{labels.headAmountShort}}</th></tr></thead>
+  <tbody>
+    {{#each items}}
+      <tr class="item-name"><td colspan="{{../receiptColspan}}">{{index}}. {{productName}}{{#if unit}} ({{unit}}){{/if}}</td></tr>
+      <tr><td>{{priceFormatted}}</td><td class="number">× {{count}}</td>{{#unless ../receiptCompact}}<td class="number">{{discountText}}</td>{{/unless}}<td class="number">{{totalFormatted}}</td></tr>
+    {{/each}}
+    <tr class="subtotal"><td colspan="{{receiptSubtotalColspan}}"><b>{{labels.totalAmount}}</b></td><td class="number"><b>{{totalProductsAmountFormatted}}</b></td></tr>
+  </tbody>
+</table>
+<table class="receipt-total">
+  {{#if hasPromotionDiscount}}<tr><td>{{labels.totalPromotionDiscount}}:</td><td>-{{order.totalPromotionDiscountFormatted}}</td></tr>{{/if}}
+  {{#if hasDiscountOnTotal}}<tr><td>{{labels.discount}}:</td><td>-{{order.discountOnTotalFormatted}}</td></tr>{{/if}}
+  {{#if hasNetValueDiff}}<tr><td>{{labels.netValue}}:</td><td>{{order.netValueFormatted}}</td></tr>{{/if}}
+  {{#if hasPointPayment}}<tr><td>{{labels.payByPoint}}:</td><td>-{{order.amountFromPointFormatted}}</td></tr>{{/if}}
+  {{#if showTax}}<tr><td>{{labels.tax}}:</td><td>+{{order.taxFormatted}}</td></tr>{{/if}}
+  {{#if hasShipping}}<tr><td>{{labels.shippingFee}}:</td><td>+{{order.shippingFeeFormatted}}</td></tr>{{/if}}
+  <tr class="grand"><td>{{labels.total}}:</td><td>{{order.totalFormatted}}</td></tr>
+  <tr><td>{{labels.cash}}:</td><td>{{order.paidFormatted}}</td></tr>
+  <tr><td>{{labels.change}}:</td><td>{{order.changeFormatted}}</td></tr>
+  {{#if hasOldDebt}}<tr><td>{{labels.oldDebt}}:</td><td>{{order.oldDebtFormatted}}</td></tr>{{/if}}
+</table>
+{{#if hasOrderPrintNote}}<p class="thanks"><em>{{orderPrintNote}}</em></p>{{/if}}
+{{#if showQr}}<div class="qr"><img src="{{qrCodeUrl}}" alt="QR thanh toán"><span>{{bank.name}} {{bankNumber}}</span><strong>{{labels.paid}} {{totalWithCurrency}}</strong></div>{{/if}}`;
 
 export interface InvoiceTemplateInput {
   order: Order;
@@ -69,6 +119,13 @@ export interface InvoiceTemplateInput {
   hideDiscountColumn?: boolean;
   staffDisplay?: string;
   paidAmount?: number;
+  promotionDiscount?: number;
+  pointPayment?: number;
+  taxAmount?: number;
+  oldDebt?: number;
+  showTax?: boolean;
+  showStaffNameUnderSign?: boolean;
+  receiptCompact?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -112,6 +169,10 @@ export class InvoiceTemplateService {
 
   context(input: InvoiceTemplateInput): Record<string, unknown> {
     const money = (value: number | null | undefined) => new Intl.NumberFormat('vi-VN').format(Math.round(Number(value ?? 0)));
+    const amount = (value: number | null | undefined) => {
+      const parsed = Number(value ?? 0);
+      return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+    };
     const order = input.order;
     const itemRows = input.items.map((item, index) => ({
       index: index + 1,
@@ -124,9 +185,15 @@ export class InvoiceTemplateService {
     }));
     const totalQty = input.items.reduce((sum, item) => sum + Number(item.qty ?? 0), 0);
     const merchandise = input.items.reduce((sum, item) => sum + Number(item.total ?? 0), 0);
-    const paid = Number(input.paidAmount ?? (order.paid ? order.total : 0));
-    const shipping = Number(order.ship_fee ?? 0);
-    const discount = Number(order.discount ?? 0);
+    const paid = amount(input.paidAmount ?? (order.paid ? order.total : 0));
+    const shipping = amount(order.ship_fee);
+    const discount = amount(order.discount);
+    const promotionDiscount = amount(input.promotionDiscount);
+    const pointPayment = amount(input.pointPayment);
+    const tax = amount(input.taxAmount);
+    const oldDebt = amount(input.oldDebt);
+    const netValue = Math.max(0, merchandise - promotionDiscount - discount - pointPayment);
+    const receiptCompact = input.receiptCompact ?? true;
     const createdAt = this.dateTime(order.created_at);
     const shop = input.shop;
     const emptyCount = Math.max(0, Math.min(20, Number(input.emptyRows ?? 0)));
@@ -136,8 +203,9 @@ export class InvoiceTemplateService {
       orderPrintTitle: 'HÓA ĐƠN BÁN HÀNG', orderCode: 'Mã đơn:', staff: 'Nhân viên:', date: 'Ngày tạo:',
       customer: 'Khách hàng:', phone: 'Điện thoại:', address: 'Địa chỉ:', headIndex: 'STT', headName: 'Sản phẩm',
       headUnit: 'Đơn vị', headQty: 'Số lượng', headPrice: 'Đơn giá', headDiscount: 'Chiết khấu', headAmount: 'Thành tiền',
-      headPriceShort: 'Đ.giá', headQtyShort: 'S.lượng', headAmountShort: 'T.t', totalAmount: 'Tổng tiền hàng',
-      discount: 'Chiết khấu', shippingFee: 'Phí vận chuyển', netValue: 'Tổng tạm tính', total: 'Tổng phải trả',
+      headPriceShort: 'Đ.giá', headQtyShort: 'S.lượng', headDiscountShort: 'C.khấu', headAmountShort: 'T.tiền', totalAmount: 'Tổng tiền hàng',
+      totalPromotionDiscount: 'Khuyến mại', discount: 'Chiết khấu', payByPoint: 'Thanh toán bằng điểm', tax: 'Thuế',
+      shippingFee: 'Phí vận chuyển', netValue: 'Tạm tính', total: 'Tổng phải trả', oldDebt: 'Công nợ cũ',
       cash: 'Khách đưa', change: 'Tiền thừa', totalWritten: 'Tổng phải trả (viết bằng chữ):', note: 'Ghi chú:',
       customerTitle: 'KHÁCH HÀNG', buyer: 'NGƯỜI BÁN HÀNG', signHint: 'Ký và ghi rõ họ tên', qrPayment: 'Quét mã để thanh toán', paid: 'Thanh toán:',
     };
@@ -149,8 +217,10 @@ export class InvoiceTemplateService {
       },
       labels,
       order: {
-        ...order, orderCode: order.code, createdAt, totalFormatted: money(order.total), netValueFormatted: money(merchandise - discount),
-        discountOnTotalFormatted: money(discount), shippingFeeFormatted: money(shipping), paidFormatted: money(paid), changeFormatted: money(Math.max(0, paid - Number(order.total ?? 0))),
+        ...order, orderCode: order.code, createdAt, totalFormatted: money(order.total), netValueFormatted: money(netValue),
+        totalPromotionDiscountFormatted: money(promotionDiscount), discountOnTotalFormatted: money(discount),
+        amountFromPointFormatted: money(pointPayment), taxFormatted: money(tax), shippingFeeFormatted: money(shipping),
+        paidFormatted: money(paid), changeFormatted: money(Math.max(0, paid - Number(order.total ?? 0))), oldDebtFormatted: money(oldDebt),
       },
       items: itemRows,
       emptyRows: Array.from({ length: emptyCount }, (_, i) => itemRows.length + i),
@@ -158,10 +228,17 @@ export class InvoiceTemplateService {
       totalProductsAmountFormatted: money(merchandise),
       customerName: order.customer_name || 'Khách lẻ', customerPhone: order.customer_phone ?? '', customerAddress: order.customer_address ?? order.shipping_address ?? '',
       hasStaff: !!input.staffDisplay, staffDisplay: input.staffDisplay ?? '', hideDiscountColumn: !!input.hideDiscountColumn,
-      totalColspan: input.hideDiscountColumn ? 5 : 6, hasDiscountOnTotal: discount > 0, hasShipping: shipping > 0,
+      showStaffNameUnderSign: !!input.showStaffNameUnderSign,
+      totalColspan: input.hideDiscountColumn ? 5 : 6,
+      hasPromotionDiscount: promotionDiscount > 0, hasDiscountOnTotal: discount > 0,
+      hasNetValueDiff: promotionDiscount > 0 || discount > 0 || pointPayment > 0,
+      hasPointPayment: pointPayment > 0, showTax: !!input.showTax || tax > 0, hasTax: tax > 0,
+      hasShipping: shipping > 0, hasOldDebt: oldDebt > 0,
       hasOrderNote: !!order.note, hasOrderPrintNote: !!input.printNote, orderPrintNote: input.printNote ?? '',
       showQr: !!input.qrCodeUrl, qrCodeUrl: input.qrCodeUrl ?? '', amountToText: this.amountToVietnamese(Number(order.total ?? 0)),
-      totalWithCurrency: `${money(order.total)} ₫`, receiptCompact: true,
+      totalWithCurrency: `${money(order.total)} ₫`, receiptCompact,
+      receiptColspan: receiptCompact ? 3 : 4, receiptSubtotalColspan: receiptCompact ? 2 : 3,
+      bank: { name: shop?.bank_name ?? '' }, bankAccount: shop?.bank_owner ?? '', bankNumber: shop?.bank_account ?? '',
     };
   }
 
@@ -175,7 +252,16 @@ export class InvoiceTemplateService {
       { id: '1', order_id: 'preview', product_id: null, name: 'Sản phẩm mẫu A', price: 150000, qty: 2, total: 300000 },
       { id: '2', order_id: 'preview', product_id: null, name: 'Sản phẩm mẫu B', price: 200300, qty: 3, total: 600900 },
     ];
-    return this.context({ order: sampleOrder, items: sampleItems, shop, printNote, emptyRows, paidAmount: 1000000 });
+    return this.context({
+      order: sampleOrder,
+      items: sampleItems,
+      shop,
+      printNote,
+      emptyRows,
+      paidAmount: 1000000,
+      showTax: true,
+      staffDisplay: 'Nhân viên bán hàng',
+    });
   }
 
   document(rendered: string, kind: InvoiceTemplateKind, autoPrint = false): string {
@@ -235,6 +321,6 @@ export class InvoiceTemplateService {
   }
 
   private baseCss(kind: InvoiceTemplateKind, width: string): string {
-    return `*{box-sizing:border-box}body{margin:0 auto;padding:${kind === 'receipt' ? '10px 8px' : '18px'};width:${width};max-width:100%;background:#fff;color:#111;font:13px Arial,sans-serif}h1{text-align:center;font-size:18px;margin:14px 0}.shop-head{text-align:center;border-bottom:1px solid #111;padding-bottom:8px}.shop-head em,.receipt-head>*{display:block}.shop-name{font-size:15px}.shop-grid{display:grid;grid-template-columns:1fr 1fr;text-align:left;gap:20px;margin-top:8px}.bank-block{border-left:1px dotted #999;padding-left:20px}.invoice-meta>div,.receipt-meta>div{margin:2px 0}.dot-line{display:inline-block;min-width:180px;border-bottom:1px dotted #333}.invoice-table,.receipt-items,.receipt-total{width:100%;border-collapse:collapse;margin-top:10px}.invoice-table th,.invoice-table td{border:1px solid #111;padding:5px}.center{text-align:center}.number{text-align:right;white-space:nowrap}.written{margin-top:10px}.signatures{display:grid;grid-template-columns:1fr 1fr;text-align:center;margin-top:28px;min-height:90px}.receipt-head{text-align:center;line-height:1.35}.receipt-meta{margin:8px 0}.receipt-items th,.receipt-items td{padding:4px 2px;border-bottom:1px solid #bbb}.receipt-total td{padding:3px 2px}.receipt-total td:last-child{text-align:right}.grand{font-weight:700;font-size:15px}.qr{display:flex;flex-direction:column;align-items:center;margin-top:10px}.qr img{max-width:${kind === 'receipt' ? '180px' : '90px'}}.thanks{text-align:center}@page{margin:8mm;size:${kind === 'receipt' ? '80mm auto' : 'A4'}}@media print{body{width:100%;padding:0}}`;
+    return `*{box-sizing:border-box}body{margin:0 auto;padding:${kind === 'receipt' ? '10px 8px' : '18px'};width:${width};max-width:100%;background:#fff;color:#111;font:13px Arial,sans-serif;line-height:1.35}h1{text-align:center;font-size:18px;margin:14px 0}.shop-head{text-align:center;border-bottom:1px solid #111;padding-bottom:8px}.shop-head em,.receipt-head>*{display:block}.shop-logo,.receipt-logo{display:block;max-width:90px;max-height:64px;object-fit:contain;margin:0 auto 5px}.receipt-logo{max-width:70px;max-height:52px}.shop-name{font-size:15px}.shop-grid{display:grid;grid-template-columns:1fr 1fr;text-align:left;gap:20px;margin-top:8px}.bank-block{border-left:1px dotted #999;padding-left:20px}.invoice-meta>div,.receipt-meta>div,.receipt-bank>div{margin:2px 0}.receipt-bank{padding:6px 0;border-top:1px dashed #777;border-bottom:1px dashed #777}.dot-line{display:inline-block;min-width:180px;border-bottom:1px dotted #333}.invoice-table,.receipt-items,.receipt-total{width:100%;border-collapse:collapse;margin-top:10px}.invoice-table th,.invoice-table td{border:1px solid #111;padding:5px}.center{text-align:center}.number{text-align:right;white-space:nowrap}.written{margin-top:10px}.signatures{display:grid;grid-template-columns:1fr 1fr;text-align:center;margin-top:28px;min-height:90px}.staff-sign{display:block;margin-top:45px}.receipt-head{text-align:center;line-height:1.35}.receipt-meta{margin:8px 0}.receipt-items{border-top:1px dashed #777;border-bottom:1px dashed #777}.receipt-items th,.receipt-items td{padding:4px 2px;border-bottom:1px solid #bbb}.receipt-items .item-name td{padding-top:7px;border-bottom:0;font-weight:600}.receipt-items .subtotal td{border-bottom:0;border-top:1px dashed #777;padding-top:7px}.receipt-total td{padding:3px 2px}.receipt-total td:last-child{text-align:right;white-space:nowrap}.grand{font-weight:700;font-size:15px}.qr{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:10px;text-align:center}.qr img{max-width:${kind === 'receipt' ? '180px' : '90px'}}.thanks{text-align:center}@page{margin:8mm;size:${kind === 'receipt' ? '80mm auto' : 'A4'}}@media print{body{width:100%;padding:0}}`;
   }
 }

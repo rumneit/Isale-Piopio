@@ -340,6 +340,7 @@ export class OrderDetailPage implements OnInit {
         emptyRows: this.settings.numberValue('invoice_empty_rows', 2),
         hideDiscountColumn: this.settings.booleanValue('hide_discount_column'),
         staffDisplay: this.auth.profile()?.full_name ?? '',
+        showTax: !this.settings.booleanValue('hide_tax'),
       }));
       if (!opened) this.toast('Trình chặn popup đang bật. Hãy cho phép popup để in.', 'warning');
     } catch (error: any) {

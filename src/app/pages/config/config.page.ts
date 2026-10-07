@@ -211,11 +211,12 @@ export class ConfigPage implements OnInit {
   readonly defaultReceiptTemplate = DEFAULT_RECEIPT_TEMPLATE;
 
   readonly templateVars = [
-    { group: 'Shop', vars: ['shop.name', 'shop.phone', 'shop.address', 'shop.email', 'shop.bankName'] },
+    { group: 'Shop', vars: ['shop.name', 'shop.iconUrl', 'shop.phone', 'shop.address', 'shop.bankName'] },
     { group: 'Đơn hàng', vars: ['order.orderCode', 'order.createdAt', 'order.totalFormatted', 'amountToText'] },
-    { group: 'Sản phẩm', vars: ['items', 'productName', 'count', 'priceFormatted', 'totalFormatted'] },
-    { group: 'QR / Nhận', vars: ['showQr', 'qrCodeUrl', 'sellerName', 'customerName'] },
-    { group: 'Bill', vars: ['order.paidFormatted', 'order.changeFormatted', 'receiptCompact', 'totalWithCurrency'] },
+    { group: 'Thanh toán', vars: ['order.discountOnTotalFormatted', 'order.taxFormatted', 'order.shippingFeeFormatted', 'order.oldDebtFormatted'] },
+    { group: 'Sản phẩm', vars: ['items', 'productName', 'unit', 'count', 'priceFormatted', 'totalFormatted'] },
+    { group: 'QR / Người nhận', vars: ['showQr', 'qrCodeUrl', 'staffDisplay', 'customerName'] },
+    { group: 'Bill', vars: ['order.paidFormatted', 'order.changeFormatted', 'receiptCompact', 'totalWithCurrency', 'bank.name'] },
   ];
 
   error = '';
