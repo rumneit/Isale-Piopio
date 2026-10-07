@@ -1,5 +1,5 @@
 <ion-app>
-  <a class="skip-link" href="#main-content">Bỏ qua menu, đến nội dung chính</a>
+  <a class="skip-link" href="/" (click)="skipToMain($event)">Bỏ qua menu, đến nội dung chính</a>
   <!-- Main content PHẢI đứng trước menu để ion-menu tìm thấy content lúc khởi tạo -->
   <main id="main-content" class="app-main" tabindex="-1">
     <router-outlet />

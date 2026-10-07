@@ -147,6 +147,15 @@ export class AppComponent implements OnInit {
     });
   }
 
+  /**
+   * Không dùng href="#main-content": ứng dụng dùng hash-router nên liên kết đó sẽ
+   * bị hiểu thành route /main-content. Chặn điều hướng và chuyển focus trực tiếp.
+   */
+  skipToMain(event: Event): void {
+    event.preventDefault();
+    document.getElementById('main-content')?.focus();
+  }
+
   /** Hiện lỗi điều hướng thay vì nuốt im lặng — để dễ chẩn đoán */
   private async reportNavError(e: NavigationError) {
     console.error('Navigation error:', (e as any).error ?? e);

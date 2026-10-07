@@ -186,7 +186,7 @@ export class A11yLabelService {
     this.focusBeforeDialog = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.activeCustomDialog = dialog;
     if (!dialog.hasAttribute('tabindex')) dialog.setAttribute('tabindex', '-1');
-    setTimeout(() => (this.dialogFocusables(dialog)[0] ?? dialog).focus(), 0);
+    setTimeout(() => this.focusElement(this.dialogFocusables(dialog)[0] ?? dialog), 0);
   }
 
   private trapDialogFocus(event: KeyboardEvent): void {
@@ -194,18 +194,26 @@ export class A11yLabelService {
     const focusable = this.dialogFocusables(this.activeCustomDialog);
     if (!focusable.length) {
       event.preventDefault();
-      this.activeCustomDialog.focus();
+      this.focusElement(this.activeCustomDialog);
       return;
     }
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
     if (event.shiftKey && document.activeElement === first) {
       event.preventDefault();
-      last.focus();
+      this.focusElement(last);
     } else if (!event.shiftKey && document.activeElement === last) {
       event.preventDefault();
-      first.focus();
+      this.focusElement(first);
     }
+  }
+
+  /** Ionic giữ nút thật trong shadow DOM; focus() trên custom-element không ổn định. */
+  private focusElement(element: HTMLElement): void {
+    const inner = element.shadowRoot?.querySelector<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    (inner ?? element).focus();
   }
 
   private dialogFocusables(dialog: HTMLElement): HTMLElement[] {

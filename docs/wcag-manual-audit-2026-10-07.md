@@ -15,12 +15,12 @@
 |---|---|---|
 | 1.1.1 Non-text content | Visible images in 14 representative routes had `alt`; decorative icons are exposed inconsistently by Ionic but actionable icon buttons now have names | Pass in sampled routes |
 | 1.3.1 Structure | Several pages exposed no heading because `ion-title` had generic semantics | Fixed globally: `ion-title` gets heading level 1 |
-| 1.4.3 Contrast | `#6c757d` on white measured about 4.37:1; received-note total in yellow measured about 1.78:1; customer/export muted text was also below 4.5:1 | Fixed tokens/styles; production remeasurement pending deployment |
+| 1.4.3 Contrast | `#6c757d` on white measured about 4.37:1; received-note total in yellow measured about 1.78:1; customer/export muted text was also below 4.5:1 | Fixed; production computed-color rescan found no sampled failures on Orders, Customers, Customer export and received-note form |
 | 1.4.10 Reflow | No document-level horizontal overflow on ten representative routes at 390×844. Wide customer tables correctly switch to cards | Pass in sampled routes |
 | 2.1.1 Keyboard | Sale controls expose keyboard focus; custom dialogs did not have a shared focus trap/restoration mechanism | Fixed for custom note/filter/barcode/QR dialogs |
 | 2.1.2 No keyboard trap | Escape existed for Notes but not barcode/QR dialogs | Fixed Escape close for barcode and QR; Tab cycles within custom dialog |
 | 2.2.2 Pause/stop/hide | Decorative animation existed without reduced-motion override | Fixed with `prefers-reduced-motion` |
-| 2.4.1 Bypass blocks | No skip link | Fixed with “Bỏ qua menu, đến nội dung chính” |
+| 2.4.1 Bypass blocks | No skip link. First deployed implementation exposed a hash-router collision (`#main-content` became route `/main-content`) during keyboard verification | Fixed with an event-controlled focus transfer that preserves the current route |
 | 2.4.3 Focus order | Sampled Sale order follows toolbar → order tabs → primary tabs → form. Ionic shadow inputs remain in logical DOM order | Pass in sampled flow |
 | 2.4.7 Focus visible / 2.4.11 not obscured | Some controls relied on browser/Ionic 1px focus indication | Fixed with 3px high-contrast focus ring and offset |
 | 2.5.8 Target size | Sampled interactive targets were generally at least 24×24; export reorder controls are 30×30 | Pass in sampled routes |
@@ -41,7 +41,14 @@
 
 ## Remaining verification
 
-- Repeat the same contrast and accessibility-tree sampling after production deployment.
 - Run at least one complete flow with VoiceOver on Safari and NVDA on Windows/Chrome; automated AX inspection does not prove screen-reader usability.
 - Destructive dialogs and camera/contact-picker permission prompts require device-level testing and were not activated against production data.
 - The audit is broad and evidence-based, but it is not a certification that every state of every route conforms to WCAG 2.2 AA.
+
+## Production verification
+
+- Reflow was rechecked at 390×844 on Home, Sale, Orders, Products, Customers, customer import/export, received-note form, Notes and Config: no document-level horizontal overflow was found.
+- The accessibility tree exposes the skip control, main landmark, page headings and contextual control names on the sampled routes.
+- Computed foreground/background contrast was rescanned on four representative data/form routes after deployment; no visible leaf text below the WCAG AA threshold was found in the sampled state.
+- The first live keyboard check caught the hash-router skip-link defect described above. It was corrected at the root rather than documented as a known issue.
+- The Notes custom dialog was used as the representative manual modal check. Initial focus, containment and restoration were corrected for Ionic shadow-DOM controls; barcode/QR dialogs use the same shared mechanism.
