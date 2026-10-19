@@ -203,6 +203,9 @@ export class OrdersService {
       p_record_income: !!options.recordIncome,
     });
     if (error) {
+      if (error.code === '42703' && /channel_id/i.test(error.message)) {
+        throw new Error('Cơ sở dữ liệu thiếu cột orders.channel_id. Hãy chạy supabase-migration-v38-sale-order-channel-fix.sql trước khi tạo đơn.');
+      }
       if (error.code === 'PGRST202' || /inv_create_order|schema cache/i.test(error.message)) {
         throw new Error('Cơ sở dữ liệu chưa có migration v34. Hãy chạy supabase-migration-v34-release-hardening.sql trước khi tạo đơn.');
       }

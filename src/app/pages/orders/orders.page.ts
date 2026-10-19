@@ -85,7 +85,7 @@ export class OrdersPage implements OnInit {
   search = '';
 
   readonly monthTabs: MonthTab[] = this.buildMonthTabs();
-  readonly selectedMonth = signal(0); // index vào monthTabs
+  readonly selectedMonth = signal(1); // mặc định tháng hiện tại (giống ISale)
   /** 'all' | 4 tab nhanh | các trạng thái phụ qua nút ••• (như ISale) */
   readonly statusFilter = signal<string>('all');
   /** Chế độ chọn nhiều đơn (ISale: bulk select) */
