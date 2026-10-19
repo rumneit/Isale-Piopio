@@ -97,7 +97,8 @@ create table if not exists public.custom_fields (
 );
 create index if not exists custom_fields_shop_idx on public.custom_fields (shop_id, entity, sort_order);
 
--- ---------- 6. Bảng dữ liệu tùy chỉnh (custom tables) ----------create table if not exists public.custom_tables (
+-- ---------- 6. Bảng dữ liệu tùy chỉnh (custom tables) ----------
+create table if not exists public.custom_tables (
   id uuid primary key default gen_random_uuid(),
   shop_id uuid not null references public.shops (id) on delete cascade,
   name text not null,
