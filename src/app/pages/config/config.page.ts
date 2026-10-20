@@ -54,6 +54,7 @@ import { SettingsService } from '../../core/services/settings.service';
 import {
   DEFAULT_INVOICE_TEMPLATE,
   DEFAULT_RECEIPT_TEMPLATE,
+  InvoicePaperSize,
   InvoiceTemplateKind,
   InvoiceTemplateService,
 } from '../../core/services/invoice-template.service';
@@ -106,6 +107,7 @@ export class ConfigPage implements OnInit {
   readonly changingPw = signal(false);
   readonly templateTab = signal<'edit' | 'preview'>('edit');
   readonly templateKind = signal<InvoiceTemplateKind>('invoice');
+  readonly invoicePaperSize = signal<InvoicePaperSize>('A5');
   readonly tab = signal<'shop' | 'website' | 'other' | 'template'>('shop');
 
   // Thông tin shop
@@ -301,6 +303,9 @@ export class ConfigPage implements OnInit {
     this.receiptTemplate = this.settingsService.get('invoice_template_receipt') ?? this.defaultReceiptTemplate;
     this.savedInvoiceTemplate = this.invoiceTemplate;
     this.savedReceiptTemplate = this.receiptTemplate;
+    this.invoicePaperSize.set(
+      this.invoiceTemplates.normalizePaperSize(this.settingsService.get('invoice_paper_size'))
+    );
     this.refreshTemplatePreview();
 
     for (const t of this.toggleSettings) {
@@ -353,6 +358,7 @@ export class ConfigPage implements OnInit {
       await this.settingsService.set('time_format', this.timeFormat);
       await this.settingsService.set('print_note', this.printNote.trim());
       await this.settingsService.set('invoice_empty_rows', String(Number(this.emptyRows ?? 0)));
+      await this.settingsService.set('invoice_paper_size', this.invoicePaperSize());
       for (const t of this.toggleSettings) {
         await this.settingsService.set(t.key, String(!!this.toggleValues[t.key]));
       }
@@ -410,6 +416,20 @@ export class ConfigPage implements OnInit {
   selectTemplateKind(kind: InvoiceTemplateKind): void {
     this.templateKind.set(kind);
     this.error = '';
+    if (this.templateTab() === 'preview') this.refreshTemplatePreview();
+  }
+
+  /** Khổ giấy hóa đơn lớn (A5 mặc định, A4 tùy chọn) — lưu ngay */
+  async setInvoicePaperSize(size: InvoicePaperSize): Promise<void> {
+    if (this.invoicePaperSize() === size) return;
+    this.invoicePaperSize.set(size);
+    this.error = '';
+    try {
+      await this.settingsService.set('invoice_paper_size', size);
+      this.toast(`Khổ giấy hóa đơn: ${size}`);
+    } catch (e: any) {
+      this.error = e?.message ?? 'Không thể lưu khổ giấy hóa đơn.';
+    }
     if (this.templateTab() === 'preview') this.refreshTemplatePreview();
   }
 
@@ -496,7 +516,7 @@ export class ConfigPage implements OnInit {
         this.invoiceTemplates.previewContext(this.auth.shop(), this.printNote, Number(this.emptyRows ?? 0)),
       );
       this.previewDocument = this.sanitizer.bypassSecurityTrustHtml(
-        this.invoiceTemplates.document(rendered, this.templateKind()),
+        this.invoiceTemplates.document(rendered, this.templateKind(), false, this.invoicePaperSize()),
       );
       this.error = '';
     } catch (error: any) {

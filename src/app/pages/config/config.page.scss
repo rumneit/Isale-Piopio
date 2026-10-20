@@ -198,6 +198,49 @@ ion-list {
   }
 
   .active .kind-icon { background: var(--ion-color-primary); color: #fff; }
+
+  .kind-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    strong { font-size: 14px; font-weight: 700; }
+    small { font-size: 11px; font-weight: 500; color: var(--app-text-muted); }
+  }
+
+  .active .kind-text small { color: inherit; opacity: .8; }
+}
+
+.template-paper-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 16px;
+
+  > span {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--app-text-muted);
+  }
+
+  button {
+    min-width: 48px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--app-border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--app-text);
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+
+  button.active {
+    border-color: var(--ion-color-primary);
+    background: rgba(var(--ion-color-primary-rgb), .08);
+    color: var(--ion-color-primary);
+  }
 }
 
 .template-toolbar {
@@ -347,6 +390,11 @@ ion-list {
 .template-preview-stage.receipt .template-preview-frame {
   width: min(100%, 304px);
   min-height: 700px;
+}
+
+.template-preview-stage.a5 .template-preview-frame {
+  width: min(100%, 559px);
+  min-height: 794px;
 }
 
 @media (max-width: 640px) {

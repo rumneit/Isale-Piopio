@@ -290,13 +290,27 @@
         <div class="template-kinds" role="tablist" aria-label="Khổ hóa đơn">
           <button type="button" role="tab" [attr.aria-selected]="templateKind() === 'invoice'" [class.active]="templateKind() === 'invoice'" (click)="selectTemplateKind('invoice')">
             <span class="kind-icon"><ion-icon name="document-text-outline" /></span>
-            <strong>Hóa đơn khổ lớn</strong>
+            <span class="kind-text">
+              <strong>Hóa đơn khổ lớn</strong>
+              <small>Giấy A4 / A5</small>
+            </span>
           </button>
           <button type="button" role="tab" [attr.aria-selected]="templateKind() === 'receipt'" [class.active]="templateKind() === 'receipt'" (click)="selectTemplateKind('receipt')">
             <span class="kind-icon"><ion-icon name="receipt-outline" /></span>
-            <strong>Bill (khổ nhỏ)</strong>
+            <span class="kind-text">
+              <strong>Bill (khổ nhỏ)</strong>
+              <small>Máy in nhiệt 58mm / 80mm</small>
+            </span>
           </button>
         </div>
+
+        @if (templateKind() === 'invoice') {
+          <div class="template-paper-size" role="group" aria-label="Khổ giấy hóa đơn">
+            <span>Khổ giấy:</span>
+            <button type="button" [class.active]="invoicePaperSize() === 'A5'" (click)="setInvoicePaperSize('A5')">A5</button>
+            <button type="button" [class.active]="invoicePaperSize() === 'A4'" (click)="setInvoicePaperSize('A4')">A4</button>
+          </div>
+        }
 
         <ion-toolbar class="template-toolbar">
         <ion-segment [value]="templateTab()" (ionChange)="selectTemplateTab($any($event.detail.value))">
@@ -354,7 +368,7 @@
           <p>Xem trước dùng thông tin shop thật; dòng sản phẩm là dữ liệu mẫu.</p>
           <button type="button" (click)="refreshTemplatePreview()"><ion-icon name="refresh-outline" /> LÀM MỚI XEM TRƯỚC</button>
         </div>
-        <div class="template-preview-stage" [class.receipt]="templateKind() === 'receipt'">
+        <div class="template-preview-stage" [class.receipt]="templateKind() === 'receipt'" [class.a5]="templateKind() === 'invoice' && invoicePaperSize() === 'A5'">
           <iframe class="template-preview-frame" sandbox="" [srcdoc]="previewDocument" title="Xem trước template hóa đơn"></iframe>
         </div>
       }

@@ -3,6 +3,7 @@ import Handlebars from 'handlebars';
 import { Order, OrderItem, Shop } from '../models/models';
 
 export type InvoiceTemplateKind = 'invoice' | 'receipt';
+export type InvoicePaperSize = 'A4' | 'A5';
 
 export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
 {{#if shop.name}}
@@ -264,17 +265,38 @@ export class InvoiceTemplateService {
     });
   }
 
-  document(rendered: string, kind: InvoiceTemplateKind, autoPrint = false): string {
-    const width = kind === 'receipt' ? '80mm' : '210mm';
-    return `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hóa đơn bán hàng</title><style>${this.baseCss(kind, width)}</style></head><body>${rendered}${autoPrint ? '<script>window.onload=()=>window.print()<\/script>' : ''}</body></html>`;
+  /** Chuẩn hóa khổ giấy hóa đơn — mặc định A5 theo mẫu Hóa đơn khổ lớn */
+  normalizePaperSize(value: unknown): InvoicePaperSize {
+    return value === 'A4' ? 'A4' : 'A5';
   }
 
-  openPrint(template: string, kind: InvoiceTemplateKind, context: Record<string, unknown>): boolean {
+  document(
+    rendered: string,
+    kind: InvoiceTemplateKind,
+    autoPrint = false,
+    paperSize: InvoicePaperSize = 'A5'
+  ): string {
+    const size = this.normalizePaperSize(paperSize);
+    const width = kind === 'receipt' ? '80mm' : size === 'A5' ? '148mm' : '210mm';
+    return `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hóa đơn bán hàng</title><style>${this.baseCss(kind, width, size)}</style></head><body>${rendered}${autoPrint ? '<script>window.onload=()=>window.print()<\/script>' : ''}</body></html>`;
+  }
+
+  openPrint(
+    template: string,
+    kind: InvoiceTemplateKind,
+    context: Record<string, unknown>,
+    paperSize: InvoicePaperSize = 'A5'
+  ): boolean {
+    const size = this.normalizePaperSize(paperSize);
     const rendered = this.render(template, context);
-    const popup = window.open('', '_blank', kind === 'receipt' ? 'width=420,height=720' : 'width=900,height=760');
+    const popup = window.open(
+      '',
+      '_blank',
+      kind === 'receipt' ? 'width=420,height=720' : size === 'A5' ? 'width=700,height=820' : 'width=900,height=900'
+    );
     if (!popup) return false;
     popup.document.open();
-    popup.document.write(this.document(rendered, kind, true));
+    popup.document.write(this.document(rendered, kind, true, size));
     popup.document.close();
     return true;
   }
@@ -320,7 +342,10 @@ export class InvoiceTemplateService {
     return `${parts.join(' ').replace(/\s+/g, ' ').trim()} đồng`;
   }
 
-  private baseCss(kind: InvoiceTemplateKind, width: string): string {
-    return `*{box-sizing:border-box}body{margin:0 auto;padding:${kind === 'receipt' ? '10px 8px' : '18px'};width:${width};max-width:100%;background:#fff;color:#111;font:13px Arial,sans-serif;line-height:1.35}h1{text-align:center;font-size:18px;margin:14px 0}.shop-head{text-align:center;border-bottom:1px solid #111;padding-bottom:8px}.shop-head em,.receipt-head>*{display:block}.shop-logo,.receipt-logo{display:block;max-width:90px;max-height:64px;object-fit:contain;margin:0 auto 5px}.receipt-logo{max-width:70px;max-height:52px}.shop-name{font-size:15px}.shop-grid{display:grid;grid-template-columns:1fr 1fr;text-align:left;gap:20px;margin-top:8px}.bank-block{border-left:1px dotted #999;padding-left:20px}.invoice-meta>div,.receipt-meta>div,.receipt-bank>div{margin:2px 0}.receipt-bank{padding:6px 0;border-top:1px dashed #777;border-bottom:1px dashed #777}.dot-line{display:inline-block;min-width:180px;border-bottom:1px dotted #333}.invoice-table,.receipt-items,.receipt-total{width:100%;border-collapse:collapse;margin-top:10px}.invoice-table th,.invoice-table td{border:1px solid #111;padding:5px}.center{text-align:center}.number{text-align:right;white-space:nowrap}.written{margin-top:10px}.signatures{display:grid;grid-template-columns:1fr 1fr;text-align:center;margin-top:28px;min-height:90px}.staff-sign{display:block;margin-top:45px}.receipt-head{text-align:center;line-height:1.35}.receipt-meta{margin:8px 0}.receipt-items{border-top:1px dashed #777;border-bottom:1px dashed #777}.receipt-items th,.receipt-items td{padding:4px 2px;border-bottom:1px solid #bbb}.receipt-items .item-name td{padding-top:7px;border-bottom:0;font-weight:600}.receipt-items .subtotal td{border-bottom:0;border-top:1px dashed #777;padding-top:7px}.receipt-total td{padding:3px 2px}.receipt-total td:last-child{text-align:right;white-space:nowrap}.grand{font-weight:700;font-size:15px}.qr{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:10px;text-align:center}.qr img{max-width:${kind === 'receipt' ? '180px' : '90px'}}.thanks{text-align:center}@page{margin:8mm;size:${kind === 'receipt' ? '80mm auto' : 'A4'}}@media print{body{width:100%;padding:0}}`;
+  private baseCss(kind: InvoiceTemplateKind, width: string, paperSize: InvoicePaperSize): string {
+    const base = `*{box-sizing:border-box}body{margin:0 auto;padding:${kind === 'receipt' ? '10px 8px' : '18px'};width:${width};max-width:100%;background:#fff;color:#111;font:13px Arial,sans-serif;line-height:1.35}h1{text-align:center;font-size:18px;margin:14px 0}.shop-head{text-align:center;border-bottom:1px solid #111;padding-bottom:8px}.shop-head em,.receipt-head>*{display:block}.shop-logo,.receipt-logo{display:block;max-width:90px;max-height:64px;object-fit:contain;margin:0 auto 5px}.receipt-logo{max-width:70px;max-height:52px}.shop-name{font-size:15px}.shop-grid{display:grid;grid-template-columns:1fr 1fr;text-align:left;gap:20px;margin-top:8px}.bank-block{border-left:1px dotted #999;padding-left:20px}.invoice-meta>div,.receipt-meta>div,.receipt-bank>div{margin:2px 0}.receipt-bank{padding:6px 0;border-top:1px dashed #777;border-bottom:1px dashed #777}.dot-line{display:inline-block;min-width:180px;border-bottom:1px dotted #333}.invoice-table,.receipt-items,.receipt-total{width:100%;border-collapse:collapse;margin-top:10px}.invoice-table th,.invoice-table td{border:1px solid #111;padding:5px}.center{text-align:center}.number{text-align:right;white-space:nowrap}.written{margin-top:10px}.signatures{display:grid;grid-template-columns:1fr 1fr;text-align:center;margin-top:28px;min-height:90px}.staff-sign{display:block;margin-top:45px}.receipt-head{text-align:center;line-height:1.35}.receipt-meta{margin:8px 0}.receipt-items{border-top:1px dashed #777;border-bottom:1px dashed #777}.receipt-items th,.receipt-items td{padding:4px 2px;border-bottom:1px solid #bbb}.receipt-items .item-name td{padding-top:7px;border-bottom:0;font-weight:600}.receipt-items .subtotal td{border-bottom:0;border-top:1px dashed #777;padding-top:7px}.receipt-total td{padding:3px 2px}.receipt-total td:last-child{text-align:right;white-space:nowrap}.grand{font-weight:700;font-size:15px}.qr{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:10px;text-align:center}.qr img{max-width:${kind === 'receipt' ? '180px' : '90px'}}.thanks{text-align:center}@page{margin:8mm;size:${kind === 'receipt' ? '80mm auto' : 'A4'}}@media print{body{width:100%;padding:0}}`;
+    if (kind !== 'invoice' || paperSize !== 'A5') return base;
+    // Hóa đơn khổ lớn A5: thu gọn chữ/bảng để vừa 148mm
+    return base + `body{width:148mm;padding:6mm;font-size:10.5px}h1{font-size:15px;margin:10px 0}.shop-name{font-size:13px}.shop-grid{gap:10px}.bank-block{padding-left:10px}.shop-logo{max-width:64px;max-height:46px}.dot-line{min-width:120px}.invoice-table th,.invoice-table td{padding:3px;font-size:10px}.written{margin-top:6px}.signatures{margin-top:18px;min-height:70px}.staff-sign{margin-top:30px}.qr img{max-width:70px}@page{margin:5mm;size:A5}@media print{body{width:100%;padding:0}}`;
   }
 }

@@ -508,7 +508,8 @@ export class OrderDetailPage implements OnInit {
   printInvoice() {
     const o = this.order();
     if (!o) return;
-    const kind: InvoiceTemplateKind = this.settings.booleanValue('print_large_invoice') ? 'invoice' : 'receipt';
+    const kind: InvoiceTemplateKind = this.settings.booleanValue('print_large_invoice', true) ? 'invoice' : 'receipt';
+    const paperSize = this.invoiceTemplates.normalizePaperSize(this.settings.get('invoice_paper_size'));
     const key = kind === 'invoice' ? 'invoice_template_large' : 'invoice_template_receipt';
     const legacy = kind === 'invoice' ? this.settings.get('invoice_template') : null;
     const template = this.settings.get(key) ?? legacy ?? this.invoiceTemplates.defaultFor(kind);
@@ -523,7 +524,7 @@ export class OrderDetailPage implements OnInit {
         hideDiscountColumn: this.settings.booleanValue('hide_discount_column'),
         staffDisplay: this.auth.profile()?.full_name ?? '',
         showTax: !this.settings.booleanValue('hide_tax'),
-      }));
+      }), paperSize);
       if (!opened) this.toast('Trình chặn popup đang bật. Hãy cho phép popup để in.', 'warning');
     } catch (error: any) {
       this.toast(error?.message ?? 'Không thể dựng template hóa đơn.', 'danger');
