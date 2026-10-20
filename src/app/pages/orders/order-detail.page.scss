@@ -79,3 +79,136 @@ ion-list {
 .ship-cta {
   padding: 10px 12px 4px;
 }
+
+/* Tab chi tiết đơn hàng — đồng bộ 4 tab của ISale */
+.od-tabs-toolbar {
+  --min-height: 44px;
+  padding: 2px 6px 4px;
+
+  ion-segment {
+    min-height: 36px;
+  }
+
+  ion-segment-button {
+    --indicator-height: 3px;
+    min-height: 34px;
+    font-size: 12.5px;
+  }
+}
+
+/* Công nợ */
+.od-debt-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--app-surface-alt);
+  }
+
+  span {
+    font-size: 11.5px;
+    color: var(--app-text-muted);
+  }
+
+  strong {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--app-text);
+    overflow-wrap: anywhere;
+  }
+
+  .ok {
+    color: var(--ion-color-success);
+  }
+
+  .danger {
+    color: var(--ion-color-danger);
+  }
+}
+
+.od-debt-note {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--ion-color-warning) 25%, var(--app-border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ion-color-warning) 9%, var(--app-surface));
+  font-size: 12.5px;
+  color: var(--app-text);
+}
+
+.od-debt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.od-empty-text {
+  padding: 14px 4px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--app-text-muted);
+}
+
+/* Mã vạch */
+.od-barcode-body {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+  overflow-x: auto;
+
+  canvas {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.od-barcode-code {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--app-text-muted);
+}
+
+/* QR thanh toán */
+.od-qr-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0 4px;
+}
+
+.od-qr-img {
+  width: min(300px, 100%);
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.od-qr-amount {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ion-color-primary);
+}
+
+.od-qr-code {
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  color: var(--app-text-muted);
+}
+
+.od-qr-bank {
+  font-size: 12.5px;
+  text-align: center;
+  color: var(--app-text-muted);
+}

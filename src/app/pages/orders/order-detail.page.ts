@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, effect, inject, signal, computed, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -16,6 +16,8 @@ import {
   IonBadge,
   IonNote,
   IonBackButton,
+  IonSegment,
+  IonSegmentButton,
   AlertController,
   ToastController,
   ActionSheetController,
@@ -35,11 +37,19 @@ import {
   callOutline,
   locationOutline,
   swapVerticalOutline,
+  barcodeOutline,
+  qrCodeOutline,
+  walletOutline,
+  arrowDownCircleOutline,
+  arrowUpCircleOutline,
 } from 'ionicons/icons';
+import JsBarcode from 'jsbarcode';
 import { OrdersService } from '../../core/services/orders.service';
 import { ShipmentsService } from '../../core/services/shipments.service';
+import { TransactionsService } from '../../core/services/transactions.service';
+import { CustomersService } from '../../core/services/customers.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Order, OrderItem, Shop, Shipment } from '../../core/models/models';
+import { Customer, Order, OrderItem, Shop, Shipment, Transaction } from '../../core/models/models';
 import { ShipmentFormModalComponent } from '../shipments/shipment-form.modal';
 import { ModalController } from '@ionic/angular';
 import { SettingsService } from '../../core/services/settings.service';
@@ -65,6 +75,8 @@ import { InvoiceTemplateService, InvoiceTemplateKind } from '../../core/services
     IonBadge,
     IonNote,
     IonBackButton,
+    IonSegment,
+    IonSegmentButton,
   ],
 })
 export class OrderDetailPage implements OnInit {
@@ -76,6 +88,8 @@ export class OrderDetailPage implements OnInit {
   private router = inject(Router);
   private ordersService = inject(OrdersService);
   private shipmentsService = inject(ShipmentsService);
+  private transactionsService = inject(TransactionsService);
+  private customersService = inject(CustomersService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private actionSheetCtrl = inject(ActionSheetController);
@@ -92,9 +106,38 @@ export class OrderDetailPage implements OnInit {
   readonly busy = signal(false);
   /** Các cột mở rộng v22 tồn tại trong DB (undefined -> ẩn khối vận chuyển/khách mở rộng) */
   readonly extras = signal<Set<string>>(new Set());
+  /** Tab chi tiết — đồng bộ 4 tab của ISale */
+  readonly tab = signal<'info' | 'debt' | 'barcode' | 'qr'>('info');
+  readonly orderTransactions = signal<Transaction[]>([]);
+  readonly customer = signal<Customer | null>(null);
+  readonly shop = this.auth.shop;
+  readonly barcodeCanvas = viewChild<ElementRef<HTMLCanvasElement>>('barcodeCanvas');
+
+  /** Đã thu của đơn: ưu tiên trạng thái paid, sau đó cộng giao dịch gắn order_id */
+  readonly paidAmount = computed(() => {
+    const o = this.order();
+    if (!o) return 0;
+    const total = Math.max(0, Number(o.total ?? 0));
+    if (o.paid) return total;
+    const net = this.orderTransactions().reduce(
+      (sum, t) => sum + (t.type === 'income' ? Number(t.amount ?? 0) : -Number(t.amount ?? 0)),
+      0
+    );
+    return Math.min(total, Math.max(0, net));
+  });
+
+  readonly remainingAmount = computed(() =>
+    Math.max(0, Number(this.order()?.total ?? 0) - this.paidAmount())
+  );
 
   constructor() {
-    addIcons({ trashOutline, cashOutline, receiptOutline, personOutline, ellipseOutline, checkmarkCircleOutline, printOutline, returnDownBackOutline, cardOutline, cubeOutline, callOutline, locationOutline, swapVerticalOutline });
+    addIcons({ trashOutline, cashOutline, receiptOutline, personOutline, ellipseOutline, checkmarkCircleOutline, printOutline, returnDownBackOutline, cardOutline, cubeOutline, callOutline, locationOutline, swapVerticalOutline, barcodeOutline, qrCodeOutline, walletOutline, arrowDownCircleOutline, arrowUpCircleOutline });
+    // Canvas chỉ tồn tại khi tab Mã vạch được render — vẽ lại mỗi khi tab/canvas sẵn sàng
+    effect(() => {
+      if (this.tab() === 'barcode' && this.barcodeCanvas()) {
+        setTimeout(() => this.drawBarcode());
+      }
+    });
   }
 
   goReturn() {
@@ -121,6 +164,9 @@ export class OrderDetailPage implements OnInit {
       const { order, items } = await this.ordersService.getWithItems(id);
       this.order.set(order);
       this.items.set(items);
+      this.orderTransactions.set([]);
+      this.customer.set(null);
+      if (order) void this.loadPaymentInfo(order);
       // Vận đơn liên quan (im lặng khi chưa chạy migration v25)
       this.shipmentsService
         .listByOrder(id)
@@ -131,6 +177,142 @@ export class OrderDetailPage implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  /** Tải giao dịch thanh toán + công nợ khách hàng (im lặng nếu DB chưa có cột/bảng) */
+  private async loadPaymentInfo(order: Order): Promise<void> {
+    const [transactions, customer] = await Promise.all([
+      this.transactionsService.listByOrder(order.id).catch(() => [] as Transaction[]),
+      order.customer_id
+        ? this.customersService.get(order.customer_id).catch(() => null)
+        : Promise.resolve(null),
+    ]);
+    if (this.order()?.id !== order.id) return;
+    this.orderTransactions.set(transactions);
+    this.customer.set(customer);
+  }
+
+  selectTab(value: string): void {
+    const tab = (['info', 'debt', 'barcode', 'qr'].includes(value) ? value : 'info') as
+      | 'info'
+      | 'debt'
+      | 'barcode'
+      | 'qr';
+    this.tab.set(tab);
+  }
+
+  /** Ghi nhận thu nợ từng phần; đủ tiền thì tự đánh dấu đã thanh toán */
+  async recordPayment(): Promise<void> {
+    const order = this.order();
+    if (!order) return;
+    const remaining = this.remainingAmount();
+    if (remaining <= 0) return;
+    const alert = await this.alertCtrl.create({
+      header: 'Ghi nhận thanh toán',
+      message: `Còn nợ ${this.formatMoney(remaining)}`,
+      inputs: [
+        {
+          name: 'amount',
+          type: 'number',
+          min: 1,
+          max: remaining,
+          value: String(Math.round(remaining)),
+          placeholder: 'Số tiền thu',
+        },
+        { name: 'note', type: 'text', placeholder: 'Ghi chú (không bắt buộc)' },
+      ],
+      buttons: [
+        { text: 'Hủy', role: 'cancel' },
+        {
+          text: 'Lưu',
+          handler: (data) => {
+            const amount = Number(data.amount);
+            if (!(amount > 0) || amount > remaining) {
+              void this.toast('Số tiền không hợp lệ.', 'danger');
+              return false;
+            }
+            void this.doRecordPayment(amount, String(data.note ?? '').trim());
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async doRecordPayment(amount: number, note: string): Promise<void> {
+    const order = this.order();
+    if (!order) return;
+    this.busy.set(true);
+    try {
+      const fullyPaid = this.paidAmount() + amount >= Number(order.total ?? 0) - 0.5;
+      await this.transactionsService.create({
+        type: 'income',
+        category: 'Thu nợ',
+        amount,
+        note: note || `Thu tiền đơn ${order.code}`,
+        occurred_at: new Date().toISOString(),
+        order_id: order.id,
+        payment_type: 'CASH',
+        source: 'debt',
+      });
+      if (fullyPaid) await this.ordersService.update(order.id, { paid: true });
+      await this.load();
+      this.toast('Đã ghi nhận thanh toán');
+    } catch (e: any) {
+      this.toast(e?.message ?? 'Ghi nhận thanh toán thất bại', 'danger');
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  // ===== Mã vạch đơn hàng (Code128 như ISale) =====
+  private drawBarcode(): void {
+    const canvas = this.barcodeCanvas()?.nativeElement;
+    const order = this.order();
+    if (!canvas || !order) return;
+    const value = (order.code || order.id || '').trim() || order.id;
+    try {
+      JsBarcode(canvas, value, {
+        format: 'CODE128',
+        width: 2,
+        height: 72,
+        displayValue: true,
+        fontSize: 14,
+        margin: 8,
+        background: '#ffffff',
+        lineColor: '#000000',
+      });
+    } catch {
+      try {
+        JsBarcode(canvas, value.replace(/[^A-Za-z0-9\-\.\ \$\/\+\%]/g, '') || '0', {
+          format: 'CODE128',
+          height: 72,
+        });
+      } catch {
+        /* bỏ qua */
+      }
+    }
+  }
+
+  printBarcode(): void {
+    const canvas = this.barcodeCanvas()?.nativeElement;
+    if (!canvas) return;
+    this.drawBarcode();
+    const url = canvas.toDataURL('image/png');
+    const w = window.open('', '_blank', 'width=520,height=360');
+    if (!w) {
+      this.toast('Trình chặn popup đang bật. Hãy cho phép popup để in mã vạch.', 'warning');
+      return;
+    }
+    w.document.write(
+      `<html><head><title>In mã vạch</title></head><body style="display:flex;align-items:center;justify-content:center;margin:0"><img src="${url}" onload="window.focus();window.print()" style="max-width:90%"/></body></html>`
+    );
+    w.document.close();
+  }
+
+  openBankSettings(): void {
+    this.router.navigateByUrl('/config');
   }
 
   async togglePaid() {

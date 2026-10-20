@@ -66,6 +66,22 @@ export class TransactionsService {
     return (data ?? []) as Transaction[];
   }
 
+  /** Giao dịch gắn với một đơn hàng (v24) — trả rỗng nếu DB chưa migrate */
+  async listByOrder(orderId: string): Promise<Transaction[]> {
+    if (!this.sb.isConfigured || !this.shopId) return [];
+    const { data, error } = await this.sb
+      .from('transactions')
+      .select('*')
+      .eq('shop_id', this.shopId)
+      .eq('order_id', orderId)
+      .order('occurred_at', { ascending: false });
+    if (error) {
+      if (TransactionsService.isMissingColumn(error)) return [];
+      throw error;
+    }
+    return (data ?? []) as Transaction[];
+  }
+
   async create(input: Partial<Transaction>): Promise<Transaction> {
     const shopId = this.shopId;
     if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
