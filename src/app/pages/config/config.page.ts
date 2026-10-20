@@ -358,7 +358,6 @@ export class ConfigPage implements OnInit {
       await this.settingsService.set('time_format', this.timeFormat);
       await this.settingsService.set('print_note', this.printNote.trim());
       await this.settingsService.set('invoice_empty_rows', String(Number(this.emptyRows ?? 0)));
-      await this.settingsService.set('invoice_paper_size', this.invoicePaperSize());
       for (const t of this.toggleSettings) {
         await this.settingsService.set(t.key, String(!!this.toggleValues[t.key]));
       }
