@@ -254,7 +254,7 @@ export class OrderDetailPage implements OnInit {
         occurred_at: new Date().toISOString(),
         order_id: order.id,
         payment_type: 'CASH',
-        source: 'debt',
+        source: 'order',
       });
       if (fullyPaid) await this.ordersService.update(order.id, { paid: true });
       await this.load();
