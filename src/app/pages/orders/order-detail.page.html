@@ -244,10 +244,12 @@
           </div>
 
           @if (customer(); as c) {
-            <div class="od-debt-note">
-              Công nợ hiện tại của khách hàng <b>{{ c.name }}</b>:
-              <strong>{{ formatMoney(c.debt) }}</strong>
-            </div>
+            @if (c.debt > 0) {
+              <div class="od-debt-note">
+                Công nợ hiện tại của khách hàng <b>{{ c.name }}</b>:
+                <strong>{{ formatMoney(c.debt) }}</strong>
+              </div>
+            }
           }
 
           <div class="od-debt-actions">
@@ -307,7 +309,6 @@
           <div class="od-barcode-body">
             <canvas #barcodeCanvas></canvas>
           </div>
-          <div class="od-barcode-code">{{ o.code }}</div>
         </div>
       }
 
