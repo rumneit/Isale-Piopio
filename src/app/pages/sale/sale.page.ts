@@ -228,13 +228,19 @@ export class SalePage implements OnInit {
   });
 
   readonly subtotal = computed(() => this.items().reduce((s, i) => s + i.price * i.qty, 0));
-  readonly discountAmount = computed(() => Math.round((this.subtotal() * (Number(this.discountPercent ?? 0))) / 100));
-  readonly taxAmount = computed(() => Math.round((this.subtotal() * (Number(this.taxPercent ?? 0))) / 100));
-  /** Tổng tạm tính = tiền hàng − chiết khấu + thuế */
-  readonly preTotal = computed(() => this.subtotal() - this.discountAmount() + this.taxAmount());
-  /** Tổng phải trả = tạm tính + phí ship (nếu khách trả ship) */
-  readonly totalDue = computed(() => this.preTotal() + (this.customerShipPaid ? Math.max(0, Number(this.shipFee ?? 0)) : 0));
-  readonly changeDue = computed(() => Math.max(0, Number(this.customerPaid ?? 0) - this.totalDue()));
+  /**
+   * Các giá trị dưới đây cố tình dùng hàm thường (không phải computed) vì chúng
+   * đọc các biến nhập tay discountPercent/taxPercent/shipFee/customerShipPaid/customerPaid.
+   * computed() chỉ theo dõi signal nên trước đây Tổng phải trả bị "đứng" khi gõ phí ship/chiết khấu/VAT.
+   */
+  readonly discountAmount = () => Math.round((this.subtotal() * Number(this.discountPercent ?? 0)) / 100);
+  readonly taxAmount = () => Math.round((this.subtotal() * Number(this.taxPercent ?? 0)) / 100);
+  /** Tổng tạm tính = tiền hàng − chiết khấu (chưa gồm thuế và phí ship) */
+  readonly preTotal = () => this.subtotal() - this.discountAmount();
+  /** Tổng phải trả = tạm tính + thuế VAT + phí ship (nếu khách trả ship) */
+  readonly totalDue = () =>
+    this.preTotal() + this.taxAmount() + (this.customerShipPaid ? Math.max(0, Number(this.shipFee ?? 0)) : 0);
+  readonly changeDue = () => Math.max(0, Number(this.customerPaid ?? 0) - this.totalDue());
   readonly totalQty = computed(() => this.items().reduce((s, i) => s + i.qty, 0));
 
   constructor() {

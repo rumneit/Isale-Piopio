@@ -98,16 +98,6 @@
             <span class="sale-label">Ngày</span>
             <ion-input type="datetime-local" [(ngModel)]="orderDate" class="sale-input" aria-label="Ngày tạo đơn" />
           </div>
-          @if (hasPaymentMethodColumn) {
-            <div class="sale-row">
-              <span class="sale-label">Hình thức thanh toán</span>
-              <div class="pay-methods">
-                @for (m of payMethods; track m.value) {
-                  <button class="pay-method" [class.active]="paymentMethod === m.value" (click)="paymentMethod = m.value">{{ m.label }}</button>
-                }
-              </div>
-            </div>
-          }
         </div>
 
         <!-- Sản phẩm -->
@@ -254,71 +244,137 @@
           </div>
         </aside>
 
-        <!-- TỔNG TIỀN & THANH TOÁN (thứ tự dòng đồng bộ ISale) -->
+        <!-- TỔNG TIỀN & THANH TOÁN (lưới 3 cột như iSale) -->
         <div class="sale-split-bottom">
-        <div class="app-card">
-          <div class="sale-row">
-            <span class="sale-label">Tài khoản</span>
-            <button class="sale-btn" (click)="selectAccount()">
-              <ion-icon name="wallet-outline" /> {{ accountName() }}
+          <div class="app-card pay-card">
+            <div class="pay-grid">
+              <div class="pay-field">
+                <span class="pay-label">Tài khoản</span>
+                <button class="pay-box pay-account" type="button" (click)="selectAccount()">
+                  {{ accountName() }}
+                </button>
+              </div>
+
+              <div class="pay-field">
+                <span class="pay-label">Trạng thái</span>
+                <div class="pay-box pay-select">
+                  <select [(ngModel)]="status" aria-label="Trạng thái đơn hàng">
+                    @for (s of orderStatusList; track s.value) {
+                      <option [value]="s.value">{{ s.label }}</option>
+                    }
+                  </select>
+                  <span class="pay-caret"></span>
+                </div>
+              </div>
+
+              @if (hasPaymentMethodColumn) {
+                <div class="pay-field">
+                  <span class="pay-label">Thanh toán</span>
+                  <div class="pay-box pay-select">
+                    <select [(ngModel)]="paymentMethod" aria-label="Hình thức thanh toán">
+                      @for (m of payMethods; track m.value) {
+                        <option [value]="m.value">{{ m.label }}</option>
+                      }
+                    </select>
+                    <span class="pay-caret"></span>
+                  </div>
+                </div>
+              }
+
+              <div class="pay-field">
+                <span class="pay-label pay-label-dark">Tổng tiền hàng</span>
+                <div class="pay-box pay-readonly">{{ formatMoney(subtotal()) }}</div>
+              </div>
+
+              <div class="pay-field">
+                <span class="pay-label">Phí ship</span>
+                <input
+                  type="number"
+                  min="0"
+                  inputmode="numeric"
+                  [(ngModel)]="shipFee"
+                  class="pay-box pay-input"
+                  placeholder="0"
+                  aria-label="Phí ship"
+                />
+              </div>
+
+              <div class="pay-field">
+                <span class="pay-label">Khách trả ship?</span>
+                <label class="pay-box pay-toggle">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="customerShipPaid"
+                    class="pay-toggle-input"
+                    aria-label="Khách trả phí ship"
+                  />
+                  <span class="pay-toggle-track"><span class="pay-toggle-thumb"></span></span>
+                  <span class="pay-toggle-text">{{ customerShipPaid ? 'Có' : 'Không' }}</span>
+                </label>
+              </div>
+
+              <div class="pay-field">
+                <span class="pay-label">Chiết khấu</span>
+                <div class="pay-box pay-suffix">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    inputmode="numeric"
+                    [(ngModel)]="discountPercent"
+                    aria-label="Chiết khấu phần trăm"
+                  />
+                  <span class="pay-pct">%</span>
+                </div>
+              </div>
+
+              <div class="pay-field">
+                <span class="pay-label pay-label-info">Tổng tạm tính</span>
+                <div class="pay-box pay-readonly">{{ formatMoney(preTotal()) }}</div>
+              </div>
+
+              <div class="pay-field">
+                <span class="pay-label">Thuế</span>
+                <div class="pay-box pay-suffix">
+                  <input
+                    type="number"
+                    min="0"
+                    inputmode="numeric"
+                    [(ngModel)]="taxPercent"
+                    aria-label="Thuế VAT phần trăm"
+                  />
+                  <span class="pay-pct">%</span>
+                </div>
+              </div>
+
+              <div class="pay-field">
+                <span class="pay-label pay-label-danger">Tổng phải trả</span>
+                <div class="pay-box pay-readonly pay-grand">{{ formatMoney(totalDue()) }}</div>
+              </div>
+
+              <div class="pay-field">
+                <span class="pay-label">Khách đưa</span>
+                <input
+                  type="number"
+                  min="0"
+                  inputmode="numeric"
+                  [(ngModel)]="customerPaid"
+                  class="pay-box pay-input"
+                  aria-label="Khách đưa"
+                />
+              </div>
+
+              <div class="pay-field">
+                <span class="pay-label">Tiền thừa</span>
+                <div class="pay-box pay-readonly">{{ formatMoney(changeDue()) }}</div>
+              </div>
+            </div>
+
+            <div class="currency-note">* Đơn vị tiền: VND</div>
+            <button class="qr-btn" (click)="showQr()">
+              <ion-icon name="qr-code-outline" /> Hiện QR Code thanh toán
             </button>
           </div>
-          <div class="sale-row">
-            <span class="sale-label">Trạng thái</span>
-            <ion-select [(ngModel)]="status" interface="action-sheet" cancelText="Đóng" class="sale-input">
-              @for (s of orderStatusList; track s.value) {
-                <ion-select-option [value]="s.value">{{ s.label }}</ion-select-option>
-              }
-            </ion-select>
-          </div>
-          <div class="sale-row total-row">
-            <span class="sale-label">Tổng tiền hàng</span>
-            <strong>{{ formatMoney(subtotal()) }}</strong>
-          </div>
-          <div class="sale-row">
-            <span class="sale-label">Chiết khấu</span>
-            <div class="pct-input">
-              <ion-input type="number" min="0" max="100" [(ngModel)]="discountPercent" aria-label="Chiết khấu phần trăm" />
-              <span>%</span>
-              <em class="calc-amount">-{{ formatMoney(discountAmount()) }}</em>
-            </div>
-          </div>
-          <div class="sale-row">
-            <span class="sale-label">Thuế VAT</span>
-            <div class="pct-input">
-              <ion-input type="number" min="0" [(ngModel)]="taxPercent" aria-label="Thuế VAT phần trăm" />
-              <span>%</span>
-              <em class="calc-amount">+{{ formatMoney(taxAmount()) }}</em>
-            </div>
-          </div>
-          <div class="sale-row">
-            <span class="sale-label">Phí ship</span>
-            <ion-input type="number" min="0" [(ngModel)]="shipFee" class="sale-input" placeholder="0" aria-label="Phí vận chuyển" />
-          </div>
-          <div class="sale-row">
-            <span class="sale-label">Khách trả ship?</span>
-            <label class="check-label">
-              <input type="checkbox" [(ngModel)]="customerShipPaid" class="sale-check" aria-label="Khách hàng trả phí vận chuyển" />
-              <span>{{ customerShipPaid ? 'Cộng phí ship vào tổng' : 'Shop chịu phí ship' }}</span>
-            </label>
-          </div>
-          <div class="sale-row total-row big">
-            <span class="sale-label">Tổng phải trả</span>
-            <strong class="due">{{ formatMoney(totalDue()) }}</strong>
-          </div>
-          <div class="sale-row">
-            <span class="sale-label">Khách đưa</span>
-            <ion-input type="number" min="0" [(ngModel)]="customerPaid" class="sale-input" />
-          </div>
-          <div class="sale-row total-row">
-            <span class="sale-label">Tiền thừa</span>
-            <strong>{{ formatMoney(changeDue()) }}</strong>
-          </div>
-          <div class="currency-note">* Đơn vị tiền: VND</div>
-          <button class="qr-btn" (click)="showQr()">
-            <ion-icon name="qr-code-outline" /> Hiện QR Code thanh toán
-          </button>
-        </div>
         </div>
         </div>
         <!-- /sale-split -->

@@ -476,55 +476,221 @@ ion-content {
   color: var(--app-text);
 }
 
-/* ---------- Phần trăm / checkbox ---------- */
-.pct-input {
+/* ---------- Lưới thanh toán (3 cột như iSale) ---------- */
+.pay-card {
+  padding: 18px 18px 14px;
+}
+
+.pay-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+
+  @media (min-width: 720px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px 14px;
+  }
+}
+
+.pay-field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pay-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ion-color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.pay-label-dark {
+    color: var(--app-text);
+  }
+
+  &.pay-label-info {
+    color: #0f9d8a;
+  }
+
+  &.pay-label-danger {
+    color: var(--ion-color-danger);
+  }
+}
+
+.pay-box {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex: 1;
+  width: 100%;
+  height: 50px;
+  min-width: 0;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--app-surface-alt) 45%, var(--app-border) 55%);
+  color: var(--app-text);
+  font: inherit;
+  font-size: 15px;
+  box-sizing: border-box;
+}
 
-  ion-input {
-    --padding-start: 8px;
-    --padding-end: 8px;
-    --background: var(--app-surface-alt);
-    --color: var(--app-text);
-    border-radius: 8px;
-    font-size: 13.5px;
-    max-width: 90px;
-  }
+.pay-input {
+  outline: none;
 
-  span {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--app-text-muted);
-  }
-
-  .calc-amount {
-    margin-left: auto;
-    font-size: 12.5px;
-    font-style: normal;
-    font-weight: 700;
-    color: var(--app-text-muted);
-    white-space: nowrap;
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.35);
   }
 }
 
-.sale-check {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--ion-color-primary);
+.pay-readonly {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.check-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  color: var(--app-text-muted);
+.pay-grand {
+  color: var(--ion-color-danger);
+  font-weight: 800;
+}
+
+.pay-account {
+  display: block;
+  padding: 0 12px;
+  border: 0;
+  background: var(--ion-color-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 50px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
+
+  &:active {
+    filter: brightness(0.94);
+  }
 }
 
+.pay-select {
+  position: relative;
+  padding: 0;
 
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 100%;
+    padding: 0 38px 0 14px;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 15px;
+    color: var(--app-text);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .pay-caret {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--app-text-muted);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+}
+
+.pay-suffix {
+  padding-right: 8px;
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 15px;
+    color: var(--app-text);
+    outline: none;
+  }
+
+  .pay-pct {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #5f6368;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+  }
+}
+
+.pay-toggle {
+  gap: 10px;
+  cursor: pointer;
+
+  .pay-toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .pay-toggle-track {
+    position: relative;
+    flex-shrink: 0;
+    width: 46px;
+    height: 26px;
+    border-radius: 999px;
+    background: var(--app-border);
+    transition: background 0.15s ease;
+  }
+
+  .pay-toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s ease;
+  }
+
+  .pay-toggle-input:checked + .pay-toggle-track {
+    background: var(--ion-color-primary);
+
+    .pay-toggle-thumb {
+      transform: translateX(20px);
+    }
+  }
+
+  .pay-toggle-input:focus-visible + .pay-toggle-track {
+    box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.35);
+  }
+
+  .pay-toggle-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--app-text-muted);
+  }
+}
 
 .currency-note {
   text-align: right;
@@ -539,13 +705,15 @@ ion-content {
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--ion-color-primary);
-  background: rgba(var(--ion-color-primary-rgb), 0.08);
-  color: var(--ion-color-primary);
+  padding: 13px;
+  border-radius: 10px;
+  border: 0;
+  background: #ffd200;
+  color: #212529;
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
   cursor: pointer;
 
   ion-icon {
@@ -938,31 +1106,6 @@ ion-fab.sale-fab {
     font-size: 13px;
     font-weight: 700;
     color: var(--app-text);
-  }
-}
-
-/* ISale: Hinh thuc thanh toan */
-.pay-methods {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.pay-method {
-  border: 1px solid var(--app-border);
-  background: var(--app-surface);
-  border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--app-text);
-  cursor: pointer;
-
-  &.active {
-    background: var(--ion-color-primary);
-    border-color: var(--ion-color-primary);
-    color: #fff;
   }
 }
 
