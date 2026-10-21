@@ -18,10 +18,12 @@ import {
   IonBackButton,
   IonSegment,
   IonSegmentButton,
+  IonInput,
   AlertController,
   ToastController,
   ActionSheetController,
 } from '@ionic/angular';
+import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import {
   trashOutline,
@@ -42,6 +44,9 @@ import {
   walletOutline,
   arrowDownCircleOutline,
   arrowUpCircleOutline,
+  createOutline,
+  closeOutline,
+  saveOutline,
 } from 'ionicons/icons';
 import JsBarcode from 'jsbarcode';
 import { OrdersService } from '../../core/services/orders.service';
@@ -77,6 +82,8 @@ import { InvoiceTemplateService, InvoiceTemplateKind } from '../../core/services
     IonBackButton,
     IonSegment,
     IonSegmentButton,
+    IonInput,
+    FormsModule,
   ],
 })
 export class OrderDetailPage implements OnInit {
@@ -130,8 +137,109 @@ export class OrderDetailPage implements OnInit {
     Math.max(0, Number(this.order()?.total ?? 0) - this.paidAmount())
   );
 
+  /** Tiền hàng = tổng các dòng sản phẩm */
+  readonly merchandise = computed(() =>
+    this.items().reduce((sum, item) => sum + Number(item.total ?? Number(item.price) * Number(item.qty)), 0)
+  );
+
+  /** Phí ship thực sự nằm trong tổng đơn (chỉ khi khách trả ship) */
+  readonly shippingIncluded = computed(() => {
+    const o = this.order();
+    if (!o) return 0;
+    return o.ship_fee_by_customer === false ? 0 : Math.max(0, Number(o.ship_fee ?? 0));
+  });
+
+  /** VAT suy ra từ tổng đơn: tổng = tiền hàng − chiết khấu + VAT + ship */
+  readonly taxAmount = computed(() => {
+    const o = this.order();
+    if (!o) return 0;
+    const tax =
+      Number(o.total ?? 0) - this.merchandise() + Number(o.discount ?? 0) - this.shippingIncluded();
+    return Math.max(0, Math.round(tax));
+  });
+
+  /** Chế độ sửa đơn (xóa sản phẩm / đổi giá) */
+  readonly editMode = signal(false);
+  readonly draftItems = signal<OrderItem[]>([]);
+
+  startEdit(): void {
+    this.draftItems.set(this.items().map((item) => ({ ...item })));
+    this.editMode.set(true);
+  }
+
+  cancelEdit(): void {
+    this.editMode.set(false);
+    this.draftItems.set([]);
+  }
+
+  removeDraftItem(index: number): void {
+    this.draftItems.update((list) => list.filter((_, i) => i !== index));
+  }
+
+  setDraftPrice(index: number, value: unknown): void {
+    if (value === '' || value === null || value === undefined) return; // đang xóa để nhập lại
+    const price = Math.max(0, Math.round(Number(value) || 0));
+    this.draftItems.update((list) =>
+      list.map((item, i) => (i === index ? { ...item, price, total: price * Number(item.qty) } : item))
+    );
+  }
+
+  async saveEdit(): Promise<void> {
+    const order = this.order();
+    if (!order || this.busy()) return;
+    const draft = this.draftItems();
+    if (!draft.length) {
+      await this.toast('Đơn hàng phải còn ít nhất 1 sản phẩm. Hãy dùng nút Xóa đơn nếu muốn bỏ cả đơn.', 'danger');
+      return;
+    }
+    this.busy.set(true);
+    try {
+      const before = this.items();
+      const oldMerchandise = this.merchandise();
+      const oldTax = this.taxAmount();
+      const keep = new Set(draft.map((item) => item.id));
+      for (const item of before) {
+        if (!keep.has(item.id)) await this.ordersService.removeItem(item.id);
+      }
+      for (const item of draft) {
+        const previous = before.find((row) => row.id === item.id);
+        const price = Math.max(0, Math.round(Number(item.price) || 0));
+        if (previous && Math.round(Number(previous.price)) !== price) {
+          await this.ordersService.updateItem(item.id, { price, total: price * Number(item.qty) });
+        }
+      }
+      const newMerchandise = draft.reduce(
+        (sum, item) => sum + Math.max(0, Math.round(Number(item.price) || 0)) * Number(item.qty),
+        0
+      );
+      // Giữ nguyên tỷ lệ VAT so với tiền hàng để bill vẫn khớp
+      const newTax = oldMerchandise > 0 ? Math.round(oldTax * (newMerchandise / oldMerchandise)) : 0;
+      const discount = Math.min(Number(order.discount ?? 0), newMerchandise);
+      const total = Math.max(0, newMerchandise - discount + newTax + this.shippingIncluded());
+      await this.ordersService.update(order.id, { total, discount });
+      // Đơn đã thu tiền: giữ khoản thu khớp với tổng mới để báo cáo doanh thu không lệch
+      if (order.paid) {
+        const income = this.orderTransactions().find((t) => t.type === 'income');
+        const delta = total - Number(order.total ?? 0);
+        if (income && delta !== 0) {
+          await this.transactionsService
+            .update(income.id, { amount: Math.max(0, Number(income.amount ?? 0) + delta) })
+            .catch(() => {});
+        }
+      }
+      await this.load();
+      this.editMode.set(false);
+      this.draftItems.set([]);
+      await this.toast('Đã cập nhật đơn hàng');
+    } catch (e: any) {
+      await this.toast(e?.message ?? 'Cập nhật đơn hàng thất bại', 'danger');
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
   constructor() {
-    addIcons({ trashOutline, cashOutline, receiptOutline, personOutline, ellipseOutline, checkmarkCircleOutline, printOutline, returnDownBackOutline, cardOutline, cubeOutline, callOutline, locationOutline, swapVerticalOutline, barcodeOutline, qrCodeOutline, walletOutline, arrowDownCircleOutline, arrowUpCircleOutline });
+    addIcons({ trashOutline, cashOutline, receiptOutline, personOutline, ellipseOutline, checkmarkCircleOutline, printOutline, returnDownBackOutline, cardOutline, cubeOutline, callOutline, locationOutline, swapVerticalOutline, barcodeOutline, qrCodeOutline, walletOutline, arrowDownCircleOutline, arrowUpCircleOutline, createOutline, closeOutline, saveOutline });
     // Canvas chỉ tồn tại khi tab Mã vạch được render — vẽ lại mỗi khi tab/canvas sẵn sàng
     effect(() => {
       if (this.tab() === 'barcode' && this.barcodeCanvas()) {
@@ -536,12 +644,7 @@ export class OrderDetailPage implements OnInit {
   }
 
   totalQty(): number {
-    return this.items().reduce((s, i) => s + (i.qty ?? 0), 0);
-  }
-
-  /** Tiền hàng = tổng cộng + giảm giá − phí ship (nếu khách trả ship) — đúng ngược công thức bán hàng */
-  sumMerchandise(o: Order): number {
-    const ship = o.ship_fee_by_customer ? Number(o.ship_fee ?? 0) : 0;
-    return Number(o.total ?? 0) + Number(o.discount ?? 0) - ship;
+    const list = this.editMode() ? this.draftItems() : this.items();
+    return list.reduce((s, i) => s + Number(i.qty ?? 0), 0);
   }
 }

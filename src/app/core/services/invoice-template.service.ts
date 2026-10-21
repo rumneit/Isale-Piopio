@@ -43,7 +43,6 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
     <tr><td colspan="3"><b>{{labels.totalAmount}}</b></td><td class="number">{{totalProductsQuantity}}</td>{{#unless hideDiscountColumn}}<td></td>{{/unless}}<td></td><td class="number">{{totalProductsAmountFormatted}}</td></tr>
     {{#if hasPromotionDiscount}}<tr><td colspan="{{totalColspan}}">{{labels.totalPromotionDiscount}}</td><td class="number">-{{order.totalPromotionDiscountFormatted}}</td></tr>{{/if}}
     {{#if hasDiscountOnTotal}}<tr><td colspan="{{totalColspan}}">{{labels.discount}}</td><td class="number">-{{order.discountOnTotalFormatted}}</td></tr>{{/if}}
-    {{#if hasNetValueDiff}}<tr><td colspan="{{totalColspan}}">{{labels.netValue}}</td><td class="number">{{order.netValueFormatted}}</td></tr>{{/if}}
     {{#if hasPointPayment}}<tr><td colspan="{{totalColspan}}">{{labels.payByPoint}}</td><td class="number">-{{order.amountFromPointFormatted}}</td></tr>{{/if}}
     {{#if showTax}}<tr><td colspan="{{totalColspan}}">{{labels.tax}}</td><td class="number">+{{order.taxFormatted}}</td></tr>{{/if}}
     {{#if hasShipping}}<tr><td colspan="{{totalColspan}}">{{labels.shippingFee}}</td><td class="number">+{{order.shippingFeeFormatted}}</td></tr>{{/if}}
@@ -98,7 +97,6 @@ export const DEFAULT_RECEIPT_TEMPLATE = `{{!-- Mẫu bill khổ nhỏ --}}
 <table class="receipt-total">
   {{#if hasPromotionDiscount}}<tr><td>{{labels.totalPromotionDiscount}}:</td><td>-{{order.totalPromotionDiscountFormatted}}</td></tr>{{/if}}
   {{#if hasDiscountOnTotal}}<tr><td>{{labels.discount}}:</td><td>-{{order.discountOnTotalFormatted}}</td></tr>{{/if}}
-  {{#if hasNetValueDiff}}<tr><td>{{labels.netValue}}:</td><td>{{order.netValueFormatted}}</td></tr>{{/if}}
   {{#if hasPointPayment}}<tr><td>{{labels.payByPoint}}:</td><td>-{{order.amountFromPointFormatted}}</td></tr>{{/if}}
   {{#if showTax}}<tr><td>{{labels.tax}}:</td><td>+{{order.taxFormatted}}</td></tr>{{/if}}
   {{#if hasShipping}}<tr><td>{{labels.shippingFee}}:</td><td>+{{order.shippingFeeFormatted}}</td></tr>{{/if}}
@@ -181,19 +179,30 @@ export class InvoiceTemplateService {
       unit: (item as any).unit ?? '',
       count: item.qty,
       priceFormatted: money(item.price),
-      totalFormatted: money(item.total),
+      totalFormatted: money(Number(item.total ?? Number(item.price) * Number(item.qty))),
       discountText: '',
     }));
     const totalQty = input.items.reduce((sum, item) => sum + Number(item.qty ?? 0), 0);
-    const merchandise = input.items.reduce((sum, item) => sum + Number(item.total ?? 0), 0);
+    const merchandise = input.items.reduce(
+      (sum, item) => sum + Number(item.total ?? Number(item.price) * Number(item.qty)),
+      0
+    );
     const paid = amount(input.paidAmount ?? (order.paid ? order.total : 0));
-    const shipping = amount(order.ship_fee);
+    /** Phí ship chỉ vào bill khi khách trả (nếu shop chịu phí thì không nằm trong tổng đơn) */
+    const shipping = order.ship_fee_by_customer === false ? 0 : amount(order.ship_fee);
     const discount = amount(order.discount);
     const promotionDiscount = amount(input.promotionDiscount);
     const pointPayment = amount(input.pointPayment);
-    const tax = amount(input.taxAmount);
     const oldDebt = amount(input.oldDebt);
     const netValue = Math.max(0, merchandise - promotionDiscount - discount - pointPayment);
+    /**
+     * VAT không lưu riêng trong DB: suy ra từ tổng đơn
+     * tổng = tiền hàng − chiết khấu − khuyến mại − điểm + VAT + phí ship
+     */
+    const tax =
+      input.taxAmount != null
+        ? amount(input.taxAmount)
+        : Math.max(0, Math.round(Number(order.total ?? 0) - netValue - shipping));
     const receiptCompact = input.receiptCompact ?? true;
     const createdAt = this.dateTime(order.created_at);
     const shop = input.shop;
@@ -344,8 +353,19 @@ export class InvoiceTemplateService {
 
   private baseCss(kind: InvoiceTemplateKind, width: string, paperSize: InvoicePaperSize): string {
     const base = `*{box-sizing:border-box}body{margin:0 auto;padding:${kind === 'receipt' ? '10px 8px' : '18px'};width:${width};max-width:100%;background:#fff;color:#111;font:13px Arial,sans-serif;line-height:1.35}h1{text-align:center;font-size:18px;margin:14px 0}.shop-head{text-align:center;border-bottom:1px solid #111;padding-bottom:8px}.shop-head em,.receipt-head>*{display:block}.shop-logo,.receipt-logo{display:block;max-width:90px;max-height:64px;object-fit:contain;margin:0 auto 5px}.receipt-logo{max-width:70px;max-height:52px}.shop-name{font-size:15px}.shop-grid{display:grid;grid-template-columns:1fr 1fr;text-align:left;gap:20px;margin-top:8px}.bank-block{border-left:1px dotted #999;padding-left:20px}.invoice-meta>div,.receipt-meta>div,.receipt-bank>div{margin:2px 0}.receipt-bank{padding:6px 0;border-top:1px dashed #777;border-bottom:1px dashed #777}.dot-line{display:inline-block;min-width:180px;border-bottom:1px dotted #333}.invoice-table,.receipt-items,.receipt-total{width:100%;border-collapse:collapse;margin-top:10px}.invoice-table th,.invoice-table td{border:1px solid #111;padding:5px}.center{text-align:center}.number{text-align:right;white-space:nowrap}.written{margin-top:10px}.signatures{display:grid;grid-template-columns:1fr 1fr;text-align:center;margin-top:28px;min-height:90px}.staff-sign{display:block;margin-top:45px}.receipt-head{text-align:center;line-height:1.35}.receipt-meta{margin:8px 0}.receipt-items{border-top:1px dashed #777;border-bottom:1px dashed #777}.receipt-items th,.receipt-items td{padding:4px 2px;border-bottom:1px solid #bbb}.receipt-items .item-name td{padding-top:7px;border-bottom:0;font-weight:600}.receipt-items .subtotal td{border-bottom:0;border-top:1px dashed #777;padding-top:7px}.receipt-total td{padding:3px 2px}.receipt-total td:last-child{text-align:right;white-space:nowrap}.grand{font-weight:700;font-size:15px}.qr{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:10px;text-align:center}.qr img{max-width:${kind === 'receipt' ? '180px' : '90px'}}.thanks{text-align:center}@page{margin:8mm;size:${kind === 'receipt' ? '80mm auto' : 'A4'}}@media print{body{width:100%;padding:0}}`;
-    if (kind !== 'invoice' || paperSize !== 'A5') return base;
+    // Cột "Sản phẩm" rộng + được xuống dòng để hiện đủ tên hàng trong kho
+    const nameColumn =
+      kind === 'invoice'
+        ? `.invoice-table{table-layout:fixed}` +
+          `.invoice-table th:nth-child(1),.invoice-table td:nth-child(1){width:6%}` +
+          `.invoice-table th:nth-child(2),.invoice-table td:nth-child(2){width:40%;white-space:normal;word-break:break-word;overflow-wrap:anywhere}` +
+          `.invoice-table th:nth-child(3),.invoice-table td:nth-child(3){width:8%}` +
+          `.invoice-table th:nth-child(4),.invoice-table td:nth-child(4){width:8%}` +
+          `.invoice-table th:nth-child(5),.invoice-table td:nth-child(5){width:12%}` +
+          `.invoice-table th:last-child,.invoice-table td:last-child{width:16%}`
+        : `.receipt-items .item-name td{white-space:normal;word-break:break-word;overflow-wrap:anywhere}`;
+    if (kind !== 'invoice' || paperSize !== 'A5') return base + nameColumn;
     // Hóa đơn khổ lớn A5: thu gọn chữ/bảng để vừa 148mm
-    return base + `body{width:148mm;padding:6mm;font-size:10.5px}h1{font-size:15px;margin:10px 0}.shop-name{font-size:13px}.shop-grid{gap:10px}.bank-block{padding-left:10px}.shop-logo{max-width:64px;max-height:46px}.dot-line{min-width:120px}.invoice-table th,.invoice-table td{padding:3px;font-size:10px}.written{margin-top:6px}.signatures{margin-top:18px;min-height:70px}.staff-sign{margin-top:30px}.qr img{max-width:70px}@page{margin:5mm;size:A5}@media print{body{width:100%;padding:0}}`;
+    return base + nameColumn + `body{width:148mm;padding:6mm;font-size:10.5px}h1{font-size:15px;margin:10px 0}.shop-name{font-size:13px}.shop-grid{gap:10px}.bank-block{padding-left:10px}.shop-logo{max-width:64px;max-height:46px}.dot-line{min-width:120px}.invoice-table th,.invoice-table td{padding:3px;font-size:10px}.written{margin-top:6px}.signatures{margin-top:18px;min-height:70px}.staff-sign{margin-top:30px}.qr img{max-width:70px}@page{margin:5mm;size:A5}@media print{body{width:100%;padding:0}}`;
   }
 }

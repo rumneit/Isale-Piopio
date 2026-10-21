@@ -50,6 +50,44 @@ describe('InvoiceTemplateService', () => {
     expect(receipt).toContain('C.khấu');
   });
 
+  it('derives VAT and shipping fee from the stored order total (khách trả ship)', () => {
+    const order = {
+      id: 'order-2', shop_id: 'shop-1', code: 'DH-002', customer_id: null,
+      customer_name: 'Khách B', status: 'completed', total: 1_100_000,
+      discount: 0, paid: true, note: null, ship_fee: 30_000, ship_fee_by_customer: true,
+      created_at: '2026-10-21T08:00:00.000Z',
+    };
+    const items = [{ id: 'item-1', order_id: 'order-2', product_id: null, name: 'Sản phẩm', price: 1_000_000, qty: 1, total: 1_000_000 }];
+
+    const receipt: any = service.context({ order, items, shop: null, showTax: true });
+    // total = tiền hàng − chiết khấu + VAT + ship ⇒ VAT = 1.100.000 − 1.000.000 − 30.000 = 70.000
+    expect(receipt.order.taxFormatted).toBe('70.000');
+    expect(receipt.order.shippingFeeFormatted).toBe('30.000');
+    expect(receipt.hasShipping).toBe(true);
+
+    const html = service.render(service.defaultFor('receipt'), receipt);
+    expect(html).toContain('Thuế:');
+    expect(html).toContain('70.000');
+    expect(html).toContain('Phí vận chuyển:');
+    expect(html).toContain('30.000');
+    expect(html).toContain('1.100.000');
+  });
+
+  it('does not add shipping to the bill when the shop pays the fee', () => {
+    const order = {
+      id: 'order-3', shop_id: 'shop-1', code: 'DH-003', customer_id: null,
+      customer_name: 'Khách C', status: 'completed', total: 1_070_000,
+      discount: 0, paid: true, note: null, ship_fee: 30_000, ship_fee_by_customer: false,
+      created_at: '2026-10-21T08:00:00.000Z',
+    };
+    const items = [{ id: 'item-1', order_id: 'order-3', product_id: null, name: 'Sản phẩm', price: 1_000_000, qty: 1, total: 1_000_000 }];
+
+    const context: any = service.context({ order, items, shop: null, showTax: true });
+    expect(context.order.shippingFeeFormatted).toBe('0');
+    expect(context.order.taxFormatted).toBe('70.000');
+    expect(context.hasShipping).toBe(false);
+  });
+
   it('escapes business data supplied to a template', () => {
     const html = service.render('<p>{{customerName}}</p>', { customerName: '<img src=x onerror=alert(1)>' });
     expect(html).toContain('&lt;img');

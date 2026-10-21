@@ -220,6 +220,20 @@ export class OrdersService {
     if (error) throw error;
   }
 
+  /** Sửa 1 dòng sản phẩm của đơn đã tạo (giá/số lượng/thành tiền) */
+  async updateItem(itemId: string, patch: { price?: number; qty?: number; total?: number }): Promise<void> {
+    if (!this.sb.isConfigured) return;
+    const { error } = await this.sb.from('order_items').update(patch).eq('id', itemId);
+    if (error) throw error;
+  }
+
+  /** Xóa 1 dòng sản phẩm khỏi đơn (trigger kho tự hoàn tồn) */
+  async removeItem(itemId: string): Promise<void> {
+    if (!this.sb.isConfigured) return;
+    const { error } = await this.sb.from('order_items').delete().eq('id', itemId);
+    if (error) throw error;
+  }
+
   async remove(id: string): Promise<void> {
     const { error } = await this.sb.from('orders').delete().eq('id', id).eq('shop_id', this.shopId!);
     if (error) throw error;

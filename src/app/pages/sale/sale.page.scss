@@ -234,22 +234,96 @@ ion-content {
     font-size: 14px;
     font-weight: 700;
     color: var(--app-text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    /* Hiện đầy đủ tên sản phẩm (không cắt bằng dấu ...) */
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.35;
   }
 
   .sale-item-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
     font-size: 12px;
     color: var(--app-text-muted);
   }
 
-  .sale-item-total {
-    font-size: 13.5px;
+  .sale-item-unit {
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--app-surface-alt);
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+}
+
+/* Ô sửa đơn giá ngay trên dòng sản phẩm */
+.price-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 4px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: var(--app-surface-alt);
+
+  .price-input {
+    width: 110px;
+    --padding-start: 4px;
+    --padding-end: 2px;
+    --background: transparent;
+    --color: var(--app-text);
+    font-size: 13px;
     font-weight: 700;
-    color: var(--app-text);
-    min-width: 74px;
     text-align: right;
+  }
+
+  .price-unit {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--app-text-muted);
+  }
+
+  .price-reset {
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 6px;
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    color: var(--ion-color-primary);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+  }
+}
+
+.sale-item-total {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--app-text);
+  min-width: 74px;
+  text-align: right;
+}
+
+/* Mobile: tên sản phẩm + ô giá chiếm trọn 1 dòng, nút số lượng/tổng tiền xuống dưới */
+@media (max-width: 576px) {
+  .sale-item {
+    flex-wrap: wrap;
+    row-gap: 6px;
+
+    .sale-item-main {
+      flex-basis: 100%;
+    }
+
+    .qty-ctrl {
+      margin-left: 0;
+    }
+
+    .sale-item-total {
+      margin-left: auto;
+    }
   }
 }
 
@@ -311,6 +385,15 @@ ion-content {
     font-weight: 700;
     color: var(--app-text-muted);
   }
+
+  .calc-amount {
+    margin-left: auto;
+    font-size: 12.5px;
+    font-style: normal;
+    font-weight: 700;
+    color: var(--app-text-muted);
+    white-space: nowrap;
+  }
 }
 
 .sale-check {
@@ -318,6 +401,17 @@ ion-content {
   height: 20px;
   accent-color: var(--ion-color-primary);
 }
+
+.check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--app-text-muted);
+  cursor: pointer;
+}
+
+
 
 .currency-note {
   text-align: right;
@@ -517,9 +611,11 @@ ion-content {
   font-weight: 600;
   line-height: 1.3;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  /* Chừa 3 dòng để tên sản phẩm dài hiển thị gần đủ */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  word-break: break-word;
 }
 
 /* Nút + tròn gọn, nổi góc dưới phải ảnh (Isale psi-actions) */

@@ -80,6 +80,100 @@ ion-list {
   padding: 10px 12px 4px;
 }
 
+/* ---------- Sửa đơn: xóa sản phẩm / đổi giá ---------- */
+.od-edit-hint {
+  padding: 2px 14px 8px;
+  font-size: 12.5px;
+  color: var(--app-text-muted);
+}
+
+.od-edit-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0 14px;
+}
+
+.od-edit-row {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--app-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.od-edit-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--app-text);
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.od-edit-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+
+  .od-edit-qty {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--app-text-muted);
+    white-space: nowrap;
+  }
+
+  .od-edit-price {
+    width: 120px;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --background: var(--app-surface-alt);
+    --color: var(--app-text);
+    border: 1px solid var(--app-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .od-edit-unit {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--app-text-muted);
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    border: 1px solid var(--app-border);
+    background: var(--app-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: auto;
+
+    &.danger {
+      color: var(--ion-color-danger);
+      border-color: transparent;
+      background: transparent;
+    }
+
+    ion-icon {
+      font-size: 18px;
+    }
+  }
+}
+
+.od-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 8px 4px;
+}
+
 /* Tab chi tiết đơn hàng — đồng bộ 4 tab của ISale */
 .od-tabs-toolbar {
   --min-height: 44px;

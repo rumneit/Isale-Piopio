@@ -526,3 +526,11 @@ ion-badge {
   padding: 5px 9px;
   border-radius: 8px;
 }
+
+/* ---------- Modal chọn khách hàng: toàn màn hình trên mobile, rộng hơn trên desktop ---------- */
+ion-modal.customer-picker-modal {
+  --width: 100%;
+  --height: 100%;
+  --max-width: 760px;
+  --max-height: 100%;
+}

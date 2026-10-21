@@ -122,8 +122,33 @@
               @for (item of items(); track $index; let i = $index) {
                 <div class="sale-item">
                   <div class="sale-item-main">
-                    <div class="sale-item-name">{{ item.name }}</div>
-                    <div class="sale-item-meta">{{ item.unit ?? '—' }} · {{ formatMoney(item.price) }}</div>
+                    <div class="sale-item-name" [title]="item.name">{{ item.name }}</div>
+                    <div class="sale-item-meta">
+                      <span class="sale-item-unit">{{ item.unit ?? '—' }}</span>
+                      <span class="price-edit">
+                        <ion-input
+                          type="number"
+                          inputmode="decimal"
+                          min="0"
+                          step="1000"
+                          [ngModel]="item.price"
+                          (ionInput)="setItemPrice(i, $any($event).detail.value)"
+                          [attr.aria-label]="'Đơn giá ' + item.name"
+                          class="price-input"
+                        />
+                        <span class="price-unit">₫</span>
+                        @if (isCustomPrice(item)) {
+                          <button
+                            class="price-reset"
+                            (click)="resetItemPrice(i)"
+                            [attr.aria-label]="'Trả giá gốc ' + item.name"
+                            title="Trả về giá niêm yết"
+                          >
+                            ↺
+                          </button>
+                        }
+                      </span>
+                    </div>
                   </div>
                   <div class="qty-ctrl">
                     <button class="qty-btn" (click)="decQty(i)" [attr.aria-label]="'Giảm số lượng ' + item.name"><ion-icon name="remove-outline" /></button>
@@ -172,7 +197,7 @@
                 <!-- Thẻ kiểu Isale: ảnh + tên nổi trên ảnh + nút thêm + giá/tồn dưới ảnh -->
                 <div class="catalog-grid">
                   @for (p of pickerPaged(); track p.id) {
-                    <button class="catalog-tile" (click)="addProduct(p)">
+                    <button class="catalog-tile" (click)="addProduct(p)" [title]="p.name">
                       <span class="tile-img">
                         <ion-icon name="cube-outline" />
                         @if (p.image) {
@@ -227,30 +252,31 @@
             <strong>{{ formatMoney(subtotal()) }}</strong>
           </div>
           <div class="sale-row">
+            <span class="sale-label">Chiết khấu</span>
+            <div class="pct-input">
+              <ion-input type="number" min="0" max="100" [(ngModel)]="discountPercent" aria-label="Chiết khấu phần trăm" />
+              <span>%</span>
+              <em class="calc-amount">-{{ formatMoney(discountAmount()) }}</em>
+            </div>
+          </div>
+          <div class="sale-row">
+            <span class="sale-label">Thuế VAT</span>
+            <div class="pct-input">
+              <ion-input type="number" min="0" [(ngModel)]="taxPercent" aria-label="Thuế VAT phần trăm" />
+              <span>%</span>
+              <em class="calc-amount">+{{ formatMoney(taxAmount()) }}</em>
+            </div>
+          </div>
+          <div class="sale-row">
             <span class="sale-label">Phí ship</span>
-            <ion-input type="number" min="0" [(ngModel)]="shipFee" class="sale-input" placeholder="0" />
+            <ion-input type="number" min="0" [(ngModel)]="shipFee" class="sale-input" placeholder="0" aria-label="Phí vận chuyển" />
           </div>
           <div class="sale-row">
             <span class="sale-label">Khách trả ship?</span>
-            <input type="checkbox" [(ngModel)]="customerShipPaid" class="sale-check" aria-label="Khách hàng trả phí vận chuyển" />
-          </div>
-          <div class="sale-row">
-            <span class="sale-label">Chiết khấu</span>
-            <div class="pct-input">
-              <ion-input type="number" min="0" max="100" [(ngModel)]="discountPercent" />
-              <span>%</span>
-            </div>
-          </div>
-          <div class="sale-row">
-            <span class="sale-label">Thuế</span>
-            <div class="pct-input">
-              <ion-input type="number" min="0" [(ngModel)]="taxPercent" />
-              <span>%</span>
-            </div>
-          </div>
-          <div class="sale-row total-row">
-            <span class="sale-label">Tổng tạm tính</span>
-            <strong>{{ formatMoney(preTotal()) }}</strong>
+            <label class="check-label">
+              <input type="checkbox" [(ngModel)]="customerShipPaid" class="sale-check" aria-label="Khách hàng trả phí vận chuyển" />
+              <span>{{ customerShipPaid ? 'Cộng phí ship vào tổng' : 'Shop chịu phí ship' }}</span>
+            </label>
           </div>
           <div class="sale-row total-row big">
             <span class="sale-label">Tổng phải trả</span>

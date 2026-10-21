@@ -20,6 +20,7 @@ import {
   IonFab,
   IonFabButton,
   ActionSheetController,
+  ModalController,
   ToastController,
 } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
@@ -50,12 +51,16 @@ import { AuthService } from '../../core/services/auth.service';
 import { Product, Customer, MoneyAccount, Shop } from '../../core/models/models';
 import { MoneyAccountsService } from '../../core/services/money-accounts.service';
 import { SettingsService } from '../../core/services/settings.service';
+import { CustomerPickerModalComponent } from '../customers/customer-picker.modal';
 
 interface SaleItem {
   product_id: string | null;
   name: string;
   unit: string | null;
+  /** Giá bán thực tế của dòng (có thể sửa tay cho từng khách) */
   price: number;
+  /** Giá niêm yết trong kho — dùng để hoàn tác khi sửa giá */
+  listPrice?: number;
   qty: number;
 }
 
@@ -128,6 +133,7 @@ export class SalePage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private actionSheetCtrl = inject(ActionSheetController);
+  private modalCtrl = inject(ModalController);
   private toastCtrl = inject(ToastController);
 
   readonly loading = signal(true);
@@ -156,7 +162,11 @@ export class SalePage implements OnInit {
   selectedCustomerName = '';
   selectedAccountId: string | null = null;
   status = 'completed';
-  customerShipPaid = false;
+  /**
+   * Khách trả phí ship? Mặc định BẬT để phí ship nhập vào được cộng luôn vào tổng
+   * (trước đây mặc định tắt nên bill có phí ship mà tổng không cộng).
+   */
+  customerShipPaid = true;
   discountPercent: number | null = 0;
   taxPercent: number | null = 0;
   customerPaid: number | null = 0;
@@ -462,10 +472,38 @@ export class SalePage implements OnInit {
     if (existing) {
       existing.qty += qty;
     } else {
-      current.push({ product_id: p.id, name: p.name, unit: p.unit, price: Number(p.price), qty });
+      current.push({
+        product_id: p.id,
+        name: p.name,
+        unit: p.unit,
+        price: Number(p.price),
+        listPrice: Number(p.price),
+        qty,
+      });
     }
     this.items.set(current);
     return true;
+  }
+
+  /** Sửa giá bán của 1 dòng (mỗi khách có thể bán 1 giá khác nhau) */
+  setItemPrice(index: number, value: unknown): void {
+    if (value === '' || value === null || value === undefined) return; // đang xóa để nhập lại
+    const price = Math.max(0, Math.round(Number(value) || 0));
+    this.items.update((list) => list.map((item, i) => (i === index ? { ...item, price } : item)));
+  }
+
+  /** Trả giá dòng về giá niêm yết trong kho */
+  resetItemPrice(index: number): void {
+    const item = this.items()[index];
+    if (!item) return;
+    const product = this.products().find((p) => p.id === item.product_id);
+    const price = Number(product?.price ?? item.listPrice ?? item.price);
+    this.items.update((list) => list.map((it, i) => (i === index ? { ...it, price, listPrice: price } : it)));
+  }
+
+  /** Dòng có giá khác giá niêm yết? (hiện nút hoàn tác) */
+  isCustomPrice(item: SaleItem): boolean {
+    return item.listPrice != null && Math.round(item.price) !== Math.round(item.listPrice);
   }
 
   /** Nút + trên thẻ: thêm nhanh 1 sản phẩm */
@@ -514,22 +552,30 @@ export class SalePage implements OnInit {
     this.items.set(current);
   }
 
+  /**
+   * Mở danh sách khách hàng (modal toàn màn hình, có tìm kiếm) để chọn KH có sẵn.
+   * Bấm 1 khách → tự điền tên/SĐT/địa chỉ vào đơn. Dùng modal để không mất sản phẩm đang nhập.
+   */
   async selectCustomer() {
-    const buttons = this.customers().slice(0, 30).map((c) => ({
-      text: c.name + (c.phone ? ` — ${c.phone}` : ''),
-      handler: () => {
-        this.selectedCustomerId = c.id;
-        this.selectedCustomerName = c.name;
-        // Điền nhanh SĐT/địa chỉ (ISale: chọn KH có sẵn)
-        this.customerPhone = c.phone ?? '';
-        this.customerAddress = c.address ?? '';
-      },
-    }));
-    const sheet = await this.actionSheetCtrl.create({
-      header: 'Chọn khách hàng có sẵn',
-      buttons: [...buttons, { text: 'Khách lẻ', handler: () => { this.selectedCustomerId = null; this.selectedCustomerName = 'Khách lẻ'; this.customerPhone = ''; this.customerAddress = ''; } }, { text: 'Hủy', role: 'cancel' }],
+    const modal = await this.modalCtrl.create({
+      component: CustomerPickerModalComponent,
+      cssClass: 'customer-picker-modal',
     });
-    await sheet.present();
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<Customer | null>();
+    if (role === 'select' && data) {
+      this.selectedCustomerId = data.id;
+      this.selectedCustomerName = data.name;
+      this.customerPhone = data.phone ?? '';
+      this.customerAddress = data.address ?? '';
+      return;
+    }
+    if (role === 'retail') {
+      this.selectedCustomerId = null;
+      this.selectedCustomerName = 'Khách lẻ';
+      this.customerPhone = '';
+      this.customerAddress = '';
+    }
   }
 
   async selectAccount() {
