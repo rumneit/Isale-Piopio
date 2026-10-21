@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
@@ -13,7 +13,7 @@ import {
   ModalController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { closeOutline, personOutline } from 'ionicons/icons';
+import { closeOutline, personOutline, checkmarkCircleOutline } from 'ionicons/icons';
 import { CustomersService } from '../../core/services/customers.service';
 import { Customer } from '../../core/models/models';
 
@@ -77,7 +77,7 @@ import { Customer } from '../../core/models/models';
             <div class="picker-count">{{ filtered().length }} khách hàng</div>
             <div class="app-card picker-list">
               @for (c of filtered(); track c.id) {
-                <button class="picker-row" (click)="pick(c)">
+                <button class="picker-row" [class.active]="c.id === selectedId" (click)="pick(c)">
                   <span class="picker-avatar">{{ initial(c.name) }}</span>
                   <span class="picker-main">
                     <span class="picker-name">{{ c.name }}</span>
@@ -92,6 +92,9 @@ import { Customer } from '../../core/models/models';
                   </span>
                   @if ((c.debt ?? 0) > 0) {
                     <span class="picker-debt">Nợ {{ money(c.debt) }}</span>
+                  }
+                  @if (c.id === selectedId) {
+                    <ion-icon class="picker-check" name="checkmark-circle-outline" aria-label="Đang chọn" />
                   }
                 </button>
               }
@@ -156,6 +159,9 @@ import { Customer } from '../../core/models/models';
         &:active {
           background: var(--app-surface-alt);
         }
+        &.active {
+          background: rgba(var(--ion-color-primary-rgb), 0.08);
+        }
       }
       .picker-avatar {
         flex-shrink: 0;
@@ -202,10 +208,18 @@ import { Customer } from '../../core/models/models';
         color: var(--ion-color-danger);
         white-space: nowrap;
       }
+      .picker-check {
+        flex-shrink: 0;
+        font-size: 20px;
+        color: var(--ion-color-primary);
+      }
     `,
   ],
 })
 export class CustomerPickerModalComponent implements OnInit {
+  /** Khách đang được chọn trên đơn — tô sáng trong danh sách */
+  @Input() selectedId: string | null = null;
+
   private customersService = inject(CustomersService);
   private modalCtrl = inject(ModalController);
 
@@ -222,7 +236,7 @@ export class CustomerPickerModalComponent implements OnInit {
   });
 
   constructor() {
-    addIcons({ closeOutline, personOutline });
+    addIcons({ closeOutline, personOutline, checkmarkCircleOutline });
   }
 
   async ngOnInit(): Promise<void> {

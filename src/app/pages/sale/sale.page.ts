@@ -70,6 +70,8 @@ interface SaleOrderSnap {
   orderDate: string;
   selectedCustomerId: string | null;
   selectedCustomerName: string;
+  /** Công nợ hiện tại của khách đã chọn (hiện ngay trên đơn) */
+  selectedCustomerDebt: number;
   selectedAccountId: string | null;
   status: string;
   paymentMethod: string;
@@ -160,6 +162,8 @@ export class SalePage implements OnInit {
   orderDate = new Date().toISOString();
   selectedCustomerId: string | null = null;
   selectedCustomerName = '';
+  /** Nợ của khách đã chọn — hiện ngay khi chọn khách có sẵn */
+  selectedCustomerDebt = 0;
   selectedAccountId: string | null = null;
   status = 'completed';
   /**
@@ -308,6 +312,7 @@ export class SalePage implements OnInit {
       orderDate: this.orderDate,
       selectedCustomerId: this.selectedCustomerId,
       selectedCustomerName: this.selectedCustomerName,
+      selectedCustomerDebt: this.selectedCustomerDebt,
       selectedAccountId: this.selectedAccountId,
       status: this.status,
       paymentMethod: this.paymentMethod,
@@ -334,6 +339,7 @@ export class SalePage implements OnInit {
     this.orderDate = s.orderDate;
     this.selectedCustomerId = s.selectedCustomerId;
     this.selectedCustomerName = s.selectedCustomerName;
+    this.selectedCustomerDebt = s.selectedCustomerDebt ?? 0;
     this.selectedAccountId = s.selectedAccountId;
     this.status = s.status;
     this.paymentMethod = s.paymentMethod;
@@ -372,6 +378,7 @@ export class SalePage implements OnInit {
       orderCode: this.ordersService.newCode(),
       selectedCustomerId: null,
       selectedCustomerName: '',
+      selectedCustomerDebt: 0,
       customerPhone: '',
       customerAddress: '',
       note: '',
@@ -560,6 +567,7 @@ export class SalePage implements OnInit {
     const modal = await this.modalCtrl.create({
       component: CustomerPickerModalComponent,
       cssClass: 'customer-picker-modal',
+      componentProps: { selectedId: this.selectedCustomerId },
     });
     await modal.present();
     const { data, role } = await modal.onWillDismiss<Customer | null>();
@@ -568,6 +576,8 @@ export class SalePage implements OnInit {
       this.selectedCustomerName = data.name;
       this.customerPhone = data.phone ?? '';
       this.customerAddress = data.address ?? '';
+      this.selectedCustomerDebt = Number(data.debt ?? 0);
+      this.toast(`Đã chọn: ${data.name}`);
       return;
     }
     if (role === 'retail') {
@@ -575,7 +585,13 @@ export class SalePage implements OnInit {
       this.selectedCustomerName = 'Khách lẻ';
       this.customerPhone = '';
       this.customerAddress = '';
+      this.selectedCustomerDebt = 0;
     }
+  }
+
+  /** Chữ cái đầu của khách đang chọn (avatar) */
+  customerInitial(): string {
+    return (this.selectedCustomerName || '').trim().charAt(0).toUpperCase() || '?';
   }
 
   async selectAccount() {

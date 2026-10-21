@@ -64,6 +64,30 @@
         <div class="sale-split">
         <!-- CỘT TRÁI: ĐƠN HÀNG -->
         <div class="sale-split-top">
+        <div class="app-card sale-customer-card">
+          <button class="sale-customer-main" type="button" (click)="selectCustomer()" aria-label="Chọn khách hàng">
+            <span class="sale-customer-avatar">{{ customerInitial() }}</span>
+            <span class="sale-customer-text">
+              <strong>{{ selectedCustomerName || 'Chọn khách hàng' }}</strong>
+              @if (customerPhone || customerAddress) {
+                <small>
+                  @if (customerPhone) { {{ customerPhone }} }
+                  @if (customerPhone && customerAddress) { · }
+                  @if (customerAddress) { {{ customerAddress }} }
+                </small>
+              } @else {
+                <small>Bấm để chọn khách có sẵn — tự điền tên, SĐT, địa chỉ</small>
+              }
+            </span>
+            <span class="sale-customer-side">
+              @if (selectedCustomerDebt > 0) {
+                <span class="sale-customer-debt">Nợ {{ formatMoney(selectedCustomerDebt) }}</span>
+              }
+              <ion-icon name="chevron-forward-outline" />
+            </span>
+          </button>
+        </div>
+
         <div class="app-card">
           <div class="sale-row">
             <span class="sale-label">Mã đơn</span>
@@ -304,6 +328,17 @@
       @if (tab() === 'customer') {
         <div class="app-card">
           <div class="app-card-title"><h4>Khách hàng</h4></div>
+          @if (selectedCustomerId) {
+            <div class="sale-customer-picked">
+              <ion-icon name="checkmark-outline" />
+              <span>
+                Đã chọn khách có sẵn: <b>{{ selectedCustomerName }}</b>
+                @if (selectedCustomerDebt > 0) {
+                  · <em>Nợ {{ formatMoney(selectedCustomerDebt) }}</em>
+                }
+              </span>
+            </div>
+          }
           <div class="sale-row">
             <span class="sale-label">Tên khách</span>
             <ion-input [(ngModel)]="selectedCustomerName" class="sale-input" placeholder="VD: Nguyễn Văn A" />

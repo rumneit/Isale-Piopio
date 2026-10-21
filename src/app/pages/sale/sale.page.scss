@@ -209,6 +209,119 @@ ion-content {
   }
 }
 
+/* ---------- Thẻ khách hàng trên đơn ---------- */
+.sale-customer-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.sale-customer-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:active {
+    background: var(--app-surface-alt);
+  }
+
+  .sale-customer-avatar {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    color: var(--ion-color-primary);
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .sale-customer-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--app-text);
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    small {
+      font-size: 12px;
+      line-height: 1.35;
+      color: var(--app-text-muted);
+      white-space: normal;
+      word-break: break-word;
+    }
+  }
+
+  .sale-customer-side {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    ion-icon {
+      font-size: 16px;
+      color: var(--app-text-muted);
+    }
+  }
+
+  .sale-customer-debt {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(var(--ion-color-danger-rgb), 0.1);
+    color: var(--ion-color-danger);
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+}
+
+/* Dòng xác nhận trong tab Khách hàng */
+.sale-customer-picked {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(var(--ion-color-success-rgb), 0.1);
+  color: var(--ion-color-success);
+  font-size: 12.5px;
+  line-height: 1.4;
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 16px;
+    margin-top: 1px;
+  }
+
+  b {
+    font-weight: 800;
+  }
+
+  em {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--ion-color-danger);
+  }
+}
+
 .sale-items {
   display: flex;
   flex-direction: column;
