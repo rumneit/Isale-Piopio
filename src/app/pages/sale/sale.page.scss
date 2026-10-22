@@ -468,12 +468,26 @@ ion-content {
   }
 }
 
-.qty-val {
-  min-width: 26px;
+.qty-input {
+  width: 42px;
+  height: 28px;
+  padding: 0 4px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: var(--app-surface);
+  color: var(--app-text);
   text-align: center;
   font-size: 14px;
   font-weight: 700;
-  color: var(--app-text);
+  line-height: 1;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+
+  &:focus {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.16);
+  }
 }
 
 /* ---------- Lưới thanh toán (3 cột như iSale) ---------- */

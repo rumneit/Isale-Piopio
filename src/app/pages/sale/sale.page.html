@@ -176,7 +176,17 @@
                   </div>
                   <div class="qty-ctrl">
                     <button class="qty-btn" (click)="decQty(i)" [attr.aria-label]="'Giảm số lượng ' + item.name"><ion-icon name="remove-outline" /></button>
-                    <span class="qty-val" [attr.aria-label]="'Số lượng ' + item.qty">{{ item.qty }}</span>
+                    <input
+                      class="qty-input"
+                      type="text"
+                      inputmode="numeric"
+                      pattern="[0-9]*"
+                      [value]="item.qty"
+                      (change)="setItemQty(i, $event)"
+                      (keydown.enter)="$any($event.target).blur()"
+                      [attr.aria-label]="'Số lượng ' + item.name"
+                      [title]="'Nhập số lượng ' + item.name"
+                    />
                     <button class="qty-btn" (click)="incQty(i)" [attr.aria-label]="'Tăng số lượng ' + item.name"><ion-icon name="add-outline" /></button>
                   </div>
                   <span class="sale-item-total">{{ formatMoney(item.price * item.qty) }}</span>

@@ -658,6 +658,44 @@ export class SalePage implements OnInit {
     this.barcodeInput = '';
   }
 
+  /** Nhập số lượng trực tiếp; vẫn giữ nút +/- để bấm nhanh. */
+  setItemQty(index: number, ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const current = [...this.items()];
+    const item = current[index];
+    if (!item) return;
+
+    const raw = input.value.trim();
+    const parsed = Number(raw);
+    if (!raw || !Number.isFinite(parsed) || parsed < 1) {
+      input.value = String(item.qty);
+      return;
+    }
+
+    const qty = Math.floor(parsed);
+    const product = this.products().find((p) => p.id === item.product_id);
+    if (product && !this.allowNegativeStock() && this.stockTrackedStatus()) {
+      // Trừ phần số lượng đã có của chính dòng này để chỉ kiểm tra phần tăng thêm.
+      const otherQty = this.currentQtyForProduct(item.product_id) - item.qty;
+      const original = item.product_id ? (this.originalQtyByProduct.get(item.product_id) ?? 0) : 0;
+      const needed = Math.max(0, otherQty + qty - original);
+      if (needed > Number(product.stock ?? 0)) {
+        input.value = String(item.qty);
+        this.toast(`Không đủ tồn kho cho "${item.name}". Còn ${product.stock}.`, 'danger');
+        return;
+      }
+    }
+
+    if (qty === item.qty) {
+      input.value = String(qty);
+      return;
+    }
+
+    current[index] = { ...item, qty };
+    this.items.set(current);
+    input.value = String(qty);
+  }
+
   incQty(index: number) {
     const current = [...this.items()];
     const item = current[index];
