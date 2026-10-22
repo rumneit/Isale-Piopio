@@ -195,12 +195,6 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
             <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">-{{order.discountOnTotalFormatted}}</td>
         </tr>
         {{/if}}
-        {{#if hasNetValueDiff}}
-        <tr>
-            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">{{labels.netValue}}</td>
-            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{order.netValueFormatted}}</td>
-        </tr>
-        {{/if}}
         {{#if hasPointPayment}}
         <tr>
             <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">{{labels.payByPoint}}</td>
@@ -221,7 +215,7 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
         {{/if}}
         <tr>
             <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"><strong>{{labels.total}}</strong></td>
-            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{order.totalFormatted}}</td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><strong>{{order.totalFormatted}}</strong></td>
         </tr>
         {{#if hasOldDebt}}
         <tr>
