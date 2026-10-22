@@ -149,7 +149,7 @@ export class ReportOrdersPage implements OnInit {
   }
 
   formatMoney(v: number | null | undefined): string {
-    return new Intl.NumberFormat('vi-VN').format(v ?? 0) + ' ₫';
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.round(v ?? 0)) + ' ₫';
   }
 
   statusLabel(status: string | null | undefined): string {

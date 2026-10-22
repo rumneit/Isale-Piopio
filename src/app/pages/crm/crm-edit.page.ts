@@ -98,6 +98,8 @@ export class CrmEditPage implements OnInit {
           this.stage = lead.stage;
           this.value = lead.value;
           this.note = lead.note ?? '';
+        } else {
+          this.error = 'Không tìm thấy khách hàng tiềm năng.';
         }
       } catch (e: any) {
         this.error = e?.message ?? 'Không tải được lead.';

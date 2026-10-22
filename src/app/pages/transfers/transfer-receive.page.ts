@@ -169,8 +169,17 @@ export class TransferReceivePage implements OnInit {
       return;
     }
     try {
-      const { data, error } = await this.sb.from('transfers').select('*').eq('id', id).single();
-      if (error) throw error;
+      const { data, error } = await this.sb.from('transfers').select('*').eq('id', id).maybeSingle();
+      if (error) {
+        this.error = error.code === '22P02'
+          ? 'Mã phiếu chuyển không hợp lệ.'
+          : 'Không tải được phiếu chuyển. Vui lòng thử lại.';
+        return;
+      }
+      if (!data) {
+        this.error = 'Không tìm thấy phiếu chuyển.';
+        return;
+      }
       const t = data as TransferRow;
       if (t.status && t.status !== 'in_transit') {
         this.error = `Phiếu ${t.code} không ở trạng thái đang đi (đã hoàn tất hoặc legacy).`;

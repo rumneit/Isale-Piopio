@@ -296,7 +296,8 @@ export class SalePage implements OnInit {
       this.products.set(products);
       this.customers.set(customers);
       this.accounts.set(accounts);
-      if (accounts.length) this.selectedAccountId = accounts[0].id;
+      const defaultAccount = accounts.find((a) => a.is_default) ?? accounts[0];
+      if (defaultAccount) this.selectedAccountId = defaultAccount.id;
       this.ordersService
         .detectOrderExtras()
         .then((cols) => this.hasOrderExtras.set(cols))
@@ -415,6 +416,7 @@ export class SalePage implements OnInit {
     this.editingOrder.set(order);
     this.orderCode = order.code;
     this.orderDate = this.toLocalInput(order.created_at);
+    if (order.account_id) this.selectedAccountId = order.account_id;
     this.selectedCustomerId = order.customer_id ?? null;
     this.selectedCustomerName = order.customer_name ?? 'Khách lẻ';
     this.selectedCustomerDebt = Number(customer?.debt ?? 0);
@@ -870,6 +872,10 @@ export class SalePage implements OnInit {
       const extras = this.hasOrderExtras();
       let saved = 0;
       for (const s of withItems) {
+        // Các trạng thái này chưa phát sinh doanh thu/thanh toán. Trước đây màn
+        // Bán hàng luôn gửi paid=true nên chọn "Công nợ"/"Báo giá" vẫn ghi thu
+        // đủ tiền và làm sai sổ quỹ/công nợ.
+        const billable = !['draft', 'quote', 'debt', 'ship_debt', 'consignment', 'cancelled'].includes(s.status);
         await this.ordersService.create(
           {
             code: s.orderCode || this.ordersService.newCode(),
@@ -877,7 +883,8 @@ export class SalePage implements OnInit {
             customer_name: s.selectedCustomerName || 'Khách lẻ',
             status: s.status,
             discount: Math.round((s.items.reduce((sum, i) => sum + i.price * i.qty, 0) * Number(s.discountPercent ?? 0)) / 100),
-            paid: true,
+            paid: billable,
+            account_id: s.selectedAccountId,
             note: [s.note.trim(), s.shippingCode.trim() ? `Vận đơn: ${s.shippingCode.trim()}` : '', s.shippingPartner.trim() ? `ĐVVC: ${s.shippingPartner.trim()}` : '']
               .filter(Boolean)
               .join(' — ') || null,
@@ -894,7 +901,7 @@ export class SalePage implements OnInit {
             ...(extras.has('shipping_address') ? { shipping_address: s.shippingAddress.trim() || null } : {}),
           },
           s.items.map((i) => ({ product_id: i.product_id, name: i.name, price: i.price, qty: i.qty })),
-          { recordIncome: this.dueOf(s) > 0 }
+          { recordIncome: billable && this.dueOf(s) > 0 }
         );
         saved++;
       }
@@ -937,6 +944,7 @@ export class SalePage implements OnInit {
           customer_name: snap.selectedCustomerName.trim() || 'Khách lẻ',
           status: snap.status,
           payment_method: snap.paymentMethod,
+          account_id: snap.selectedAccountId,
           discount_percent: Math.max(0, Number(snap.discountPercent ?? 0)),
           tax_percent: Math.max(0, Number(snap.taxPercent ?? 0)),
           ship_fee: Math.max(0, Number(snap.shipFee ?? 0)),

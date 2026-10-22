@@ -28,6 +28,10 @@ describe('permissions (RBAC)', () => {
     expect(permissionForRoute('/report/stock')).toBe('report');
     expect(permissionForRoute('/permission')).toBe('owner');
     expect(permissionForRoute('/external-api')).toBe('owner');
+    expect(permissionForRoute('/suppliers')).toBe('inventory');
+    expect(permissionForRoute('/supplier-debts')).toBe('money');
+    expect(permissionForRoute('/custom-field')).toBe('owner');
+    expect(permissionForRoute('/custom-table/abc')).toBe('owner');
   });
 
   it('trả về null cho route công khai nội bộ và khóa config cho owner', () => {

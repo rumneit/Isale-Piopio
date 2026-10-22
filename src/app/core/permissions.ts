@@ -77,6 +77,8 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   material: 'inventory',
   import: 'inventory',
   scan: 'inventory',
+  suppliers: 'inventory',
+  'supplier-debts': 'money',
   // Bán hàng
   order: 'sell',
   sale: 'sell',
@@ -107,6 +109,8 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   // nằm trong permissions nhân viên nên can() fail-closed cho staff.
   permission: 'owner',
   config: 'owner',
+  'custom-field': 'owner',
+  'custom-table': 'owner',
   integrations: 'owner',
   'external-api': 'owner',
   fbpage: 'owner',

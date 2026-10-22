@@ -228,6 +228,7 @@ export class OrdersService {
       customer_name: string;
       status: string;
       payment_method?: string | null;
+      account_id?: string | null;
       discount_percent: number;
       tax_percent: number;
       ship_fee: number;
@@ -272,6 +273,21 @@ export class OrdersService {
       throw error;
     }
     const updated = data as Order;
+    // v41: lưu ví nhận tiền để các lần thu sau và báo cáo sổ tiền dùng đúng.
+    // Bỏ qua khi migration chưa chạy để không chặn việc sửa đơn.
+    if (order.account_id !== undefined) {
+      // Dùng RPC security-definer để nhân viên bán hàng cũng đổi được ví;
+      // fallback UPDATE trực tiếp cho DB chưa chạy v41.
+      const rpc = await this.sb.client.rpc('inv_set_order_account', {
+        p_shop: shopId,
+        p_order_id: orderId,
+        p_account: order.account_id,
+      });
+      if (rpc.error && !/inv_set_order_account|schema cache|function/i.test(rpc.error.message)) {
+        // Không chặn việc sửa đơn nếu chỉ lỗi lưu ví.
+        console.warn('Không lưu được ví nhận tiền:', rpc.error.message);
+      }
+    }
     this.logService.log('update', 'order', updated?.code ?? orderId);
     return updated;
   }

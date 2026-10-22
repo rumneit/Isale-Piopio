@@ -58,7 +58,7 @@ export const routes: Routes = [
   { path: 'sales-channels', loadComponent: () => import('./pages/sales-channels/sales-channels.page').then((m) => m.SalesChannelsPage), canActivate: [authGuard, permissionGuard] },
   // Activity log + permissions
   { path: 'activity-log', loadComponent: () => import('./pages/activity-log/activity-log.page').then((m) => m.ActivityLogPage), canActivate: [authGuard, permissionGuard] },
-  { path: 'permission', loadComponent: () => import('./pages/permissions/permissions.page').then((m) => m.PermissionsPage), canActivate: [authGuard] },
+  { path: 'permission', loadComponent: () => import('./pages/permissions/permissions.page').then((m) => m.PermissionsPage), canActivate: [authGuard, permissionGuard] },
   // Received notes (nhập hàng)
   { path: 'received-note', loadComponent: () => import('./pages/received-notes/received-notes.page').then((m) => m.ReceivedNotesPage), canActivate: [authGuard, permissionGuard] },
   { path: 'received-note/add', loadComponent: () => import('./pages/received-notes/received-note-add.page').then((m) => m.ReceivedNoteAddPage), canActivate: [authGuard, permissionGuard] },
@@ -91,7 +91,7 @@ export const routes: Routes = [
   { path: 'crm-activities', loadComponent: () => import('./pages/crm/crm-activities.page').then((m) => m.CrmActivitiesPage), canActivate: [authGuard, permissionGuard] },
   { path: 'report/product', loadComponent: () => import('./pages/reports/report-product.page').then((m) => m.ReportProductPage), canActivate: [authGuard, permissionGuard] },
   { path: 'report/debt', loadComponent: () => import('./pages/reports/report-debt.page').then((m) => m.ReportDebtPage), canActivate: [authGuard, permissionGuard] },
-  { path: 'integrations', loadComponent: () => import('./pages/integrations/integrations.page').then((m) => m.IntegrationsPage), canActivate: [authGuard] },
+  { path: 'integrations', loadComponent: () => import('./pages/integrations/integrations.page').then((m) => m.IntegrationsPage), canActivate: [authGuard, permissionGuard] },
   // Notifications
   { path: 'notifications', loadComponent: () => import('./pages/notifications/notifications.page').then((m) => m.NotificationsPage), canActivate: [authGuard] },
   // Reports
@@ -109,15 +109,15 @@ export const routes: Routes = [
   // Config
   { path: 'config', loadComponent: () => import('./pages/config/config.page').then((m) => m.ConfigPage), canActivate: [authGuard, permissionGuard] },
   { path: 'change-password', loadComponent: () => import('./pages/config/change-password.page').then((m) => m.ChangePasswordPage), canActivate: [authGuard] },
-  { path: 'custom-field', loadComponent: () => import('./pages/config/custom-fields.page').then((m) => m.CustomFieldsPage), canActivate: [authGuard] },
+  { path: 'custom-field', loadComponent: () => import('./pages/config/custom-fields.page').then((m) => m.CustomFieldsPage), canActivate: [authGuard, permissionGuard] },
   // Bảng dữ liệu tùy chỉnh
-  { path: 'custom-table', loadComponent: () => import('./pages/custom-tables/custom-tables.page').then((m) => m.CustomTablesPage), canActivate: [authGuard] },
-  { path: 'custom-table/:id', loadComponent: () => import('./pages/custom-tables/custom-table-detail.page').then((m) => m.CustomTableDetailPage), canActivate: [authGuard] },
+  { path: 'custom-table', loadComponent: () => import('./pages/custom-tables/custom-tables.page').then((m) => m.CustomTablesPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'custom-table/:id', loadComponent: () => import('./pages/custom-tables/custom-table-detail.page').then((m) => m.CustomTableDetailPage), canActivate: [authGuard, permissionGuard] },
   // Tích hợp theo nhà cung cấp
-  { path: 'zbs-marketing', loadComponent: () => import('./pages/integrations/integration-config.page').then((m) => m.IntegrationConfigPage), canActivate: [authGuard], data: { provider: 'zbs' } },
-  { path: 'sms-marketing', loadComponent: () => import('./pages/integrations/integration-config.page').then((m) => m.IntegrationConfigPage), canActivate: [authGuard], data: { provider: 'sms' } },
-  { path: 'sepay-payment', loadComponent: () => import('./pages/integrations/integration-config.page').then((m) => m.IntegrationConfigPage), canActivate: [authGuard], data: { provider: 'sepay' } },
-  { path: 'external-api', loadComponent: () => import('./pages/external-api/external-api.page').then((m) => m.ExternalApiPage), canActivate: [authGuard] },
+  { path: 'zbs-marketing', loadComponent: () => import('./pages/integrations/integration-config.page').then((m) => m.IntegrationConfigPage), canActivate: [authGuard, permissionGuard], data: { provider: 'zbs' } },
+  { path: 'sms-marketing', loadComponent: () => import('./pages/integrations/integration-config.page').then((m) => m.IntegrationConfigPage), canActivate: [authGuard, permissionGuard], data: { provider: 'sms' } },
+  { path: 'sepay-payment', loadComponent: () => import('./pages/integrations/integration-config.page').then((m) => m.IntegrationConfigPage), canActivate: [authGuard, permissionGuard], data: { provider: 'sepay' } },
+  { path: 'external-api', loadComponent: () => import('./pages/external-api/external-api.page').then((m) => m.ExternalApiPage), canActivate: [authGuard, permissionGuard] },
   // Stock check
   { path: 'stock-check', loadComponent: () => import('./pages/stock-check/stock-check.page').then((m) => m.StockCheckPage), canActivate: [authGuard, permissionGuard] },
   { path: 'stock-check/new', loadComponent: () => import('./pages/stock-check/stock-count-detail.page').then((m) => m.StockCountDetailPage), canActivate: [authGuard, permissionGuard] },

@@ -204,6 +204,9 @@ export interface Order {
   shipper_name?: string | null;
   shipper_phone?: string | null;
   shipping_address?: string | null;
+  /** Migration v41 — ví/tài khoản nhận tiền và dư nợ đơn (derived) */
+  account_id?: string | null;
+  debt_amount?: number | null;
   created_at: string;
 }
 
@@ -283,6 +286,8 @@ export interface MoneyAccount {
   name: string;
   type: string;
   balance: number;
+  /** Migration v41 — ví mặc định cho giao dịch tự động */
+  is_default?: boolean;
   created_at?: string;
 }
 

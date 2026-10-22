@@ -100,6 +100,8 @@ export class PromotionEditPage implements OnInit {
           this.value = promo.value;
           this.active = promo.active;
           this.note = promo.note ?? '';
+        } else {
+          this.error = 'Không tìm thấy khuyến mãi.';
         }
       } catch (e: any) {
         this.error = e?.message ?? 'Không tải được khuyến mãi.';

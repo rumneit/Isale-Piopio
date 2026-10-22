@@ -218,6 +218,7 @@ export class MoneyAccountsPage implements OnInit {
         { name: 'type', type: 'radio', label: 'Ngân hàng', value: 'bank' },
         { name: 'type', type: 'radio', label: 'Ví điện tử', value: 'e-wallet' },
         { name: 'balance', type: 'number', placeholder: 'Số dư ban đầu (₫)', value: '0' },
+        { name: 'is_default', type: 'checkbox', label: 'Dùng làm ví mặc định', checked: this.items().length === 0 },
       ],
       buttons: [
         { text: 'Hủy', role: 'cancel' },
@@ -229,7 +230,7 @@ export class MoneyAccountsPage implements OnInit {
               return false;
             }
             try {
-              await this.accountsService.create(data.name, data.type ?? 'cash', Number(data.balance ?? 0));
+              await this.accountsService.create(data.name, data.type ?? 'cash', Number(data.balance ?? 0), !!data.is_default);
               this.toast('Đã thêm sổ tiền');
               await this.load();
               return true;
@@ -259,6 +260,7 @@ export class MoneyAccountsPage implements OnInit {
         { name: 'type', type: 'radio', label: 'Ngân hàng', value: 'bank', checked: account.type === 'bank' },
         { name: 'type', type: 'radio', label: 'Ví điện tử', value: 'e-wallet', checked: account.type === 'e-wallet' },
         { name: 'balance', type: 'number', value: String(account.balance ?? 0), placeholder: 'Số dư (₫)' },
+        { name: 'is_default', type: 'checkbox', label: 'Dùng làm ví mặc định', checked: !!account.is_default },
       ],
       buttons: [
         { text: 'Hủy', role: 'cancel' },
@@ -282,6 +284,7 @@ export class MoneyAccountsPage implements OnInit {
                 name: data.name.trim(),
                 type: data.type ?? account.type,
                 balance: Number(data.balance ?? 0),
+                is_default: !!data.is_default,
               });
               this.toast('Đã lưu');
               await this.load();

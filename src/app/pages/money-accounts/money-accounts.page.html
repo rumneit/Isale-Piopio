@@ -40,7 +40,7 @@
                 </div>
                 <ion-label>
                   <h3>{{ item.name }}</h3>
-                  <p>{{ accountsService.typeLabel(item.type) }}</p>
+                  <p>{{ accountsService.typeLabel(item.type) }}{{ item.is_default ? ' · Mặc định' : '' }}</p>
                 </ion-label>
                 <ion-badge slot="end" color="primary">{{ formatMoney(liveBalance(item)) }}</ion-badge>
               </ion-item>
