@@ -176,68 +176,22 @@
         <div class="app-card">
           <div class="app-card-title">
             <h4><ion-icon name="receipt-outline" /> Sản phẩm ({{ items().length }})</h4>
-            @if (!editMode()) {
-              <ion-button fill="clear" size="small" (click)="startEdit()" [disabled]="busy()" aria-label="Sửa đơn hàng">
-                <ion-icon slot="icon-only" name="create-outline" />
-              </ion-button>
-            }
+            <ion-button fill="clear" size="small" (click)="editInSale()" [disabled]="busy()" aria-label="Sửa đơn hàng">
+              <ion-icon slot="icon-only" name="create-outline" />
+            </ion-button>
           </div>
 
-          @if (editMode()) {
-            <div class="od-edit-hint">Sửa giá hoặc xóa sản phẩm khỏi đơn, sau đó bấm "Lưu thay đổi".</div>
-            <div class="od-edit-list">
-              @for (item of draftItems(); track item.id; let i = $index) {
-                <div class="od-edit-row">
-                  <div class="od-edit-name">{{ item.name }}</div>
-                  <div class="od-edit-controls">
-                    <span class="od-edit-qty">{{ item.qty }} ×</span>
-                    <ion-input
-                      type="number"
-                      min="0"
-                      step="1000"
-                      [ngModel]="item.price"
-                      (ionInput)="setDraftPrice(i, $any($event).detail.value)"
-                      [attr.aria-label]="'Đơn giá ' + item.name"
-                      class="od-edit-price"
-                    />
-                    <span class="od-edit-unit">₫</span>
-                    <button
-                      class="icon-btn danger"
-                      (click)="removeDraftItem(i)"
-                      [attr.aria-label]="'Xóa ' + item.name + ' khỏi đơn'"
-                    >
-                      <ion-icon name="trash-outline" />
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-            @if (draftItems().length === 0) {
-              <div class="od-empty-text">
-                Đơn không còn sản phẩm nào. Thêm lại ở trang Bán hàng, hoặc bấm Hủy để giữ nguyên đơn cũ.
-              </div>
+          <ion-list lines="full">
+            @for (item of items(); track item.id) {
+              <ion-item>
+                <ion-label>
+                  <h3>{{ item.name }}</h3>
+                  <p>{{ item.qty }} × {{ formatMoney(item.price) }}</p>
+                </ion-label>
+                <ion-badge slot="end" color="light">{{ formatMoney(item.total) }}</ion-badge>
+              </ion-item>
             }
-            <div class="od-edit-actions">
-              <ion-button fill="clear" color="medium" (click)="cancelEdit()" [disabled]="busy()">
-                <ion-icon slot="start" name="close-outline" /> Hủy
-              </ion-button>
-              <ion-button (click)="saveEdit()" [disabled]="busy()">
-                <ion-icon slot="start" name="save-outline" /> Lưu thay đổi
-              </ion-button>
-            </div>
-          } @else {
-            <ion-list lines="full">
-              @for (item of items(); track item.id) {
-                <ion-item>
-                  <ion-label>
-                    <h3>{{ item.name }}</h3>
-                    <p>{{ item.qty }} × {{ formatMoney(item.price) }}</p>
-                  </ion-label>
-                  <ion-badge slot="end" color="light">{{ formatMoney(item.total) }}</ion-badge>
-                </ion-item>
-              }
-            </ion-list>
-          }
+          </ion-list>
 
           <div class="detail-sums">
             <div class="detail-sum-row">

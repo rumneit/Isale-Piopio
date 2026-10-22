@@ -215,62 +215,69 @@ export class OrdersService {
     return order as Order;
   }
 
-  async update(id: string, patch: Partial<Order>): Promise<void> {
-    const { error } = await this.sb.from('orders').update(patch).eq('id', id).eq('shop_id', this.shopId!);
-    if (error) throw error;
-  }
-
   /**
-   * Lưu phần sản phẩm của đơn đã tạo (giá bán / xóa dòng) qua RPC v39.
-   * Từ v36, authenticated không còn quyền ghi trực tiếp order_items nên phải
-   * đi qua hàm security definer để trigger kho vẫn hoạt động đúng.
+   * Sửa TOÀN BỘ đơn đã tạo từ màn hình Bán hàng (migration v40):
+   * sản phẩm/số lượng/giá, khách hàng, chiết khấu, VAT, ship, trạng thái,
+   * thanh toán, ghi chú, vận chuyển. Hàm SQL tự đồng bộ tồn kho và khoản thu.
    */
-  async saveOrderEdit(
+  async updateFullOrder(
     orderId: string,
-    items: Array<{ id: string; price: number }>,
-    discount: number,
-    total: number,
-    adjustIncome: boolean
+    order: {
+      code: string;
+      customer_id: string | null;
+      customer_name: string;
+      status: string;
+      payment_method?: string | null;
+      discount_percent: number;
+      tax_percent: number;
+      ship_fee: number;
+      ship_fee_by_customer: boolean;
+      note: string | null;
+      customer_phone?: string | null;
+      customer_address?: string | null;
+      shipping_code?: string | null;
+      shipping_partner?: string | null;
+      shipper_name?: string | null;
+      shipper_phone?: string | null;
+      shipping_address?: string | null;
+      created_at?: string | null;
+    },
+    items: Array<{ id?: string; product_id: string | null; name: string; price: number; qty: number }>
   ): Promise<Order> {
     const shopId = this.shopId;
     if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
-    const { data, error } = await this.sb.client.rpc('inv_update_order', {
+    const { data, error } = await this.sb.client.rpc('inv_update_order_full', {
       p_shop: shopId,
       p_order_id: orderId,
+      p_order: order,
       p_items: items,
-      p_discount: Math.max(0, Math.round(Number(discount) || 0)),
-      p_total: Math.max(0, Math.round(Number(total) || 0)),
-      p_adjust_income: !!adjustIncome,
+      p_adjust_income: true,
     });
     if (error) {
-      if (error.code === 'PGRST202' || /inv_update_order|schema cache/i.test(error.message)) {
+      if (error.code === 'PGRST202' || /inv_update_order_full|schema cache/i.test(error.message)) {
         throw new Error(
-          'Cơ sở dữ liệu chưa có hàm cập nhật đơn (migration v39). Hãy chạy file supabase-migration-v39-order-edit.sql trong Supabase SQL Editor rồi thử lại.'
+          'Cơ sở dữ liệu chưa có hàm sửa đơn đầy đủ (migration v40). Hãy chạy file supabase-migration-v40-sale-order-edit.sql trong Supabase SQL Editor, đợi vài giây để schema cache nạp lại rồi thử lại.'
+        );
+      }
+      if (error.code === '42883' || /_inv_lock_products|_inv_stock_status|_inv_order_item/i.test(error.message)) {
+        throw new Error(
+          'Cơ sở dữ liệu thiếu hàm nền tảng tồn kho. Hãy chạy supabase-migration-v27.sql (và v36) rồi chạy lại supabase-migration-v40-sale-order-edit.sql.'
         );
       }
       if (/thuộc về đơn hàng|không thể sửa\/xóa thủ công/i.test(error.message)) {
         throw new Error(
-          'Database đang dùng bản migration v39 cũ. Hãy chạy lại file supabase-migration-v39-order-edit.sql (bản mới) trong Supabase SQL Editor rồi thử lại.'
+          'Database đang dùng bản transactions_guard cũ. Hãy chạy lại file supabase-migration-v40-sale-order-edit.sql (bản mới) trong Supabase SQL Editor rồi thử lại.'
         );
       }
       throw error;
     }
-    const order = data as Order;
-    this.logService.log('update', 'order', order?.code ?? orderId);
-    return order;
+    const updated = data as Order;
+    this.logService.log('update', 'order', updated?.code ?? orderId);
+    return updated;
   }
 
-  /** Sửa 1 dòng sản phẩm của đơn đã tạo (giá/số lượng/thành tiền) */
-  async updateItem(itemId: string, patch: { price?: number; qty?: number; total?: number }): Promise<void> {
-    if (!this.sb.isConfigured) return;
-    const { error } = await this.sb.from('order_items').update(patch).eq('id', itemId);
-    if (error) throw error;
-  }
-
-  /** Xóa 1 dòng sản phẩm khỏi đơn (trigger kho tự hoàn tồn) */
-  async removeItem(itemId: string): Promise<void> {
-    if (!this.sb.isConfigured) return;
-    const { error } = await this.sb.from('order_items').delete().eq('id', itemId);
+  async update(id: string, patch: Partial<Order>): Promise<void> {
+    const { error } = await this.sb.from('orders').update(patch).eq('id', id).eq('shop_id', this.shopId!);
     if (error) throw error;
   }
 

@@ -45,8 +45,6 @@ import {
   arrowDownCircleOutline,
   arrowUpCircleOutline,
   createOutline,
-  closeOutline,
-  saveOutline,
 } from 'ionicons/icons';
 import JsBarcode from 'jsbarcode';
 import { OrdersService } from '../../core/services/orders.service';
@@ -158,75 +156,15 @@ export class OrderDetailPage implements OnInit {
     return Math.max(0, Math.round(tax));
   });
 
-  /** Chế độ sửa đơn (xóa sản phẩm / đổi giá) */
-  readonly editMode = signal(false);
-  readonly draftItems = signal<OrderItem[]>([]);
-
-  startEdit(): void {
-    this.draftItems.set(this.items().map((item) => ({ ...item })));
-    this.editMode.set(true);
-  }
-
-  cancelEdit(): void {
-    this.editMode.set(false);
-    this.draftItems.set([]);
-  }
-
-  removeDraftItem(index: number): void {
-    this.draftItems.update((list) => list.filter((_, i) => i !== index));
-  }
-
-  setDraftPrice(index: number, value: unknown): void {
-    if (value === '' || value === null || value === undefined) return; // đang xóa để nhập lại
-    const price = Math.max(0, Math.round(Number(value) || 0));
-    this.draftItems.update((list) =>
-      list.map((item, i) => (i === index ? { ...item, price, total: price * Number(item.qty) } : item))
-    );
-  }
-
-  async saveEdit(): Promise<void> {
+  /** Mở màn hình Bán hàng với đơn này để sửa toàn bộ (như iSale). */
+  editInSale(): void {
     const order = this.order();
     if (!order || this.busy()) return;
-    const draft = this.draftItems();
-    if (!draft.length) {
-      await this.toast('Đơn hàng phải còn ít nhất 1 sản phẩm. Hãy dùng nút Xóa đơn nếu muốn bỏ cả đơn.', 'danger');
-      return;
-    }
-    this.busy.set(true);
-    try {
-      const oldMerchandise = this.merchandise();
-      const oldTax = this.taxAmount();
-      const newMerchandise = draft.reduce(
-        (sum, item) => sum + Math.max(0, Math.round(Number(item.price) || 0)) * Number(item.qty),
-        0
-      );
-      // Giữ nguyên tỷ lệ VAT so với tiền hàng để bill vẫn khớp
-      const newTax = oldMerchandise > 0 ? Math.round(oldTax * (newMerchandise / oldMerchandise)) : 0;
-      const discount = Math.min(Number(order.discount ?? 0), newMerchandise);
-      const total = Math.max(0, newMerchandise - discount + newTax + this.shippingIncluded());
-      await this.ordersService.saveOrderEdit(
-        order.id,
-        draft.map((item) => ({
-          id: item.id,
-          price: Math.max(0, Math.round(Number(item.price) || 0)),
-        })),
-        discount,
-        total,
-        order.paid
-      );
-      await this.load();
-      this.editMode.set(false);
-      this.draftItems.set([]);
-      await this.toast('Đã cập nhật đơn hàng');
-    } catch (e: any) {
-      await this.toast(e?.message ?? 'Cập nhật đơn hàng thất bại', 'danger');
-    } finally {
-      this.busy.set(false);
-    }
+    this.router.navigate(['/sale'], { queryParams: { edit: order.id } });
   }
 
   constructor() {
-    addIcons({ trashOutline, cashOutline, receiptOutline, personOutline, ellipseOutline, checkmarkCircleOutline, printOutline, returnDownBackOutline, cardOutline, cubeOutline, callOutline, locationOutline, swapVerticalOutline, barcodeOutline, qrCodeOutline, walletOutline, arrowDownCircleOutline, arrowUpCircleOutline, createOutline, closeOutline, saveOutline });
+    addIcons({ trashOutline, cashOutline, receiptOutline, personOutline, ellipseOutline, checkmarkCircleOutline, printOutline, returnDownBackOutline, cardOutline, cubeOutline, callOutline, locationOutline, swapVerticalOutline, barcodeOutline, qrCodeOutline, walletOutline, arrowDownCircleOutline, arrowUpCircleOutline, createOutline });
     // Canvas chỉ tồn tại khi tab Mã vạch được render — vẽ lại mỗi khi tab/canvas sẵn sàng
     effect(() => {
       if (this.tab() === 'barcode' && this.barcodeCanvas()) {
@@ -631,7 +569,6 @@ export class OrderDetailPage implements OnInit {
   }
 
   totalQty(): number {
-    const list = this.editMode() ? this.draftItems() : this.items();
-    return list.reduce((s, i) => s + Number(i.qty ?? 0), 0);
+    return this.items().reduce((s, i) => s + Number(i.qty ?? 0), 0);
   }
 }

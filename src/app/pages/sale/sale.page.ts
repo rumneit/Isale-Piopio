@@ -48,12 +48,14 @@ import { ProductsService } from '../../core/services/products.service';
 import { OrdersService } from '../../core/services/orders.service';
 import { CustomersService } from '../../core/services/customers.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Product, Customer, MoneyAccount, Shop } from '../../core/models/models';
+import { Product, Customer, MoneyAccount, Order, OrderItem, Shop } from '../../core/models/models';
 import { MoneyAccountsService } from '../../core/services/money-accounts.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { CustomerPickerModalComponent } from '../customers/customer-picker.modal';
 
 interface SaleItem {
+  /** id dòng order_items khi đang sửa đơn đã tạo; undefined với dòng mới */
+  id?: string;
   product_id: string | null;
   name: string;
   unit: string | null;
@@ -156,6 +158,15 @@ export class SalePage implements OnInit {
   // Nhiều đơn song song (ISale multi-add): danh sách + vị trí đang mở
   readonly orderTabs = signal<SaleOrderSnap[]>([]);
   readonly activeOrderIdx = signal(0);
+
+  /** Đang sửa một đơn đã tạo (mở từ nút bút chì ở chi tiết đơn hàng) */
+  readonly editingOrderId = signal<string | null>(null);
+  readonly editingOrder = signal<Order | null>(null);
+  /**
+   * Số lượng từng sản phẩm trong đơn gốc. Tồn kho hiện tại đã bị trừ số lượng
+   * này, nên khi sửa chỉ phần tăng thêm mới cần kiểm tra tồn.
+   */
+  private readonly originalQtyByProduct = new Map<string, number>();
 
   // Thông tin đơn
   orderCode = '';
@@ -266,16 +277,20 @@ export class SalePage implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    const editId = this.route.snapshot.queryParamMap.get('edit');
+    if (editId) this.editingOrderId.set(editId);
     this.orderCode = this.ordersService.newCode();
+    this.orderDate = this.toLocalInput(new Date().toISOString());
     this.hasPaymentMethodColumn = await this.ordersService.detectPaymentMethod().catch(() => false);
-    this.orderTabs.set([this.currentSnap()]);
+    if (!editId) this.orderTabs.set([this.currentSnap()]);
     this.loading.set(true);
     try {
-      const [products, customers, accounts] = await Promise.all([
+      const [products, customers, accounts, , editData] = await Promise.all([
         this.productsService.list(),
         this.customersService.list(),
         this.moneyAccountsService.list(),
         this.settingsService.load(),
+        editId ? this.ordersService.getWithItems(editId) : Promise.resolve(null),
       ]);
       this.allowNegativeStock.set(this.settingsService.booleanValue('allow_negative_stock'));
       this.products.set(products);
@@ -287,19 +302,34 @@ export class SalePage implements OnInit {
         .then((cols) => this.hasOrderExtras.set(cols))
         .catch(() => {});
 
-      // Nếu mở từ nút "Tạo đơn: quét mã" → tự thêm sản phẩm theo mã vạch
-      const barcode = this.route.snapshot.queryParamMap.get('barcode');
-      if (barcode) {
-        const found = this.products().find((p) => (p.sku ?? '').toLowerCase() === barcode.toLowerCase());
-        if (found) {
-          if (this.addProduct(found)) this.toast(`Đã thêm: ${found.name}`);
-        } else {
-          this.barcodeInput = barcode;
-          this.toast(`Không tìm thấy sản phẩm mã "${barcode}"`, 'danger');
+      if (editId) {
+        if (!editData?.order) {
+          await this.toast('Không tìm thấy đơn hàng cần sửa', 'danger');
+          this.router.navigateByUrl('/order', { replaceUrl: true });
+          return;
+        }
+        this.applyOrderToSale(editData.order, editData.items);
+      } else {
+        // Nếu mở từ nút "Tạo đơn: quét mã" → tự thêm sản phẩm theo mã vạch
+        const barcode = this.route.snapshot.queryParamMap.get('barcode');
+        if (barcode) {
+          const found = this.products().find((p) => (p.sku ?? '').toLowerCase() === barcode.toLowerCase());
+          if (found) {
+            if (this.addProduct(found)) this.toast(`Đã thêm: ${found.name}`);
+          } else {
+            this.barcodeInput = barcode;
+            this.toast(`Không tìm thấy sản phẩm mã "${barcode}"`, 'danger');
+          }
         }
       }
+
+      this.orderTabs.set([this.currentSnap()]);
     } catch (e) {
       console.error('load sale data failed', e);
+      if (editId) {
+        await this.toast('Không tải được đơn hàng để sửa', 'danger');
+        this.router.navigateByUrl('/order', { replaceUrl: true });
+      }
     } finally {
       this.loading.set(false);
     }
@@ -365,7 +395,92 @@ export class SalePage implements OnInit {
     this.items.set([...s.items]);
   }
 
+  /** Nạp một đơn đã tạo vào màn hình bán hàng để sửa toàn bộ. */
+  private applyOrderToSale(order: Order, orderItems: OrderItem[]): void {
+    const merchandise = orderItems.reduce(
+      (sum, item) => sum + Number(item.price ?? 0) * Number(item.qty ?? 0),
+      0
+    );
+    const discount = Math.max(0, Number(order.discount ?? 0));
+    const ship = Math.max(0, Number(order.ship_fee ?? 0));
+    const shippingIncluded = order.ship_fee_by_customer === false ? 0 : ship;
+    const tax = Math.max(
+      0,
+      Math.round(Number(order.total ?? 0) - merchandise + discount - shippingIncluded)
+    );
+    const customer = order.customer_id
+      ? this.customers().find((c) => c.id === order.customer_id)
+      : null;
+
+    this.editingOrder.set(order);
+    this.orderCode = order.code;
+    this.orderDate = this.toLocalInput(order.created_at);
+    this.selectedCustomerId = order.customer_id ?? null;
+    this.selectedCustomerName = order.customer_name ?? 'Khách lẻ';
+    this.selectedCustomerDebt = Number(customer?.debt ?? 0);
+    this.status = order.status || 'completed';
+    this.paymentMethod = order.payment_method || 'CASH';
+    this.customerShipPaid = order.ship_fee_by_customer !== false;
+    this.discountPercent = merchandise > 0 ? this.roundPercent((discount / merchandise) * 100) : 0;
+    this.taxPercent = merchandise > 0 ? this.roundPercent((tax / merchandise) * 100) : 0;
+    this.customerPaid = order.paid ? Number(order.total ?? 0) : 0;
+    this.shipFee = ship;
+    this.customerPhone = order.customer_phone ?? '';
+    this.customerAddress = order.customer_address ?? '';
+    this.note = order.note ?? '';
+    this.shippingCode = order.shipping_code ?? '';
+    this.shippingPartner = order.shipping_partner ?? '';
+    this.shipperName = order.shipper_name ?? '';
+    this.shipperPhone = order.shipper_phone ?? '';
+    this.shippingAddress = order.shipping_address ?? '';
+
+    // Chỉ đơn đang tính tồn mới đã trừ sẵn số lượng gốc khỏi kho.
+    // Đơn nháp/báo giá/đã hủy chưa trừ tồn nên không được cộng lại phần gốc.
+    const originalCountsStock = !['draft', 'quote', 'cancelled'].includes(order.status || 'completed');
+    this.originalQtyByProduct.clear();
+    this.items.set(
+      orderItems.map((item) => {
+        const product = this.products().find((p) => p.id === item.product_id);
+        if (item.product_id && originalCountsStock) {
+          this.originalQtyByProduct.set(
+            item.product_id,
+            (this.originalQtyByProduct.get(item.product_id) ?? 0) + Number(item.qty ?? 0)
+          );
+        }
+        return {
+          id: item.id,
+          product_id: item.product_id,
+          name: item.name,
+          unit: product?.unit ?? null,
+          price: Number(item.price ?? 0),
+          listPrice: product ? Number(product.price) : undefined,
+          qty: Number(item.qty ?? 0),
+        };
+      })
+    );
+  }
+
+  /** datetime-local cần chuỗi giờ địa phương YYYY-MM-DDTHH:mm, không phải ISO UTC. */
+  private toLocalInput(iso: string | null | undefined): string {
+    const d = iso ? new Date(iso) : new Date();
+    if (Number.isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  private fromLocalInput(value: string): string | null {
+    if (!value) return null;
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? null : d.toISOString();
+  }
+
+  private roundPercent(value: number): number {
+    // Giữ đủ chính xác để tổng tiền của đơn cũ không bị lệch khi chỉ sửa tên/giá.
+    return Math.round(value * 10000) / 10000;
+  }
+
   switchOrderTab(i: number) {
+    if (this.editingOrderId()) return;
     if (i === this.activeOrderIdx() || i < 0 || i >= this.orderTabs().length) return;
     // Lưu đơn đang mở rồi nạp đơn được chọn
     this.orderTabs.update((list) => list.map((s, idx) => (idx === this.activeOrderIdx() ? this.currentSnap() : s)));
@@ -374,6 +489,7 @@ export class SalePage implements OnInit {
   }
 
   addOrderTab() {
+    if (this.editingOrderId()) return;
     if (this.orderTabs().length >= 10) {
       this.toast('Tối đa 10 đơn mỗi lượt bán', 'danger');
       return;
@@ -406,6 +522,7 @@ export class SalePage implements OnInit {
   }
 
   removeOrderTab(i: number) {
+    if (this.editingOrderId()) return;
     if (this.orderTabs().length <= 1) return;
     const active = this.activeOrderIdx();
     if (i === active) {
@@ -477,10 +594,14 @@ export class SalePage implements OnInit {
   addProduct(p: Product, qty: number = 1): boolean {
     const current = [...this.items()];
     const existing = current.find((i) => i.product_id === p.id);
-    const nextQty = (existing?.qty ?? 0) + qty;
-    if (!this.allowNegativeStock() && nextQty > Number(p.stock ?? 0)) {
-      this.toast(`Không đủ tồn kho cho "${p.name}". Còn ${p.stock}, cần ${nextQty}.`, 'danger');
-      return false;
+    if (!this.allowNegativeStock() && this.stockTrackedStatus()) {
+      const nextTotal = this.currentQtyForProduct(p.id) + qty;
+      const original = this.originalQtyByProduct.get(p.id) ?? 0;
+      const needed = Math.max(0, nextTotal - original);
+      if (needed > Number(p.stock ?? 0)) {
+        this.toast(`Không đủ tồn kho cho "${p.name}". Còn ${p.stock}, cần thêm ${needed}.`, 'danger');
+        return false;
+      }
     }
     if (existing) {
       existing.qty += qty;
@@ -541,12 +662,31 @@ export class SalePage implements OnInit {
     const current = [...this.items()];
     const item = current[index];
     const product = this.products().find((p) => p.id === item.product_id);
-    if (product && !this.allowNegativeStock() && item.qty + 1 > Number(product.stock ?? 0)) {
-      this.toast(`Không đủ tồn kho cho "${item.name}". Còn ${product.stock}.`, 'danger');
-      return;
+    if (product && !this.allowNegativeStock() && this.stockTrackedStatus()) {
+      const nextTotal = this.currentQtyForProduct(item.product_id) + 1;
+      const original = item.product_id ? (this.originalQtyByProduct.get(item.product_id) ?? 0) : 0;
+      const needed = Math.max(0, nextTotal - original);
+      if (needed > Number(product.stock ?? 0)) {
+        this.toast(`Không đủ tồn kho cho "${item.name}". Còn ${product.stock}, cần thêm ${needed}.`, 'danger');
+        return;
+      }
     }
     current[index].qty += 1;
     this.items.set(current);
+  }
+
+  /** Tổng số lượng hiện tại của 1 sản phẩm trong đơn đang mở */
+  private currentQtyForProduct(productId: string | null): number {
+    if (!productId) return 0;
+    return this.items().reduce((sum, item) => sum + (item.product_id === productId ? item.qty : 0), 0);
+  }
+
+  /**
+   * Trạng thái hiện tại có tính tồn kho không? Nháp/báo giá/đã hủy thì không,
+   * nên không cần chặn thêm sản phẩm vượt tồn (khi lưu cũng không trừ kho).
+   */
+  private stockTrackedStatus(): boolean {
+    return !['draft', 'quote', 'cancelled'].includes(this.status || 'completed');
   }
 
   decQty(index: number) {
@@ -655,6 +795,11 @@ export class SalePage implements OnInit {
   }
 
   async save() {
+    if (this.busy()) return;
+    if (this.editingOrderId()) {
+      await this.saveEditOrder();
+      return;
+    }
     // Lưu CẢ LƯỢT bán (tất cả tab Đơn hàng) như ISale multi-add
     this.orderTabs.update((list) => list.map((s, idx) => (idx === this.activeOrderIdx() ? this.currentSnap() : s)));
     const batch = this.orderTabs();
@@ -725,7 +870,72 @@ export class SalePage implements OnInit {
     }
   }
 
+  /** Lưu thay đổi của một đơn đã tạo từ màn hình Bán hàng. */
+  private async saveEditOrder(): Promise<void> {
+    const orderId = this.editingOrderId();
+    const original = this.editingOrder();
+    if (!orderId || !original) {
+      await this.toast('Không xác định được đơn hàng cần sửa', 'danger');
+      return;
+    }
+
+    const snap = this.currentSnap();
+    if (!snap.items.length) {
+      await this.toast('Đơn hàng phải còn ít nhất 1 sản phẩm. Hãy dùng nút Xóa đơn nếu muốn bỏ cả đơn.', 'danger');
+      return;
+    }
+    if (snap.items.some((item) => !item.name.trim() || Number(item.qty) <= 0 || Number(item.price) < 0)) {
+      await this.toast('Có dòng sản phẩm không hợp lệ. Hãy kiểm tra lại số lượng và giá bán.', 'danger');
+      return;
+    }
+
+    this.busy.set(true);
+    try {
+      await this.ordersService.updateFullOrder(
+        orderId,
+        {
+          code: snap.orderCode.trim() || original.code,
+          customer_id: snap.selectedCustomerId,
+          customer_name: snap.selectedCustomerName.trim() || 'Khách lẻ',
+          status: snap.status,
+          payment_method: snap.paymentMethod,
+          discount_percent: Math.max(0, Number(snap.discountPercent ?? 0)),
+          tax_percent: Math.max(0, Number(snap.taxPercent ?? 0)),
+          ship_fee: Math.max(0, Number(snap.shipFee ?? 0)),
+          ship_fee_by_customer: !!snap.customerShipPaid,
+          note: snap.note.trim() || null,
+          customer_phone: snap.customerPhone.trim() || null,
+          customer_address: snap.customerAddress.trim() || null,
+          shipping_code: snap.shippingCode.trim() || null,
+          shipping_partner: snap.shippingPartner.trim() || null,
+          shipper_name: snap.shipperName.trim() || null,
+          shipper_phone: snap.shipperPhone.trim() || null,
+          shipping_address: snap.shippingAddress.trim() || null,
+          created_at: this.fromLocalInput(snap.orderDate),
+        },
+        snap.items.map((item) => ({
+          ...(item.id ? { id: item.id } : {}),
+          product_id: item.product_id,
+          name: item.name.trim(),
+          price: Math.max(0, Number(item.price) || 0),
+          qty: Number(item.qty),
+        }))
+      );
+      await this.toast('Đã cập nhật đơn hàng');
+      this.router.navigateByUrl(`/order/${orderId}`, { replaceUrl: true });
+    } catch (e: any) {
+      await this.toast(e?.message ?? 'Cập nhật đơn hàng thất bại', 'danger');
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
   goBack() {
+    const id = this.editingOrderId();
+    if (id) {
+      this.router.navigateByUrl(`/order/${id}`, { replaceUrl: true });
+      return;
+    }
     this.router.navigateByUrl('/home');
   }
 

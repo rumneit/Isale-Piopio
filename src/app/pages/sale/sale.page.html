@@ -4,13 +4,19 @@
       <ion-button (click)="goBack()" aria-label="Quay lại">
         <ion-icon slot="icon-only" name="arrow-back-outline" />
       </ion-button>
-      <ion-button (click)="openHome()" aria-label="Về trang chủ">
-        <ion-icon slot="icon-only" name="home-outline" />
-      </ion-button>
+      @if (!editingOrderId()) {
+        <ion-button (click)="openHome()" aria-label="Về trang chủ">
+          <ion-icon slot="icon-only" name="home-outline" />
+        </ion-button>
+      }
     </ion-buttons>
-    <ion-title>Bán hàng</ion-title>
+    <ion-title>{{ editingOrderId() ? 'Sửa đơn hàng' : 'Bán hàng' }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="save()" [disabled]="busy()" aria-label="Lưu đơn hàng">
+      <ion-button
+        (click)="save()"
+        [disabled]="busy()"
+        [attr.aria-label]="editingOrderId() ? 'Cập nhật đơn hàng' : 'Lưu đơn hàng'"
+      >
         @if (busy()) {
           <ion-spinner name="crescent" />
         } @else {
@@ -20,22 +26,24 @@
     </ion-buttons>
   </ion-toolbar>
 
-  <!-- Tab đơn hàng (nhiều đơn song song như ISale multi-add) -->
-  <ion-toolbar>
-    <div class="order-tabs">
-      @for (t of orderTabs(); track $index; let i = $index) {
-        <button class="order-tab" [class.active]="i === activeOrderIdx()" (click)="switchOrderTab(i)">
-          Đơn hàng {{ i + 1 }}
-          @if (orderTabs().length > 1) {
-            <span class="order-tab-remove" tabindex="0" (click)="removeOrderTab(i); $event.stopPropagation()" role="button" aria-label="Xóa đơn này" (keydown.enter)="removeOrderTab(i); $event.stopPropagation()" (keydown.space)="removeOrderTab(i); $event.preventDefault(); $event.stopPropagation()"><ion-icon name="close-outline" /></span>
-          }
+  <!-- Tab đơn hàng (nhiều đơn song song như ISale multi-add) — ẩn khi sửa 1 đơn -->
+  @if (!editingOrderId()) {
+    <ion-toolbar>
+      <div class="order-tabs">
+        @for (t of orderTabs(); track $index; let i = $index) {
+          <button class="order-tab" [class.active]="i === activeOrderIdx()" (click)="switchOrderTab(i)">
+            Đơn hàng {{ i + 1 }}
+            @if (orderTabs().length > 1) {
+              <span class="order-tab-remove" tabindex="0" (click)="removeOrderTab(i); $event.stopPropagation()" role="button" aria-label="Xóa đơn này" (keydown.enter)="removeOrderTab(i); $event.stopPropagation()" (keydown.space)="removeOrderTab(i); $event.preventDefault(); $event.stopPropagation()"><ion-icon name="close-outline" /></span>
+            }
+          </button>
+        }
+        <button class="order-tab-add" (click)="addOrderTab()" aria-label="Thêm đơn hàng">
+          <ion-icon name="add-outline" />
         </button>
-      }
-      <button class="order-tab-add" (click)="addOrderTab()" aria-label="Thêm đơn hàng">
-        <ion-icon name="add-outline" />
-      </button>
-    </div>
-  </ion-toolbar>
+      </div>
+    </ion-toolbar>
+  }
 
   <!-- 4 tab chính -->
   <ion-toolbar>
@@ -108,9 +116,11 @@
               <button class="sale-btn" (click)="focusBarcode(barcodeField)">
                 <ion-icon name="barcode-outline" /> Quét mã
               </button>
-              <button class="sale-btn" (click)="openQuotes()">
-                <ion-icon name="reader-outline" /> Từ báo giá
-              </button>
+              @if (!editingOrderId()) {
+                <button class="sale-btn" (click)="openQuotes()">
+                  <ion-icon name="reader-outline" /> Từ báo giá
+                </button>
+              }
             </div>
           </div>
 
@@ -133,7 +143,7 @@
             </div>
           } @else {
             <div class="sale-items">
-              @for (item of items(); track $index; let i = $index) {
+              @for (item of items(); track item.id ?? $index; let i = $index) {
                 <div class="sale-item">
                   <div class="sale-item-main">
                     <div class="sale-item-name" [title]="item.name">{{ item.name }}</div>
