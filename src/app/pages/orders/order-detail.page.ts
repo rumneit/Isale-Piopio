@@ -194,20 +194,8 @@ export class OrderDetailPage implements OnInit {
     }
     this.busy.set(true);
     try {
-      const before = this.items();
       const oldMerchandise = this.merchandise();
       const oldTax = this.taxAmount();
-      const keep = new Set(draft.map((item) => item.id));
-      for (const item of before) {
-        if (!keep.has(item.id)) await this.ordersService.removeItem(item.id);
-      }
-      for (const item of draft) {
-        const previous = before.find((row) => row.id === item.id);
-        const price = Math.max(0, Math.round(Number(item.price) || 0));
-        if (previous && Math.round(Number(previous.price)) !== price) {
-          await this.ordersService.updateItem(item.id, { price, total: price * Number(item.qty) });
-        }
-      }
       const newMerchandise = draft.reduce(
         (sum, item) => sum + Math.max(0, Math.round(Number(item.price) || 0)) * Number(item.qty),
         0
@@ -216,17 +204,16 @@ export class OrderDetailPage implements OnInit {
       const newTax = oldMerchandise > 0 ? Math.round(oldTax * (newMerchandise / oldMerchandise)) : 0;
       const discount = Math.min(Number(order.discount ?? 0), newMerchandise);
       const total = Math.max(0, newMerchandise - discount + newTax + this.shippingIncluded());
-      await this.ordersService.update(order.id, { total, discount });
-      // Đơn đã thu tiền: giữ khoản thu khớp với tổng mới để báo cáo doanh thu không lệch
-      if (order.paid) {
-        const income = this.orderTransactions().find((t) => t.type === 'income');
-        const delta = total - Number(order.total ?? 0);
-        if (income && delta !== 0) {
-          await this.transactionsService
-            .update(income.id, { amount: Math.max(0, Number(income.amount ?? 0) + delta) })
-            .catch(() => {});
-        }
-      }
+      await this.ordersService.saveOrderEdit(
+        order.id,
+        draft.map((item) => ({
+          id: item.id,
+          price: Math.max(0, Math.round(Number(item.price) || 0)),
+        })),
+        discount,
+        total,
+        order.paid
+      );
       await this.load();
       this.editMode.set(false);
       this.draftItems.set([]);

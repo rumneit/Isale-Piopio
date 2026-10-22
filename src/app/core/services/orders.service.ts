@@ -220,6 +220,41 @@ export class OrdersService {
     if (error) throw error;
   }
 
+  /**
+   * Lưu phần sản phẩm của đơn đã tạo (giá bán / xóa dòng) qua RPC v39.
+   * Từ v36, authenticated không còn quyền ghi trực tiếp order_items nên phải
+   * đi qua hàm security definer để trigger kho vẫn hoạt động đúng.
+   */
+  async saveOrderEdit(
+    orderId: string,
+    items: Array<{ id: string; price: number }>,
+    discount: number,
+    total: number,
+    adjustIncome: boolean
+  ): Promise<Order> {
+    const shopId = this.shopId;
+    if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
+    const { data, error } = await this.sb.client.rpc('inv_update_order', {
+      p_shop: shopId,
+      p_order_id: orderId,
+      p_items: items,
+      p_discount: Math.max(0, Math.round(Number(discount) || 0)),
+      p_total: Math.max(0, Math.round(Number(total) || 0)),
+      p_adjust_income: !!adjustIncome,
+    });
+    if (error) {
+      if (error.code === 'PGRST202' || /inv_update_order|schema cache/i.test(error.message)) {
+        throw new Error(
+          'Cơ sở dữ liệu chưa có hàm cập nhật đơn (migration v39). Hãy chạy file supabase-migration-v39-order-edit.sql trong Supabase SQL Editor rồi thử lại.'
+        );
+      }
+      throw error;
+    }
+    const order = data as Order;
+    this.logService.log('update', 'order', order?.code ?? orderId);
+    return order;
+  }
+
   /** Sửa 1 dòng sản phẩm của đơn đã tạo (giá/số lượng/thành tiền) */
   async updateItem(itemId: string, patch: { price?: number; qty?: number; total?: number }): Promise<void> {
     if (!this.sb.isConfigured) return;
