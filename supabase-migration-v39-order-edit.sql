@@ -13,6 +13,29 @@
 -- An toàn khi chạy lại nhiều lần.
 -- ============================================================================
 
+-- Cho phép RPC inv_update_order điều chỉnh đúng khoản thu của đơn hàng.
+-- Trigger transactions_guard v24 vẫn chặn mọi sửa/xóa thủ công khác.
+create or replace function public.transactions_guard()
+returns trigger
+language plpgsql
+as $$
+begin
+  if current_setting('piopio.allow_order_tx', true) = old.id::text then
+    return coalesce(new, old);
+  end if;
+  if coalesce(old.source, 'manual') <> 'manual' then
+    raise exception 'Giao dịch này thuộc về % nên không thể sửa/xóa thủ công. Hãy thao tác qua đối tượng gốc.',
+      case old.source
+        when 'order' then 'đơn hàng'
+        when 'debt' then 'công nợ'
+        when 'recurring' then 'giao dịch định kỳ'
+        when 'transfer' then 'chuyển tiền nội bộ'
+        else 'hệ thống'
+      end;
+  end if;
+  return coalesce(new, old);
+end $$;
+
 create or replace function public.inv_update_order(
   p_shop uuid,
   p_order_id uuid,
@@ -138,9 +161,16 @@ begin
      limit 1
      for update;
     if found then
-      update public.transactions
-         set amount = greatest(0, coalesce(amount, 0) + v_delta)
-       where id = v_income.id;
+      -- Chỉ mở khóa đúng giao dịch thu của đơn này trong transaction hiện tại.
+      perform set_config('piopio.allow_order_tx', v_income.id::text, true);
+      if coalesce(v_income.amount, 0) + v_delta <= 0 then
+        delete from public.transactions where id = v_income.id;
+      else
+        update public.transactions
+           set amount = coalesce(v_income.amount, 0) + v_delta
+         where id = v_income.id;
+      end if;
+      perform set_config('piopio.allow_order_tx', '', true);
     end if;
   end if;
 
