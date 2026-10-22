@@ -7,54 +7,290 @@ export type InvoicePaperSize = 'A4' | 'A5';
 
 export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
 {{#if shop.name}}
-<header class="shop-head">
-  {{#if shop.iconUrl}}<img class="shop-logo" src="{{shop.iconUrl}}" alt="Logo {{shop.name}}">{{/if}}
-  <strong class="shop-name">{{shop.nameUpper}}</strong>
-  {{#if shop.shortDescription}}<em>{{shop.shortDescription}}</em>{{/if}}
-  <div class="shop-grid">
-    <div>
-      {{#if shop.phone}}<div>{{labels.shopPhone}} {{shop.phone}}</div>{{/if}}
-      {{#if shop.email}}<div>{{labels.shopEmail}} {{shop.email}}</div>{{/if}}
-      {{#if shop.facebook}}<div>{{labels.shopFacebook}} {{shop.facebook}}</div>{{/if}}
-      {{#if shop.address}}<div>{{labels.shopAddress}} {{shop.address}}</div>{{/if}}
+<div style="border-bottom: 1px solid #000; padding-bottom: 8px; margin-bottom: 4px;">
+    <div style="width: 100%; text-align: center; margin-top: 5px;">
+        <strong style="font-size: 1.1em;">{{shop.nameUpper}}</strong><br>
+        {{#if shop.shortDescription}}<i style="font-size: 0.9em;">{{shop.shortDescription}}</i>{{/if}}
     </div>
-    {{#if shop.bankName}}<div class="bank-block">
-      <div><b>{{labels.bankName}}</b> {{shop.bankName}}</div>
-      {{#if shop.bankAccountName}}<div>{{labels.bankAccountName}}: {{shop.bankAccountName}}</div>{{/if}}
-      {{#if shop.bankAccountNumber}}<div>{{labels.bankAccountNumber}}: {{shop.bankAccountNumber}}</div>{{/if}}
-    </div>{{/if}}
-  </div>
-</header>
+    <table style="border: none; width: 100%; margin-top: 6px; table-layout: fixed;">
+        <tr>
+            {{#if shop.iconUrl}}
+            <td style="width: 20%; vertical-align: top; padding: 0;">
+                <img src="{{shop.iconUrl}}" style="max-width: 44px; max-height: 44px;" />
+            </td>
+            {{/if}}
+            <td style="vertical-align: top; padding: 0 8px 0 0;{{#if shop.bankName}}{{#if shop.iconUrl}} width: 40%;{{else}} width: 60%;{{/if}}{{else}}{{#if shop.iconUrl}} width: 80%;{{else}} width: 100%;{{/if}}{{/if}}">
+                <table style="border: none; border-spacing: 0; width: 100%; font-size: 0.9em;">
+                    {{#if shop.phone}}
+                    <tr>
+                        <td style="width: 1px; white-space: nowrap; padding: 1px 0;">{{{labels.shopPhone}}}</td>
+                        <td style="padding: 1px 0 1px 5px;" nowrap>{{shop.phone}}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if shop.email}}
+                    <tr>
+                        <td style="width: 1px; white-space: nowrap; padding: 1px 0;">{{{labels.shopEmail}}}</td>
+                        <td style="padding: 1px 0 1px 5px;" nowrap>{{shop.email}}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if shop.facebook}}
+                    <tr>
+                        <td style="width: 1px; white-space: nowrap; padding: 1px 0;">{{{labels.shopFacebook}}}</td>
+                        <td style="padding: 1px 0 1px 5px;" nowrap>{{shop.facebook}}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if shop.address}}
+                    <tr>
+                        <td style="width: 1px; white-space: nowrap; padding: 1px 0; vertical-align: top;">{{{labels.shopAddress}}}</td>
+                        <td style="padding: 1px 0 1px 5px;">{{shop.address}}</td>
+                    </tr>
+                    {{/if}}
+                </table>
+            </td>
+            {{#if shop.bankName}}
+            <td style="width: 40%; vertical-align: top; padding: 0 0 0 20px; border-left: 1px dotted #999;">
+                <table style="border: none; width: 100%; font-size: 0.9em; table-layout: fixed;">
+                    <tr>
+                        <td style="width: 38%; white-space: nowrap; padding: 1px 0; vertical-align: top;"><strong>{{{labels.bankName}}}</strong></td>
+                        <td style="padding: 1px 0 1px 5px; vertical-align: top; word-break: break-word;">{{shop.bankName}}</td>
+                    </tr>
+                    {{#if shop.bankAccountName}}
+                    <tr>
+                        <td style="white-space: nowrap; padding: 1px 0; vertical-align: top;">{{{labels.bankAccountName}}}:</td>
+                        <td style="padding: 1px 0 1px 5px; vertical-align: top; word-break: break-word;">{{shop.bankAccountName}}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if shop.bankAccountNumber}}
+                    <tr>
+                        <td style="white-space: nowrap; padding: 1px 0; vertical-align: top;">{{{labels.bankAccountNumber}}}:</td>
+                        <td style="padding: 1px 0 1px 5px; vertical-align: top; word-break: break-word;">{{shop.bankAccountNumber}}</td>
+                    </tr>
+                    {{/if}}
+                </table>
+            </td>
+            {{/if}}
+        </tr>
+    </table>
+</div>
 {{/if}}
-<section class="invoice-meta">
-  <h1>{{labels.orderPrintTitle}}</h1>
-  <div><b>{{labels.orderCode}}</b> {{order.orderCode}}</div>
-  {{#if hasStaff}}<div>{{labels.staff}} {{staffDisplay}}</div>{{/if}}
-  <div>{{labels.date}} {{order.createdAt}}</div>
-  <div>{{labels.customer}} <span class="dot-line">{{customerName}}</span></div>
-  <div>{{labels.phone}} <span class="dot-line">{{customerPhone}}</span></div>
-  <div>{{labels.address}} <span class="dot-line">{{customerAddress}}</span></div>
-</section>
-<table class="invoice-table">
-  <thead><tr><th>{{labels.headIndex}}</th><th>{{labels.headName}}</th><th>{{labels.headUnit}}</th><th>{{labels.headQty}}</th><th>{{labels.headPrice}}</th>{{#unless hideDiscountColumn}}<th>{{labels.headDiscount}}</th>{{/unless}}<th>{{labels.headAmount}}</th></tr></thead>
-  <tbody>
-    {{#each items}}<tr><td class="center">{{index}}</td><td>{{productName}}</td><td class="center">{{unit}}</td><td class="number">{{count}}</td><td class="number">{{priceFormatted}}</td>{{#unless ../hideDiscountColumn}}<td class="number">{{discountText}}</td>{{/unless}}<td class="number">{{totalFormatted}}</td></tr>{{/each}}
-    {{#each emptyRows}}<tr><td class="center">{{inc this}}</td><td>&nbsp;</td><td></td><td></td><td></td>{{#unless ../hideDiscountColumn}}<td></td>{{/unless}}<td></td></tr>{{/each}}
-    <tr><td colspan="3"><b>{{labels.totalAmount}}</b></td><td class="number">{{totalProductsQuantity}}</td>{{#unless hideDiscountColumn}}<td></td>{{/unless}}<td></td><td class="number">{{totalProductsAmountFormatted}}</td></tr>
-    {{#if hasPromotionDiscount}}<tr><td colspan="{{totalColspan}}">{{labels.totalPromotionDiscount}}</td><td class="number">-{{order.totalPromotionDiscountFormatted}}</td></tr>{{/if}}
-    {{#if hasDiscountOnTotal}}<tr><td colspan="{{totalColspan}}">{{labels.discount}}</td><td class="number">-{{order.discountOnTotalFormatted}}</td></tr>{{/if}}
-    {{#if hasPointPayment}}<tr><td colspan="{{totalColspan}}">{{labels.payByPoint}}</td><td class="number">-{{order.amountFromPointFormatted}}</td></tr>{{/if}}
-    {{#if showTax}}<tr><td colspan="{{totalColspan}}">{{labels.tax}}</td><td class="number">+{{order.taxFormatted}}</td></tr>{{/if}}
-    {{#if hasShipping}}<tr><td colspan="{{totalColspan}}">{{labels.shippingFee}}</td><td class="number">+{{order.shippingFeeFormatted}}</td></tr>{{/if}}
-    <tr><td colspan="{{totalColspan}}"><b>{{labels.total}}</b></td><td class="number"><b>{{order.totalFormatted}}</b></td></tr>
-    {{#if hasOldDebt}}<tr><td colspan="{{totalColspan}}">{{labels.oldDebt}}</td><td class="number">{{order.oldDebtFormatted}}</td></tr>{{/if}}
-  </tbody>
-</table>
-<div class="written">{{labels.totalWritten}} <span class="dot-line">{{amountToText}}</span></div>
-{{#if hasOrderNote}}<div>{{labels.note}} <span class="dot-line">{{order.note}}</span></div>{{/if}}
-{{#if hasOrderPrintNote}}<p><em>{{orderPrintNote}}</em></p>{{/if}}
-{{#if showQr}}<div class="qr"><img src="{{qrCodeUrl}}" alt="QR"><span>{{labels.qrPayment}}</span></div>{{/if}}
-<footer class="signatures"><div><b>{{labels.customerTitle}}</b><br><small>({{labels.signHint}})</small></div><div><b>{{labels.buyer}}</b><br><small>({{labels.signHint}})</small>{{#if showStaffNameUnderSign}}<strong class="staff-sign">{{staffDisplay}}</strong>{{/if}}</div></footer>`;
+
+<div>
+    <table style="border: none; width: 100%; margin-top: 4px; border-collapse: collapse;">
+        <tr>
+            <td style="vertical-align: top; padding: 0;">
+                <div style="text-align: center;">
+                    <h2 style="font-size: 18px; text-transform: uppercase; font-weight: bold; margin: 8px 0 10px;">{{labels.orderPrintTitle}}</h2>
+                </div>
+                <table style="border: none; width: 100%;">
+                    <tr>
+                        <td style="width: 1px; white-space: nowrap; padding: 0;"><strong>{{{labels.orderCode}}}</strong></td>
+                        <td style="padding: 0 0 0 5px;">{{order.orderCode}}</td>
+                    </tr>
+                    {{#if hasStaff}}
+                    <tr>
+                        <td style="width: 1px; white-space: nowrap; padding: 0;">{{{labels.staff}}}</td>
+                        <td style="padding: 0 0 0 5px;">{{staffDisplay}}</td>
+                    </tr>
+                    {{/if}}
+                    <tr>
+                        <td style="width: 1px; white-space: nowrap; padding: 0;">{{{labels.date}}}</td>
+                        <td style="padding: 0 0 0 5px;">{{order.createdAt}}</td>
+                    </tr>
+                </table>
+                <table style="border: none; width: 100%; margin-top: 4px;">
+                    <tr>
+                        <td style="width: 1px; white-space: nowrap; padding: 0; vertical-align: top;">{{{labels.customer}}}</td>
+                        <td style="padding: 0 0 0 5px;"><strong>{{customerName}}</strong></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 1px; white-space: nowrap; padding: 0; vertical-align: top;">{{{labels.phone}}}</td>
+                        <td style="padding: 0 0 0 5px;">{{customerPhone}}</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 1px; white-space: nowrap; padding: 0; vertical-align: top;">{{{labels.address}}}</td>
+                        <td style="padding: 0 0 0 5px;">{{customerAddress}}</td>
+                    </tr>
+                </table>
+            </td>
+            {{#if showQr}}
+            <td style="width: 90px; vertical-align: top; text-align: center; padding: 0 0 0 8px;">
+                <img src="{{qrCodeUrl}}" style="width: 72px; max-width: 72px; height: auto; display: block; margin: 8px auto 2px;" alt="QR">
+                <div style="font-size: 0.75em; line-height: 1.2;">{{labels.qrPayment}}</div>
+            </td>
+            {{/if}}
+        </tr>
+    </table>
+</div>
+
+<div style="padding-left: 5px; padding-right: 5px;">
+    <table style="margin-top: 10px; margin-bottom: 10px; width: 100%; border-collapse: collapse; table-layout: fixed;">
+        <colgroup>
+            <col style="width: 6%;">
+            <col style="width: {{#if hideDiscountColumn}}44%{{else}}36%{{/if}};">
+            <col style="width: 11%;">
+            <col style="width: 8%;">
+            <col style="width: 14%;">
+            {{#unless hideDiscountColumn}}<col style="width: 8%;">{{/unless}}
+            <col style="width: 17%;">
+        </colgroup>
+        <tr>
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;"><b>{{labels.headIndex}}</b></td>
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"><b>{{labels.headName}}</b></td>
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;"><b>{{labels.headUnit}}</b></td>
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><b>{{labels.headQty}}</b></td>
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><b>{{labels.headPrice}}</b></td>
+            {{#unless hideDiscountColumn}}
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><b>{{labels.headDiscount}}</b></td>
+            {{/unless}}
+            <td style="border-right: 1px solid #000; border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><b>{{labels.headAmount}}</b></td>
+        </tr>
+        {{#each items}}
+        <tr>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">{{index}}</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; white-space: normal; word-break: break-word; overflow-wrap: anywhere;">
+                {{productName}}{{{extrasHtml}}}
+            </td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">{{unit}}</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{count}}</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{priceFormatted}}</td>
+            {{#unless ../hideDiscountColumn}}
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{discountText}}</td>
+            {{/unless}}
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">
+                {{totalFormatted}}{{#if ../hideDiscountColumn}}{{#if discountText}}<br><span style="font-size: 0.8em;">{{discountText}}</span>{{/if}}{{/if}}
+            </td>
+        </tr>
+        {{/each}}
+        {{#each emptyRows}}
+        <tr>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">{{inc this}}</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
+            {{#unless ../hideDiscountColumn}}
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
+            {{/unless}}
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
+        </tr>
+        {{/each}}
+        <tr>
+            <td colspan="3" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"><strong>{{labels.totalAmount}}</strong></td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{totalProductsQuantity}}</td>
+            {{#unless hideDiscountColumn}}
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
+            {{/unless}}
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{totalProductsAmountFormatted}}</td>
+        </tr>
+        {{#if hasPromotionDiscount}}
+        <tr>
+            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">{{labels.totalPromotionDiscount}}</td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">-{{order.totalPromotionDiscountFormatted}}</td>
+        </tr>
+        {{/if}}
+        {{#if hasDiscountOnTotal}}
+        <tr>
+            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">{{labels.discount}}</td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">-{{order.discountOnTotalFormatted}}</td>
+        </tr>
+        {{/if}}
+        {{#if hasNetValueDiff}}
+        <tr>
+            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">{{labels.netValue}}</td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{order.netValueFormatted}}</td>
+        </tr>
+        {{/if}}
+        {{#if hasPointPayment}}
+        <tr>
+            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">{{labels.payByPoint}}</td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">-{{order.amountFromPointFormatted}}</td>
+        </tr>
+        {{/if}}
+        {{#if hasTax}}
+        <tr>
+            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">{{labels.tax}}</td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">+{{order.taxFormatted}}</td>
+        </tr>
+        {{/if}}
+        {{#if hasShipping}}
+        <tr>
+            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">{{labels.shippingFee}}</td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">+{{order.shippingFeeFormatted}}</td>
+        </tr>
+        {{/if}}
+        <tr>
+            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"><strong>{{labels.total}}</strong></td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{order.totalFormatted}}</td>
+        </tr>
+        {{#if hasOldDebt}}
+        <tr>
+            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; background-color: #fff3e0;"><strong style="color: #dc3545;">{{labels.oldDebt}}</strong></td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right; background-color: #fff3e0;"><strong style="color: #dc3545;">{{oldDebtFormatted}}</strong></td>
+        </tr>
+        {{/if}}
+    </table>
+</div>
+
+<div>
+    <table style="width: 100%; border: none;" cellpadding="0" cellspacing="0">
+        <tr>
+            <td style="width: 1px; white-space: nowrap;">{{{labels.totalWritten}}}</td>
+            <td>&nbsp;{{amountToText}}</td>
+            <td colspan="2">&nbsp;</td>
+        </tr>
+        {{#if hasOrderNote}}
+        <tr>
+            <td colspan="2" style="padding: 0;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="width: 1px; white-space: nowrap; padding: 0;">{{{labels.note}}}</td>
+                        <td style="border-bottom: 1px dotted #000; padding: 0 0 0 5px;">{{order.note}}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        {{/if}}
+    </table>
+</div>
+{{#if hasOrderPrintNote}}
+<div style="padding-top: 8px;"><i>{{orderPrintNote}}</i></div>
+{{/if}}
+
+<div>
+    <table style="border: none; width: 100%; margin-bottom: 20px; margin-top: 20px;">
+        <tr>
+            <td style="width: 50%; text-align: center; vertical-align: top;">
+                <table style="border: none; margin: 0 auto;">
+                    <tr>
+                        <td>
+                            <strong style="text-transform: uppercase;">{{labels.customerTitle}}</strong><br>
+                            ({{labels.signHint}})
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td style="width: 50%; text-align: center; vertical-align: top;">
+                <table style="border: none; margin: 0 auto;">
+                    <tr>
+                        <td>
+                            <strong style="text-transform: uppercase;">{{labels.buyer}}</strong><br>
+                            ({{labels.signHint}})
+                        </td>
+                    </tr>
+                    <tr><td>&nbsp;</td></tr>
+                    <tr><td>&nbsp;</td></tr>
+                    <tr><td>&nbsp;</td></tr>
+                    {{#if showStaffNameUnderSign}}
+                    {{#if hasStaff}}
+                    <tr><td><span>{{staffDisplay}}</span></td></tr>
+                    {{/if}}
+                    {{/if}}
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>`;
 
 export const DEFAULT_RECEIPT_TEMPLATE = `{{!-- Mẫu bill khổ nhỏ --}}
 {{#if shop.name}}

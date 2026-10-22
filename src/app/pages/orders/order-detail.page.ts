@@ -554,7 +554,7 @@ export class OrderDetailPage implements OnInit {
         qrCodeUrl: this.settings.booleanValue('print_qr') ? this.qrUrlFor(o) : '',
         printNote: this.settings.get('print_note') ?? '',
         emptyRows: this.settings.numberValue('invoice_empty_rows', 2),
-        hideDiscountColumn: this.settings.booleanValue('hide_discount_column'),
+        hideDiscountColumn: this.settings.booleanValue('hide_discount_column', true),
         staffDisplay: this.auth.profile()?.full_name ?? '',
         showTax: !this.settings.booleanValue('hide_tax'),
       }), paperSize);

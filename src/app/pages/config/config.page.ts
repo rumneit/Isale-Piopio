@@ -310,7 +310,10 @@ export class ConfigPage implements OnInit {
 
     for (const t of this.toggleSettings) {
       const raw = this.settingsService.get(t.key);
-      this.toggleValues[t.key] = raw === 'true';
+      // Các tùy chọn in mặc định bật cho shop mới
+      this.toggleValues[t.key] = raw == null
+        ? t.key === 'hide_discount_column' || t.key === 'print_large_invoice'
+        : raw === 'true';
     }
   }
 
