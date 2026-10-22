@@ -248,6 +248,11 @@ export class OrdersService {
           'Cơ sở dữ liệu chưa có hàm cập nhật đơn (migration v39). Hãy chạy file supabase-migration-v39-order-edit.sql trong Supabase SQL Editor rồi thử lại.'
         );
       }
+      if (/thuộc về đơn hàng|không thể sửa\/xóa thủ công/i.test(error.message)) {
+        throw new Error(
+          'Database đang dùng bản migration v39 cũ. Hãy chạy lại file supabase-migration-v39-order-edit.sql (bản mới) trong Supabase SQL Editor rồi thử lại.'
+        );
+      }
       throw error;
     }
     const order = data as Order;
