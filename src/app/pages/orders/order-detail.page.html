@@ -52,7 +52,7 @@
             <ion-badge [color]="statusColor(o.status)" (click)="changeStatus()" [class.status-badge]="true">
               {{ statusLabel(o.status) }}
             </ion-badge>
-            <ion-badge [color]="o.paid ? 'success' : 'warning'">{{ o.paid ? 'Đã thanh toán' : 'Còn nợ' }}</ion-badge>
+            <ion-badge [color]="isPaid() ? 'success' : 'warning'">{{ isPaid() ? 'Đã thanh toán' : 'Còn nợ' }}</ion-badge>
           </div>
         </div>
       </div>
@@ -70,12 +70,12 @@
               </ion-item>
             }
             <ion-item button detail="true" (click)="togglePaid()">
-              <ion-icon slot="start" [name]="o.paid ? 'checkmark-circle-outline' : 'ellipse-outline'" [color]="o.paid ? 'success' : 'warning'" />
+              <ion-icon slot="start" [name]="isPaid() ? 'checkmark-circle-outline' : 'ellipse-outline'" [color]="isPaid() ? 'success' : 'warning'" />
               <ion-label>
-                <h3>{{ o.paid ? 'Đã thanh toán đủ' : 'Còn nợ ' + formatMoney(remainingAmount()) }}</h3>
-                <p>Trạng thái thanh toán (bấm để đổi)</p>
+                <h3>{{ isPaid() ? 'Đã thanh toán đủ' : 'Còn nợ ' + formatMoney(remainingAmount()) }}</h3>
+                <p>{{ isPaid() && hasRecordedPayments() ? 'Đã ghi nhận thanh toán (bấm để đổi)' : 'Trạng thái thanh toán (bấm để đổi)' }}</p>
               </ion-label>
-              <ion-badge slot="end" [color]="o.paid ? 'success' : 'warning'">{{ o.paid ? 'Đủ' : 'Thiếu' }}</ion-badge>
+              <ion-badge slot="end" [color]="isPaid() ? 'success' : 'warning'">{{ isPaid() ? 'Đủ' : 'Thiếu' }}</ion-badge>
             </ion-item>
             <ion-item>
               <ion-icon slot="start" name="person-outline" />
@@ -231,9 +231,9 @@
           <ion-icon slot="start" name="swap-vertical-outline" />
           Đổi trạng thái đơn hàng
         </ion-button>
-        <ion-button expand="block" fill="outline" [color]="o.paid ? 'warning' : 'success'" (click)="togglePaid()" [disabled]="busy()">
-          <ion-icon slot="start" [name]="o.paid ? 'ellipse-outline' : 'checkmark-circle-outline'" />
-          {{ o.paid ? 'Đánh dấu còn nợ' : 'Đánh dấu đã thanh toán' }}
+        <ion-button expand="block" fill="outline" [color]="isPaid() ? 'warning' : 'success'" (click)="togglePaid()" [disabled]="busy()">
+          <ion-icon slot="start" [name]="isPaid() ? 'ellipse-outline' : 'checkmark-circle-outline'" />
+          {{ isPaid() ? 'Đánh dấu còn nợ' : 'Đánh dấu đã thanh toán' }}
         </ion-button>
       }
 
@@ -274,7 +274,7 @@
                 <ion-icon slot="start" name="checkmark-circle-outline" />
                 Đánh dấu đã trả đủ
               </ion-button>
-            } @else if (o.paid) {
+            } @else if (isPaid()) {
               <ion-button expand="block" fill="outline" color="warning" (click)="togglePaid()" [disabled]="busy()">
                 <ion-icon slot="start" name="ellipse-outline" />
                 Chuyển về còn nợ

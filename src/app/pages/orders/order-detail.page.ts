@@ -118,17 +118,37 @@ export class OrderDetailPage implements OnInit {
   readonly shop = this.auth.shop;
   readonly barcodeCanvas = viewChild<ElementRef<HTMLCanvasElement>>('barcodeCanvas');
 
-  /** Đã thu của đơn: ưu tiên trạng thái paid, sau đó cộng giao dịch gắn order_id */
-  readonly paidAmount = computed(() => {
-    const o = this.order();
-    if (!o) return 0;
-    const total = Math.max(0, Number(o.total ?? 0));
-    if (o.paid) return total;
+  /** Tổng thực thu ròng của đơn (thu trừ chi điều chỉnh/hoàn tiền). */
+  readonly netRecordedAmount = computed(() => {
     const net = this.orderTransactions().reduce(
       (sum, t) => sum + (t.type === 'income' ? Number(t.amount ?? 0) : -Number(t.amount ?? 0)),
       0
     );
-    return Math.min(total, Math.max(0, net));
+    return Math.max(0, net);
+  });
+
+  /** Tiền đã thực thu, không vượt quá tổng đơn. */
+  readonly recordedAmount = computed(() => {
+    const total = Math.max(0, Number(this.order()?.total ?? 0));
+    return Math.min(total, this.netRecordedAmount());
+  });
+
+  /** Đã thu của đơn: ưu tiên trạng thái paid, sau đó dùng số tiền thực thu. */
+  readonly paidAmount = computed(() => {
+    const o = this.order();
+    if (!o) return 0;
+    return o.paid ? Math.max(0, Number(o.total ?? 0)) : this.recordedAmount();
+  });
+
+  /** Đơn đã có giao dịch thu tiền thực tế hay chưa. */
+  readonly hasRecordedPayments = computed(() => this.netRecordedAmount() > 0);
+
+  /** Trạng thái thanh toán hiển thị: cờ paid hoặc số thu đã đủ tổng đơn. */
+  readonly isPaid = computed(() => {
+    const o = this.order();
+    if (!o) return false;
+    const total = Math.max(0, Number(o.total ?? 0));
+    return o.paid || total <= 0 || this.recordedAmount() >= total - 0.5;
   });
 
   readonly remainingAmount = computed(() =>
@@ -223,6 +243,21 @@ export class OrderDetailPage implements OnInit {
     if (this.order()?.id !== order.id) return;
     this.orderTransactions.set(transactions);
     this.customer.set(customer);
+
+    // Dữ liệu cũ có thể bị lệch: đã ghi đủ tiền thu nhưng cờ paid vẫn false.
+    // Tự đồng bộ cờ để danh sách đơn và báo cáo không hiển thị sai là còn nợ.
+    const total = Math.max(0, Number(order.total ?? 0));
+    const net = transactions.reduce(
+      (sum, t) => sum + (t.type === 'income' ? Number(t.amount ?? 0) : -Number(t.amount ?? 0)),
+      0
+    );
+    const editable = !['cancelled', 'quote'].includes(order.status);
+    if (!order.paid && editable && total > 0 && net >= total - 0.5) {
+      await this.ordersService.update(order.id, { paid: true }).catch(() => {});
+      this.order.update((current) =>
+        current && current.id === order.id ? { ...current, paid: true } : current
+      );
+    }
   }
 
   selectTab(value: string): void {
@@ -350,12 +385,76 @@ export class OrderDetailPage implements OnInit {
 
   async togglePaid() {
     const order = this.order();
-    if (!order) return;
+    if (!order || this.busy()) return;
+
+    // Chưa đủ tiền: không bật cờ paid "khống". Ghi nhận khoản thu còn thiếu
+    // để trạng thái đơn và lịch sử thanh toán luôn khớp nhau.
+    if (!this.isPaid()) {
+      if (this.remainingAmount() > 0.5) {
+        await this.recordPayment();
+        return;
+      }
+      this.busy.set(true);
+      try {
+        await this.ordersService.update(order.id, { paid: true });
+        await this.load();
+        this.toast('Đã đánh dấu đã thanh toán');
+      } catch (e: any) {
+        this.toast(e?.message ?? 'Cập nhật thất bại', 'danger');
+      } finally {
+        this.busy.set(false);
+      }
+      return;
+    }
+
+    // Đã có khoản thu thực tế: tạo bút toán điều chỉnh giảm để công nợ và
+    // doanh thu cùng quay về đúng, thay vì chỉ lật cờ paid rồi bị lệch sổ.
+    if (this.hasRecordedPayments()) {
+      const recorded = this.netRecordedAmount();
+      const confirm = await this.alertCtrl.create({
+        header: 'Chuyển về còn nợ',
+        message:
+          `Đơn đã ghi nhận thanh toán ${this.formatMoney(recorded)}. ` +
+          `Hệ thống sẽ tạo khoản điều chỉnh giảm tương ứng để công nợ quay về ${this.formatMoney(order.total)}. Tiếp tục?`,
+        buttons: [
+          { text: 'Hủy', role: 'cancel' },
+          { text: 'Đồng ý', role: 'confirm' },
+        ],
+      });
+      await confirm.present();
+      const { role } = await confirm.onWillDismiss();
+      if (role !== 'confirm') return;
+
+      this.busy.set(true);
+      try {
+        await this.ordersService.update(order.id, { paid: false });
+        await this.transactionsService.create({
+          type: 'expense',
+          category: 'Chi khác',
+          amount: recorded,
+          note: `Điều chỉnh giảm thanh toán đơn ${order.code}`,
+          occurred_at: new Date().toISOString(),
+          order_id: order.id,
+          payment_type: 'CASH',
+          source: 'order',
+        });
+        await this.load();
+        this.toast('Đã chuyển sang còn nợ');
+      } catch (e: any) {
+        // Nếu bước điều chỉnh lỗi, tải lại để cờ paid tự khớp với khoản thu còn lại.
+        await this.load().catch(() => {});
+        this.toast(e?.message ?? 'Cập nhật thất bại', 'danger');
+      } finally {
+        this.busy.set(false);
+      }
+      return;
+    }
+
     this.busy.set(true);
     try {
-      await this.ordersService.update(order.id, { paid: !order.paid });
+      await this.ordersService.update(order.id, { paid: false });
       await this.load();
-      this.toast(order.paid ? 'Đã chuyển sang còn nợ' : 'Đã đánh dấu đã thanh toán');
+      this.toast('Đã chuyển sang còn nợ');
     } catch (e: any) {
       this.toast(e?.message ?? 'Cập nhật thất bại', 'danger');
     } finally {
@@ -548,7 +647,7 @@ export class OrderDetailPage implements OnInit {
     const template = this.settings.get(key) ?? legacy ?? this.invoiceTemplates.defaultFor(kind);
     try {
       const opened = this.invoiceTemplates.openPrint(template, kind, this.invoiceTemplates.context({
-        order: o,
+        order: { ...o, paid: this.isPaid() },
         items: this.items(),
         shop: this.auth.shop(),
         qrCodeUrl: this.settings.booleanValue('print_qr') ? this.qrUrlFor(o) : '',
@@ -556,6 +655,7 @@ export class OrderDetailPage implements OnInit {
         emptyRows: this.settings.numberValue('invoice_empty_rows', 2),
         hideDiscountColumn: this.settings.booleanValue('hide_discount_column', true),
         staffDisplay: this.auth.profile()?.full_name ?? '',
+        paidAmount: this.paidAmount(),
         showTax: !this.settings.booleanValue('hide_tax'),
       }), paperSize);
       if (!opened) this.toast('Trình chặn popup đang bật. Hãy cho phép popup để in.', 'warning');
