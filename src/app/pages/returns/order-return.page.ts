@@ -89,7 +89,22 @@ export class OrderReturnPage implements OnInit {
   get total(): number {
     return this.drafts()
       .filter((d) => d.selected && d.qty > 0)
-      .reduce((s, d) => s + d.item.price * Math.min(d.qty, d.item.qty), 0);
+      .reduce((s, d) => s + this.unitPrice(d.item) * Math.min(d.qty, this.maxUnitQty(d.item)), 0);
+  }
+
+  /** Số lượng tối đa theo đơn vị khách đã mua (Thùng/Lốc...). */
+  maxUnitQty(item: OrderItem): number {
+    return item.unit_qty != null ? Number(item.unit_qty) : Number(item.qty ?? 0);
+  }
+
+  /** 1 đơn vị đã chọn = bao nhiêu đơn vị gốc. */
+  unitConversion(item: OrderItem): number {
+    const n = Number(item.unit_conversion);
+    return Number.isFinite(n) && n > 0 ? n : 1;
+  }
+
+  unitPrice(item: OrderItem): number {
+    return item.unit_price != null ? Number(item.unit_price) : Number(item.price ?? 0);
   }
 
   get selectedCount(): number {
@@ -104,7 +119,13 @@ export class OrderReturnPage implements OnInit {
       const { order, items } = await this.ordersService.getWithItems(id);
       if (order) {
         this.order.set(order);
-        this.drafts.set(items.map((item) => ({ item, selected: false, qty: item.qty })));
+        this.drafts.set(
+          items.map((item) => ({
+            item,
+            selected: false,
+            qty: item.unit_qty != null ? Number(item.unit_qty) : Number(item.qty ?? 0),
+          }))
+        );
       }
     } catch (e: any) {
       this.error = e?.message ?? 'Không tải được đơn hàng.';
@@ -129,12 +150,18 @@ export class OrderReturnPage implements OnInit {
 
     const items: ReturnNoteItem[] = this.drafts()
       .filter((d) => d.selected && d.qty > 0)
-      .map((d) => ({
-        product_id: d.item.product_id,
-        name: d.item.name,
-        price: d.item.price,
-        qty: Math.min(d.qty, d.item.qty),
-      }));
+      .map((d) => {
+        const unitQty = Math.min(d.qty, this.maxUnitQty(d.item));
+        // Phiếu trả kho vẫn lưu số lượng/giá theo đơn vị gốc để hoàn tồn kho
+        // đúng; giao diện chỉ hiển thị theo đơn vị khách đã mua.
+        const baseQty = Math.min(unitQty * this.unitConversion(d.item), Number(d.item.qty ?? 0));
+        return {
+          product_id: d.item.product_id,
+          name: d.item.name,
+          price: d.item.price,
+          qty: baseQty,
+        };
+      });
 
     if (!items.length) {
       this.error = 'Chọn ít nhất một sản phẩm cần trả.';
