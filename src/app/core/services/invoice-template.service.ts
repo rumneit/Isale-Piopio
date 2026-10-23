@@ -406,9 +406,10 @@ export class InvoiceTemplateService {
     const itemRows = input.items.map((item, index) => ({
       index: index + 1,
       productName: item.name,
-      unit: (item as any).unit ?? '',
-      count: item.qty,
-      priceFormatted: money(item.price),
+      unit: item.unit ?? '',
+      // Đơn vị khách đã chọn (Thùng/Lốc...) nếu có; đơn cũ vẫn hiển thị đơn vị gốc.
+      count: item.unit_qty ?? item.qty,
+      priceFormatted: money(item.unit_price ?? item.price),
       totalFormatted: money(Number(item.total ?? Number(item.price) * Number(item.qty))),
       discountText: '',
     }));

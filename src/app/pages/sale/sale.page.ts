@@ -38,6 +38,7 @@ import {
   searchOutline,
   chevronBackOutline,
   chevronForwardOutline,
+  chevronDownOutline,
   receiptOutline,
   refreshOutline,
   walletOutline,
@@ -52,18 +53,34 @@ import { Product, Customer, MoneyAccount, Order, OrderItem, Shop } from '../../c
 import { MoneyAccountsService } from '../../core/services/money-accounts.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { CustomerPickerModalComponent } from '../customers/customer-picker.modal';
+import {
+  SaleUnit,
+  basePriceFor,
+  baseQtyFor,
+  defaultSaleUnit,
+  findSaleUnit,
+  productSaleUnits,
+} from '../../core/utils/product-units';
 
 interface SaleItem {
   /** id dòng order_items khi đang sửa đơn đã tạo; undefined với dòng mới */
   id?: string;
   product_id: string | null;
   name: string;
+  /** Đơn vị khách chọn (Cái/Thùng/Lốc...) */
   unit: string | null;
-  /** Giá bán thực tế của dòng (có thể sửa tay cho từng khách) */
+  /** Giá bán theo đơn vị đang chọn — hiển thị và tính tiền trên màn hình */
   price: number;
-  /** Giá niêm yết trong kho — dùng để hoàn tác khi sửa giá */
+  /** Giá niêm yết của đơn vị đang chọn — dùng để hoàn tác khi sửa giá */
   listPrice?: number;
+  /** Số lượng theo đơn vị đang chọn — hiển thị cho người bán */
   qty: number;
+  /** 1 đơn vị đang chọn = bao nhiêu đơn vị gốc */
+  unitConversion: number;
+  /** Số lượng quy về đơn vị gốc — gửi RPC/kiểm tra tồn kho */
+  baseQty: number;
+  /** Giá quy về đơn vị gốc — gửi RPC */
+  basePrice: number;
 }
 
 /** Trạng thái đầy đủ của 1 đơn trong lượt bán (đồng bộ ISale multi-add) */
@@ -268,6 +285,7 @@ export class SalePage implements OnInit {
       searchOutline,
       chevronBackOutline,
       chevronForwardOutline,
+      chevronDownOutline,
       receiptOutline,
       refreshOutline,
       walletOutline,
@@ -449,14 +467,22 @@ export class SalePage implements OnInit {
             (this.originalQtyByProduct.get(item.product_id) ?? 0) + Number(item.qty ?? 0)
           );
         }
+        // Đơn cũ chưa có metadata đơn vị → coi như đang bán theo đơn vị gốc.
+        const conversion = Number(item.unit_conversion) > 0 ? Number(item.unit_conversion) : 1;
+        const unitQty = item.unit_qty != null ? Number(item.unit_qty) : Number(item.qty ?? 0);
+        const unitPrice = item.unit_price != null ? Number(item.unit_price) : Number(item.price ?? 0);
+        const unitName = item.unit ?? product?.unit ?? null;
         return {
           id: item.id,
           product_id: item.product_id,
           name: item.name,
-          unit: product?.unit ?? null,
-          price: Number(item.price ?? 0),
-          listPrice: product ? Number(product.price) : undefined,
-          qty: Number(item.qty ?? 0),
+          unit: unitName,
+          price: unitPrice,
+          listPrice: findSaleUnit(product, unitName)?.price ?? unitPrice,
+          qty: unitQty,
+          unitConversion: conversion,
+          baseQty: Number(item.qty ?? 0),
+          basePrice: Number(item.price ?? 0),
         };
       })
     );
@@ -593,48 +619,158 @@ export class SalePage implements OnInit {
     this.pickerPage.set(1);
   }
 
-  addProduct(p: Product, qty: number = 1): boolean {
+  /** Các đơn vị bán của sản phẩm (luôn có đơn vị gốc ở đầu). */
+  productUnits(p: Product | null | undefined): SaleUnit[] {
+    return productSaleUnits(p);
+  }
+
+  /** Dòng này có từ 2 đơn vị trở lên để đổi đơn vị tại chỗ không? */
+  hasAlternateUnits(item: SaleItem): boolean {
+    const product = this.products().find((p) => p.id === item.product_id);
+    return this.productUnits(product).length > 1;
+  }
+
+  /**
+   * Thêm sản phẩm với đơn vị cụ thể. `qty` là số lượng theo đơn vị đó;
+   * tồn kho luôn được kiểm tra theo số lượng quy về đơn vị gốc.
+   */
+  addProduct(p: Product, qty: number = 1, unit?: SaleUnit | null): boolean {
+    const chosen = unit ?? defaultSaleUnit(p);
+    if (!chosen) return false;
+    const conversion = chosen.conversion > 0 ? chosen.conversion : 1;
+    const baseToAdd = baseQtyFor(qty, conversion);
     const current = [...this.items()];
-    const existing = current.find((i) => i.product_id === p.id);
+    const existing = current.find((i) => i.product_id === p.id && i.unit === chosen.name);
     if (!this.allowNegativeStock() && this.stockTrackedStatus()) {
-      const nextTotal = this.currentQtyForProduct(p.id) + qty;
+      const nextTotal = this.currentQtyForProduct(p.id) + baseToAdd;
       const original = this.originalQtyByProduct.get(p.id) ?? 0;
       const needed = Math.max(0, nextTotal - original);
       if (needed > Number(p.stock ?? 0)) {
-        this.toast(`Không đủ tồn kho cho "${p.name}". Còn ${p.stock}, cần thêm ${needed}.`, 'danger');
+        this.toast(
+          `Không đủ tồn kho cho "${p.name}". Còn ${p.stock}, cần thêm ${this.formatNum(needed)}.`,
+          'danger'
+        );
         return false;
       }
     }
     if (existing) {
       existing.qty += qty;
+      existing.baseQty = baseQtyFor(existing.qty, existing.unitConversion);
     } else {
       current.push({
         product_id: p.id,
         name: p.name,
-        unit: p.unit,
-        price: Number(p.price),
-        listPrice: Number(p.price),
+        unit: chosen.name,
+        price: chosen.price,
+        listPrice: chosen.price,
         qty,
+        unitConversion: conversion,
+        baseQty: baseToAdd,
+        basePrice: basePriceFor(chosen.price, conversion),
       });
     }
     this.items.set(current);
     return true;
   }
 
+  /** Bấm vào thẻ sản phẩm: nếu có nhiều đơn vị thì hỏi chọn đơn vị trước. */
+  async addProductFromTile(p: Product): Promise<void> {
+    const units = this.productUnits(p);
+    if (units.length <= 1) {
+      if (this.addProduct(p)) this.toast(`Đã thêm: ${p.name}`);
+      return;
+    }
+    const chosen = await this.pickUnit(p);
+    if (!chosen) return;
+    if (this.addProduct(p, 1, chosen)) this.toast(`Đã thêm: ${p.name} (${chosen.name})`);
+  }
+
+  /** ActionSheet chọn đơn vị — giống danh sách "Đơn vị" khi thêm sản phẩm của ISale. */
+  private pickUnit(p: Product, currentName?: string | null): Promise<SaleUnit | null> {
+    return new Promise<SaleUnit | null>(async (resolve) => {
+      const baseName = (p.unit || 'Cái').trim() || 'Cái';
+      const buttons = this.productUnits(p).map((u) => ({
+        text:
+          `${currentName === u.name ? '✓ ' : ''}${u.name} · ${this.formatMoney(u.price)}` +
+          (u.conversion > 1 ? ` (1 ${u.name} = ${this.formatNum(u.conversion)} ${baseName})` : ''),
+        cssClass: currentName === u.name ? 'sale-unit-selected' : undefined,
+        handler: () => resolve(u),
+      }));
+      const sheet = await this.actionSheetCtrl.create({
+        header: `Chọn đơn vị — ${p.name}`,
+        subHeader: 'Giá và tồn kho sẽ tính theo đơn vị đã chọn',
+        buttons: [...buttons, { text: 'Hủy', role: 'cancel', handler: () => resolve(null) }],
+      });
+      sheet.onDidDismiss().then(() => resolve(null));
+      await sheet.present();
+    });
+  }
+
+  /** Đổi đơn vị của một dòng đã có trong đơn (giữ nguyên số lượng hiển thị). */
+  async changeItemUnit(index: number): Promise<void> {
+    const item = this.items()[index];
+    const product = this.products().find((p) => p.id === item?.product_id);
+    if (!item || !product) return;
+    if (this.productUnits(product).length <= 1) return;
+    const chosen = await this.pickUnit(product, item.unit);
+    if (!chosen || chosen.name === item.unit) return;
+
+    const oldBaseQty = this.itemBaseQty(item);
+    const newBaseQty = baseQtyFor(item.qty, chosen.conversion);
+    if (!this.allowNegativeStock() && this.stockTrackedStatus()) {
+      const otherBase = this.currentQtyForProduct(product.id) - oldBaseQty;
+      const original = this.originalQtyByProduct.get(product.id) ?? 0;
+      const needed = Math.max(0, otherBase + newBaseQty - original);
+      if (needed > Number(product.stock ?? 0)) {
+        this.toast(`Không đủ tồn kho cho "${product.name}" theo đơn vị ${chosen.name}.`, 'danger');
+        return;
+      }
+    }
+
+    this.items.update((list) =>
+      list.map((it, i) =>
+        i === index
+          ? {
+              ...it,
+              unit: chosen.name,
+              unitConversion: chosen.conversion,
+              price: chosen.price,
+              listPrice: chosen.price,
+              baseQty: newBaseQty,
+              basePrice: basePriceFor(chosen.price, chosen.conversion),
+            }
+          : it
+      )
+    );
+  }
+
   /** Sửa giá bán của 1 dòng (mỗi khách có thể bán 1 giá khác nhau) */
   setItemPrice(index: number, value: unknown): void {
     if (value === '' || value === null || value === undefined) return; // đang xóa để nhập lại
     const price = Math.max(0, Math.round(Number(value) || 0));
-    this.items.update((list) => list.map((item, i) => (i === index ? { ...item, price } : item)));
+    this.items.update((list) =>
+      list.map((item, i) => {
+        if (i !== index) return item;
+        const conversion = item.unitConversion > 0 ? item.unitConversion : 1;
+        return { ...item, price, basePrice: basePriceFor(price, conversion) };
+      })
+    );
   }
 
-  /** Trả giá dòng về giá niêm yết trong kho */
+  /** Trả giá dòng về giá niêm yết của đơn vị đang chọn. */
   resetItemPrice(index: number): void {
     const item = this.items()[index];
     if (!item) return;
     const product = this.products().find((p) => p.id === item.product_id);
-    const price = Number(product?.price ?? item.listPrice ?? item.price);
-    this.items.update((list) => list.map((it, i) => (i === index ? { ...it, price, listPrice: price } : it)));
+    const price = findSaleUnit(product, item.unit)?.price ?? Number(product?.price ?? item.listPrice ?? item.price);
+    const conversion = item.unitConversion > 0 ? item.unitConversion : 1;
+    this.items.update((list) =>
+      list.map((it, i) =>
+        i === index
+          ? { ...it, price, listPrice: price, basePrice: basePriceFor(price, conversion) }
+          : it
+      )
+    );
   }
 
   /** Dòng có giá khác giá niêm yết? (hiện nút hoàn tác) */
@@ -642,10 +778,13 @@ export class SalePage implements OnInit {
     return item.listPrice != null && Math.round(item.price) !== Math.round(item.listPrice);
   }
 
-  /** Nút + trên thẻ: thêm nhanh 1 sản phẩm */
+  /** Nút + trên thẻ: thêm nhanh theo đơn vị mặc định. */
   quickAdd(ev: Event, p: Product) {
     ev.stopPropagation();
-    if (this.addProduct(p)) this.toast(`Đã thêm: ${p.name}`);
+    const unit = defaultSaleUnit(p);
+    if (this.addProduct(p, 1, unit)) {
+      this.toast(`Đã thêm: ${p.name}${unit ? ` (${unit.name})` : ''}`);
+    }
   }
 
   addByBarcode() {
@@ -653,7 +792,10 @@ export class SalePage implements OnInit {
     if (!code) return;
     const found = this.products().find((p) => (p.sku ?? '').toLowerCase() === code.toLowerCase());
     if (found) {
-      if (this.addProduct(found)) this.toast(`Đã thêm: ${found.name}`);
+      const unit = defaultSaleUnit(found);
+      if (this.addProduct(found, 1, unit)) {
+        this.toast(`Đã thêm: ${found.name}${unit ? ` (${unit.name})` : ''}`);
+      }
     } else {
       this.toast(`Không tìm thấy sản phẩm mã "${code}"`, 'danger');
     }
@@ -675,12 +817,14 @@ export class SalePage implements OnInit {
     }
 
     const qty = Math.floor(parsed);
+    const conversion = item.unitConversion > 0 ? item.unitConversion : 1;
+    const newBaseQty = baseQtyFor(qty, conversion);
     const product = this.products().find((p) => p.id === item.product_id);
     if (product && !this.allowNegativeStock() && this.stockTrackedStatus()) {
       // Trừ phần số lượng đã có của chính dòng này để chỉ kiểm tra phần tăng thêm.
-      const otherQty = this.currentQtyForProduct(item.product_id) - item.qty;
+      const otherQty = this.currentQtyForProduct(item.product_id) - this.itemBaseQty(item);
       const original = item.product_id ? (this.originalQtyByProduct.get(item.product_id) ?? 0) : 0;
-      const needed = Math.max(0, otherQty + qty - original);
+      const needed = Math.max(0, otherQty + newBaseQty - original);
       if (needed > Number(product.stock ?? 0)) {
         input.value = String(item.qty);
         this.toast(`Không đủ tồn kho cho "${item.name}". Còn ${product.stock}.`, 'danger');
@@ -693,7 +837,7 @@ export class SalePage implements OnInit {
       return;
     }
 
-    current[index] = { ...item, qty };
+    current[index] = { ...item, qty, baseQty: newBaseQty };
     this.items.set(current);
     input.value = String(qty);
   }
@@ -702,23 +846,48 @@ export class SalePage implements OnInit {
     const current = [...this.items()];
     const item = current[index];
     const product = this.products().find((p) => p.id === item.product_id);
+    const conversion = item.unitConversion > 0 ? item.unitConversion : 1;
     if (product && !this.allowNegativeStock() && this.stockTrackedStatus()) {
-      const nextTotal = this.currentQtyForProduct(item.product_id) + 1;
+      const nextTotal = this.currentQtyForProduct(item.product_id) + conversion;
       const original = item.product_id ? (this.originalQtyByProduct.get(item.product_id) ?? 0) : 0;
       const needed = Math.max(0, nextTotal - original);
       if (needed > Number(product.stock ?? 0)) {
-        this.toast(`Không đủ tồn kho cho "${item.name}". Còn ${product.stock}, cần thêm ${needed}.`, 'danger');
+        this.toast(
+          `Không đủ tồn kho cho "${item.name}". Còn ${product.stock}, cần thêm ${this.formatNum(needed)}.`,
+          'danger'
+        );
         return;
       }
     }
-    current[index].qty += 1;
+    current[index] = {
+      ...item,
+      qty: item.qty + 1,
+      baseQty: baseQtyFor(item.qty + 1, conversion),
+    };
     this.items.set(current);
   }
 
-  /** Tổng số lượng hiện tại của 1 sản phẩm trong đơn đang mở */
+  /** Số lượng quy về đơn vị gốc của một dòng. */
+  private itemBaseQty(item: SaleItem): number {
+    return item.baseQty != null
+      ? Number(item.baseQty)
+      : baseQtyFor(item.qty, item.unitConversion ?? 1);
+  }
+
+  /** Giá quy về đơn vị gốc của một dòng. */
+  private itemBasePrice(item: SaleItem): number {
+    return item.basePrice != null
+      ? Number(item.basePrice)
+      : basePriceFor(item.price, item.unitConversion ?? 1);
+  }
+
+  /** Tổng số lượng (đơn vị gốc) hiện tại của 1 sản phẩm trong đơn đang mở */
   private currentQtyForProduct(productId: string | null): number {
     if (!productId) return 0;
-    return this.items().reduce((sum, item) => sum + (item.product_id === productId ? item.qty : 0), 0);
+    return this.items().reduce(
+      (sum, item) => sum + (item.product_id === productId ? this.itemBaseQty(item) : 0),
+      0
+    );
   }
 
   /**
@@ -731,8 +900,15 @@ export class SalePage implements OnInit {
 
   decQty(index: number) {
     const current = [...this.items()];
-    if (current[index].qty > 1) {
-      current[index].qty -= 1;
+    const item = current[index];
+    if (!item) return;
+    if (item.qty > 1) {
+      const nextQty = item.qty - 1;
+      current[index] = {
+        ...item,
+        qty: nextQty,
+        baseQty: baseQtyFor(nextQty, item.unitConversion ?? 1),
+      };
     } else {
       current.splice(index, 1);
     }
@@ -854,14 +1030,17 @@ export class SalePage implements OnInit {
         for (const item of order.items) {
           if (!item.product_id) continue;
           const current = requested.get(item.product_id) ?? { name: item.name, qty: 0 };
-          current.qty += item.qty;
+          current.qty += this.itemBaseQty(item);
           requested.set(item.product_id, current);
         }
       }
       for (const [productId, request] of requested) {
         const stock = Number(this.products().find((p) => p.id === productId)?.stock ?? 0);
         if (request.qty > stock) {
-          this.toast(`Không đủ tồn kho cho "${request.name}". Còn ${stock}, cần ${request.qty}.`, 'danger');
+          this.toast(
+            `Không đủ tồn kho cho "${request.name}". Còn ${stock}, cần ${this.formatNum(request.qty)}.`,
+            'danger'
+          );
           return;
         }
       }
@@ -902,7 +1081,18 @@ export class SalePage implements OnInit {
             ...(extras.has('shipper_phone') ? { shipper_phone: s.shipperPhone.trim() || null } : {}),
             ...(extras.has('shipping_address') ? { shipping_address: s.shippingAddress.trim() || null } : {}),
           },
-          s.items.map((i) => ({ product_id: i.product_id, name: i.name, price: i.price, qty: i.qty })),
+          s.items.map((i) => ({
+            product_id: i.product_id,
+            name: i.name,
+            // RPC và tồn kho luôn nhận đơn vị gốc; metadata đơn vị đi kèm để
+            // OrdersService lưu lại cho phần hiển thị.
+            price: this.itemBasePrice(i),
+            qty: this.itemBaseQty(i),
+            unit: i.unit,
+            unit_qty: i.qty,
+            unit_conversion: i.unitConversion,
+            unit_price: i.price,
+          })),
           { recordIncome: billable && this.dueOf(s) > 0 }
         );
         saved++;
@@ -965,8 +1155,12 @@ export class SalePage implements OnInit {
           ...(item.id ? { id: item.id } : {}),
           product_id: item.product_id,
           name: item.name.trim(),
-          price: Math.max(0, Number(item.price) || 0),
-          qty: Number(item.qty),
+          price: Math.max(0, this.itemBasePrice(item)),
+          qty: Math.max(0, this.itemBaseQty(item)),
+          unit: item.unit,
+          unit_qty: item.qty,
+          unit_conversion: item.unitConversion,
+          unit_price: item.price,
         }))
       );
       await this.toast('Đã cập nhật đơn hàng');
@@ -989,6 +1183,10 @@ export class SalePage implements OnInit {
 
   formatMoney(v: number | null | undefined): string {
     return new Intl.NumberFormat('vi-VN').format(v ?? 0) + ' ₫';
+  }
+
+  formatNum(v: number | null | undefined): string {
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 3 }).format(Number(v ?? 0));
   }
 
   private async toast(message: string, color: string = 'success') {

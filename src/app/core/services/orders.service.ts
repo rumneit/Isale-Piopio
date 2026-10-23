@@ -5,6 +5,24 @@ import { LogService } from './log.service';
 import { Order, OrderItem } from '../models/models';
 import { safeIlikeTerm } from '../utils/postgrest-search';
 
+/**
+ * Một dòng sản phẩm gửi lên RPC tạo/sửa đơn.
+ *
+ * `price`/`qty` luôn là đơn vị gốc để tồn kho và báo cáo không bị lẫn đơn vị.
+ * Các trường `unit_*` chỉ là metadata hiển thị (đơn vị khách đã chọn).
+ */
+export interface OrderLineInput {
+  id?: string;
+  product_id: string | null;
+  name: string;
+  price: number;
+  qty: number;
+  unit?: string | null;
+  unit_qty?: number | null;
+  unit_conversion?: number | null;
+  unit_price?: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
   private sb = inject(SupabaseService);
@@ -185,7 +203,7 @@ export class OrdersService {
 
   async create(
     input: Partial<Order>,
-    items: Array<{ product_id: string | null; name: string; price: number; qty: number }>,
+    items: OrderLineInput[],
     options: { recordIncome?: boolean; idempotencyKey?: string } = {}
   ): Promise<Order> {
     const shopId = this.shopId;
@@ -217,8 +235,13 @@ export class OrdersService {
       }
       throw error;
     }
-    this.logService.log('create', 'order', order.code);
-    return order as Order;
+    const created = order as Order;
+    // Lưu đơn vị khách đã chọn (Thùng/Lốc/...) để chi tiết đơn và hoá đơn
+    // hiển thị đúng. Đây là metadata phụ; lỗi ở bước này không được làm hỏng
+    // đơn vừa tạo (tồn kho/doanh thu đã được RPC xử lý xong).
+    await this.syncItemUnits(created.id, items);
+    this.logService.log('create', 'order', created.code);
+    return created;
   }
 
   /**
@@ -249,7 +272,7 @@ export class OrdersService {
       shipping_address?: string | null;
       created_at?: string | null;
     },
-    items: Array<{ id?: string; product_id: string | null; name: string; price: number; qty: number }>
+    items: OrderLineInput[]
   ): Promise<Order> {
     const shopId = this.shopId;
     if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
@@ -294,8 +317,101 @@ export class OrdersService {
         console.warn('Không lưu được ví nhận tiền:', rpc.error.message);
       }
     }
+    await this.syncItemUnits(orderId, items);
     this.logService.log('update', 'order', updated?.code ?? orderId);
     return updated;
+  }
+
+  /**
+   * Gắn metadata đơn vị (Thùng/Lốc/...) vào các dòng order_items vừa tạo/sửa.
+   *
+   * `order_items.qty` vẫn là số lượng quy về đơn vị gốc — nhờ vậy trigger tồn
+   * kho, báo cáo và các RPC cũ không phải thay đổi. Hàm này chỉ cập nhật
+   * unit/unit_qty/unit_conversion/unit_price để giao diện hiển thị đúng đơn vị.
+   */
+  async syncItemUnits(orderId: string, items: OrderLineInput[]): Promise<void> {
+    try {
+      await this.syncItemUnitsUnsafe(orderId, items);
+    } catch (e: any) {
+      console.warn('Không lưu được đơn vị bán:', e?.message ?? e);
+    }
+  }
+
+  private async syncItemUnitsUnsafe(orderId: string, items: OrderLineInput[]): Promise<void> {
+    const tagged = items.filter(
+      (i) =>
+        !!i.unit &&
+        Number(i.unit_conversion) > 0 &&
+        i.unit_qty != null &&
+        i.unit_price != null
+    );
+    const shopId = this.shopId;
+    if (!tagged.length || !shopId) return;
+
+    const { data, error } = await this.sb
+      .from('order_items')
+      .select('id, product_id, name, price, qty')
+      .eq('order_id', orderId);
+    if (error) {
+      console.warn('Không đọc được dòng đơn để lưu đơn vị:', error.message);
+      return;
+    }
+
+    // Ghép theo id trước; dòng mới (hoặc dòng bị RPC xoá/tạo lại) thì ghép theo
+    // sản phẩm + tên + giá/số lượng gốc. Mỗi dòng DB chỉ được ghép một lần.
+    const pool = [...(data ?? [])] as Array<{
+      id: string;
+      product_id: string | null;
+      name: string;
+      price: number;
+      qty: number;
+    }>;
+    const payload: Array<{
+      id: string;
+      unit: string;
+      unit_conversion: number;
+      unit_qty: number;
+      unit_price: number;
+    }> = [];
+
+    for (const item of tagged) {
+      let row: (typeof pool)[number] | undefined;
+      if (item.id) {
+        const byId = pool.findIndex((r) => r.id === item.id);
+        if (byId >= 0) row = pool.splice(byId, 1)[0];
+      }
+      if (!row) {
+        const byValues = pool.findIndex(
+          (r) =>
+            (r.product_id ?? null) === (item.product_id ?? null) &&
+            r.name === item.name &&
+            Math.abs(Number(r.qty) - Number(item.qty)) < 0.0001 &&
+            Math.abs(Number(r.price) - Number(item.price)) < 0.005
+        );
+        if (byValues >= 0) row = pool.splice(byValues, 1)[0];
+      }
+      if (!row) continue;
+      payload.push({
+        id: row.id,
+        unit: String(item.unit),
+        unit_conversion: Number(item.unit_conversion),
+        unit_qty: Number(item.unit_qty),
+        unit_price: Number(item.unit_price),
+      });
+    }
+    if (!payload.length) return;
+
+    const { error: rpcError } = await this.sb.client.rpc('inv_set_order_item_units', {
+      p_shop: shopId,
+      p_order_id: orderId,
+      p_items: payload,
+    });
+    if (
+      rpcError &&
+      !/inv_set_order_item_units|schema cache|function|does not exist/i.test(rpcError.message)
+    ) {
+      console.warn('Không lưu được đơn vị bán:', rpcError.message);
+    }
   }
 
   async update(id: string, patch: Partial<Order>): Promise<void> {
