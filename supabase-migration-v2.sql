@@ -19,6 +19,8 @@ create table if not exists public.crm_leads (
 );
 create index if not exists crm_leads_shop_idx on public.crm_leads (shop_id, stage);
 
+alter table public.crm_leads enable row level security;
+
 drop policy if exists "shop member all" on public.crm_leads;
 create policy "shop member all" on public.crm_leads
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));
@@ -36,6 +38,8 @@ create table if not exists public.received_notes (
   created_at timestamptz not null default now()
 );
 create index if not exists received_notes_shop_idx on public.received_notes (shop_id, created_at desc);
+
+alter table public.received_notes enable row level security;
 
 drop policy if exists "shop member all" on public.received_notes;
 create policy "shop member all" on public.received_notes

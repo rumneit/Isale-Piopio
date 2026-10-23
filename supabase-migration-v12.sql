@@ -3,6 +3,8 @@
 -- Chạy trong Supabase Dashboard → SQL Editor → New query
 -- =============================================================
 
+begin;
+
 -- ---------- 1. Phiếu kiểm kê kho ----------
 create table if not exists public.stock_counts (
   id uuid primary key default gen_random_uuid(),
@@ -18,6 +20,10 @@ create table if not exists public.stock_counts (
 );
 
 create index if not exists stock_counts_shop_idx on public.stock_counts (shop_id, created_at desc);
+
+-- Bảng được tạo với RLS bật ngay từ đầu; nếu chỉ chạy v12 mà chưa chạy
+-- các migration sau thì dữ liệu vẫn không bị lộ qua anon key.
+alter table public.stock_counts enable row level security;
 
 drop policy if exists "shop member all" on public.stock_counts;
 create policy "shop member all" on public.stock_counts
@@ -52,6 +58,8 @@ $$;
 
 -- Kho & sản phẩm
 drop policy if exists "shop member all" on public.products;
+drop policy if exists "shop member read" on public.products;
+drop policy if exists "shop perm write" on public.products;
 create policy "shop member read" on public.products
   for select using (public.is_shop_member(shop_id));
 create policy "shop perm write" on public.products
@@ -59,6 +67,8 @@ create policy "shop perm write" on public.products
   with check (public.has_permission(shop_id, 'inventory'));
 
 drop policy if exists "shop member all" on public.categories;
+drop policy if exists "shop member read" on public.categories;
+drop policy if exists "shop perm write" on public.categories;
 create policy "shop member read" on public.categories
   for select using (public.is_shop_member(shop_id));
 create policy "shop perm write" on public.categories
@@ -66,6 +76,8 @@ create policy "shop perm write" on public.categories
   with check (public.has_permission(shop_id, 'inventory'));
 
 drop policy if exists "shop member all" on public.stock_counts;
+drop policy if exists "shop member read" on public.stock_counts;
+drop policy if exists "shop perm write" on public.stock_counts;
 create policy "shop member read" on public.stock_counts
   for select using (public.is_shop_member(shop_id));
 create policy "shop perm write" on public.stock_counts
@@ -74,6 +86,8 @@ create policy "shop perm write" on public.stock_counts
 
 -- Thu chi & sổ tiền
 drop policy if exists "shop member all" on public.transactions;
+drop policy if exists "shop member read" on public.transactions;
+drop policy if exists "shop perm write" on public.transactions;
 create policy "shop member read" on public.transactions
   for select using (public.is_shop_member(shop_id));
 create policy "shop perm write" on public.transactions
@@ -81,6 +95,8 @@ create policy "shop perm write" on public.transactions
   with check (public.has_permission(shop_id, 'money'));
 
 drop policy if exists "shop member all" on public.money_accounts;
+drop policy if exists "shop member read" on public.money_accounts;
+drop policy if exists "shop perm write" on public.money_accounts;
 create policy "shop member read" on public.money_accounts
   for select using (public.is_shop_member(shop_id));
 create policy "shop perm write" on public.money_accounts
@@ -89,6 +105,8 @@ create policy "shop perm write" on public.money_accounts
 
 -- CRM & khách hàng
 drop policy if exists "shop member all" on public.customers;
+drop policy if exists "shop member read" on public.customers;
+drop policy if exists "shop perm write" on public.customers;
 create policy "shop member read" on public.customers
   for select using (public.is_shop_member(shop_id));
 create policy "shop perm write" on public.customers
@@ -99,3 +117,5 @@ create policy "shop perm write" on public.customers
 -- Ghi chú: chạy file này SAU khi đã cấp quyền cho nhân viên ở trang
 -- "Phân quyền". Chủ cửa hàng luôn toàn quyền nên không bị ảnh hưởng.
 -- =============================================================
+
+commit;

@@ -16,6 +16,8 @@ create table if not exists public.promotions (
 );
 create index if not exists promotions_shop_idx on public.promotions (shop_id);
 
+alter table public.promotions enable row level security;
+
 drop policy if exists "shop member all" on public.promotions;
 create policy "shop member all" on public.promotions
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));
@@ -31,6 +33,8 @@ create table if not exists public.materials (
   created_at timestamptz not null default now()
 );
 create index if not exists materials_shop_idx on public.materials (shop_id);
+
+alter table public.materials enable row level security;
 
 drop policy if exists "shop member all" on public.materials;
 create policy "shop member all" on public.materials

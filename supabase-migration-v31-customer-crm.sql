@@ -84,19 +84,51 @@ create index if not exists customer_attachments_customer_idx on public.customer_
 
 create or replace function public.crm_prepare_customer()
 returns trigger language plpgsql set search_path = public as $$
-declare v_num bigint;
+declare
+  v_num bigint;
+  v_check_name boolean := false;
+  v_check_phone boolean := false;
+  v_check_email boolean := false;
 begin
+  -- Chỉ kiểm tra trường vừa thay đổi. Dữ liệu cũ có thể không hợp lệ; các
+  -- trigger cập nhật total_spending/debt/last_activity không được làm hỏng
+  -- thao tác đơn hàng/công nợ chỉ vì name/phone/email cũ chưa chuẩn.
+  if tg_op = 'INSERT' then
+    v_check_name := true;
+    v_check_phone := true;
+    v_check_email := true;
+  else
+    v_check_name := new.name is distinct from old.name;
+    v_check_phone := new.phone is distinct from old.phone;
+    v_check_email := new.email is distinct from old.email;
+  end if;
+
   new.name := btrim(new.name);
-  if length(new.name) < 2 or length(new.name) > 160 then raise exception 'Họ tên phải từ 2 đến 160 ký tự.'; end if;
+  if v_check_name and (length(new.name) < 2 or length(new.name) > 160) then
+    raise exception 'Họ tên phải từ 2 đến 160 ký tự.';
+  end if;
+
   new.phone := nullif(btrim(coalesce(new.phone,'')), '');
   new.phone_normalized := nullif(regexp_replace(coalesce(new.phone,''), '[^0-9]', '', 'g'), '');
-  if new.phone_normalized is not null and length(new.phone_normalized) not between 8 and 15 then raise exception 'Số điện thoại không hợp lệ.'; end if;
-  if new.email is not null and new.email !~* '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$' then raise exception 'Email không hợp lệ.'; end if;
+  if v_check_phone and new.phone_normalized is not null
+     and length(new.phone_normalized) not between 8 and 15 then
+    raise exception 'Số điện thoại không hợp lệ.';
+  end if;
+
+  if v_check_email and new.email is not null
+     and new.email !~* '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$' then
+    raise exception 'Email không hợp lệ.';
+  end if;
+
   if new.code is null or btrim(new.code) = '' then
     perform pg_advisory_xact_lock(hashtextextended('customer-code:' || new.shop_id::text, 0));
-    select coalesce(max(nullif(regexp_replace(code, '[^0-9]', '', 'g'),'')::bigint),0)+1 into v_num from public.customers where shop_id = new.shop_id;
+    select coalesce(max(nullif(regexp_replace(code, '[^0-9]', '', 'g'),'')::bigint),0)+1
+      into v_num
+      from public.customers
+     where shop_id = new.shop_id;
     new.code := 'CUST' || lpad(v_num::text, 3, '0');
   end if;
+
   new.updated_at := now();
   new.search_vector := setweight(to_tsvector('simple', coalesce(new.name,'')), 'A') || setweight(to_tsvector('simple', coalesce(new.phone_normalized,'')), 'A') || setweight(to_tsvector('simple', coalesce(new.code,'')), 'B') || setweight(to_tsvector('simple', coalesce(new.email,'')), 'C');
   return new;
@@ -254,7 +286,8 @@ drop policy if exists "customer files member write" on storage.objects;
 create policy "customer files member read" on storage.objects for select using(bucket_id='customer-files' and public.is_shop_member(((storage.foldername(name))[1])::uuid));
 create policy "customer files member write" on storage.objects for all using(bucket_id='customer-files' and public.is_shop_member(((storage.foldername(name))[1])::uuid)) with check(bucket_id='customer-files' and public.is_shop_member(((storage.foldername(name))[1])::uuid));
 
-grant execute on function public.crm_list_customers(uuid,text,numeric,uuid,uuid,text,text,date,date,boolean,text,text,int,int) to authenticated;
+-- Đúng chữ ký 12 tham số của hàm ở trên (bản cũ ghi nhầm thành 14 tham số).
+grant execute on function public.crm_list_customers(uuid,text,numeric,uuid,text,date,date,boolean,text,text,int,int) to authenticated;
 grant execute on function public.crm_create_customer(uuid,jsonb) to authenticated;
 grant execute on function public.crm_update_customer(uuid,uuid,jsonb) to authenticated;
 grant execute on function public.crm_soft_delete_customer(uuid,uuid) to authenticated;

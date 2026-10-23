@@ -16,6 +16,7 @@ create table if not exists public.calendar_events (
   created_at timestamptz not null default now()
 );
 create index if not exists calendar_events_shop_idx on public.calendar_events (shop_id, event_date);
+alter table public.calendar_events enable row level security;
 drop policy if exists "shop member all" on public.calendar_events;
 create policy "shop member all" on public.calendar_events
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));
@@ -30,6 +31,7 @@ create table if not exists public.notes (
   created_at timestamptz not null default now()
 );
 create index if not exists notes_shop_idx on public.notes (shop_id, created_at desc);
+alter table public.notes enable row level security;
 drop policy if exists "shop member all" on public.notes;
 create policy "shop member all" on public.notes
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));
@@ -45,6 +47,7 @@ create table if not exists public.shifts (
   closing_note text
 );
 create index if not exists shifts_shop_idx on public.shifts (shop_id, opened_at desc);
+alter table public.shifts enable row level security;
 drop policy if exists "shop member all" on public.shifts;
 create policy "shop member all" on public.shifts
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));
@@ -60,6 +63,7 @@ create table if not exists public.transfers (
   created_at timestamptz not null default now()
 );
 create index if not exists transfers_shop_idx on public.transfers (shop_id, created_at desc);
+alter table public.transfers enable row level security;
 drop policy if exists "shop member all" on public.transfers;
 create policy "shop member all" on public.transfers
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));
@@ -74,6 +78,7 @@ create table if not exists public.crm_activities (
   created_at timestamptz not null default now()
 );
 create index if not exists crm_activities_shop_idx on public.crm_activities (shop_id, created_at desc);
+alter table public.crm_activities enable row level security;
 drop policy if exists "shop member all" on public.crm_activities;
 create policy "shop member all" on public.crm_activities
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));
@@ -89,6 +94,7 @@ create table if not exists public.cafe_tables (
   created_at timestamptz not null default now()
 );
 create index if not exists cafe_tables_shop_idx on public.cafe_tables (shop_id);
+alter table public.cafe_tables enable row level security;
 drop policy if exists "shop member all" on public.cafe_tables;
 create policy "shop member all" on public.cafe_tables
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));
@@ -103,6 +109,7 @@ create table if not exists public.tickets (
   created_at timestamptz not null default now()
 );
 create index if not exists tickets_shop_idx on public.tickets (shop_id, created_at desc);
+alter table public.tickets enable row level security;
 drop policy if exists "shop member all" on public.tickets;
 create policy "shop member all" on public.tickets
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));
@@ -116,6 +123,7 @@ create table if not exists public.surveys (
   created_at timestamptz not null default now()
 );
 create index if not exists surveys_shop_idx on public.surveys (shop_id, created_at desc);
+alter table public.surveys enable row level security;
 drop policy if exists "shop member all" on public.surveys;
 create policy "shop member all" on public.surveys
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));

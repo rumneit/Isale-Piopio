@@ -11,6 +11,9 @@
 --
 -- Cách chạy: Supabase Dashboard → SQL Editor → dán toàn bộ file → Run.
 -- An toàn khi chạy lại nhiều lần.
+--
+-- LƯU Ý: inv_update_order đã được thay thế bởi inv_update_order_full (v40) và
+-- sẽ bị v42 drop. Giữ file này để bảo toàn lịch sử migration.
 -- ============================================================================
 
 -- Cho phép RPC inv_update_order điều chỉnh đúng khoản thu của đơn hàng.

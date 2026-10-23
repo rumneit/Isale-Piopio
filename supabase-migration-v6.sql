@@ -18,6 +18,8 @@ create table if not exists public.return_notes (
 );
 create index if not exists return_notes_shop_idx on public.return_notes (shop_id, created_at desc);
 
+alter table public.return_notes enable row level security;
+
 drop policy if exists "shop member all" on public.return_notes;
 create policy "shop member all" on public.return_notes
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));

@@ -14,6 +14,8 @@ create table if not exists public.activity_logs (
   created_at timestamptz not null default now()
 );
 create index if not exists activity_logs_shop_idx on public.activity_logs (shop_id, created_at desc);
+alter table public.activity_logs enable row level security;
+
 drop policy if exists "shop member all" on public.activity_logs;
 create policy "shop member all" on public.activity_logs
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));

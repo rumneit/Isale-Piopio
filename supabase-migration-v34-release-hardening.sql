@@ -94,8 +94,14 @@ declare
   v_order public.orders%rowtype;
   v_item jsonb;
   v_total numeric;
+  v_merch numeric;
   v_discount numeric;
+  v_discount_pct numeric;
+  v_tax_pct numeric;
+  v_tax numeric;
   v_ship numeric;
+  v_ship_total numeric;
+  v_ship_by_customer boolean;
 begin
   if not public.has_permission(p_shop, 'sell') then
     raise exception 'Bạn không có quyền tạo đơn hàng.';
@@ -120,11 +126,56 @@ begin
     ) then raise exception 'Sản phẩm không thuộc cửa hàng.'; end if;
   end loop;
 
-  v_discount := greatest(0, coalesce(nullif(p_order->>'discount', '')::numeric, 0));
+  -- Chặn bán vượt tồn kho kể cả khi client gửi nhiều dòng trùng một sản phẩm.
+  -- v36 mới tạo hàm này; nếu v34 được chạy trước v36 thì bỏ qua để không chặn
+  -- tạm thời các đơn đang dùng bản frontend cũ.
+  if public._inv_stock_status(coalesce(nullif(p_order->>'status', ''), 'completed'))
+     and to_regprocedure('public._inv_assert_sale_stock(uuid,jsonb)') is not null then
+    perform public._inv_assert_sale_stock(p_shop, p_items);
+  end if;
+
+  select coalesce(sum((x->>'price')::numeric * (x->>'qty')::numeric), 0)
+    into v_merch
+    from jsonb_array_elements(p_items) x;
+  v_merch := round(v_merch, 2);
+
+  v_ship_by_customer := coalesce((p_order->>'ship_fee_by_customer')::boolean, true);
   v_ship := greatest(0, coalesce(nullif(p_order->>'ship_fee', '')::numeric, 0));
-  v_total := coalesce(nullif(p_order->>'total', '')::numeric,
-    (select sum((x->>'price')::numeric * (x->>'qty')::numeric) from jsonb_array_elements(p_items) x)
-      - v_discount + case when coalesce((p_order->>'ship_fee_by_customer')::boolean, true) then v_ship else 0 end);
+  v_ship_total := case when v_ship_by_customer then v_ship else 0 end;
+
+  v_discount_pct := nullif(p_order->>'discount_percent', '')::numeric;
+  v_tax_pct := nullif(p_order->>'tax_percent', '')::numeric;
+
+  if v_discount_pct is not null or v_tax_pct is not null then
+    -- Frontend mới gửi phần trăm; server tự tính tiền hàng/chiết khấu/thuế/ship.
+    v_discount_pct := coalesce(v_discount_pct, 0);
+    v_tax_pct := coalesce(v_tax_pct, 0);
+    if v_discount_pct < 0 or v_discount_pct > 100 then
+      raise exception 'Chiết khấu không hợp lệ.';
+    end if;
+    if v_tax_pct < 0 or v_tax_pct > 1000 then
+      raise exception 'Thuế không hợp lệ.';
+    end if;
+    v_discount := round(v_merch * v_discount_pct / 100);
+    if v_discount > v_merch then
+      v_discount := v_merch;
+    end if;
+    v_tax := round(v_merch * v_tax_pct / 100);
+    v_total := round(v_merch - v_discount + v_tax + v_ship_total, 2);
+  else
+    -- Tương thích frontend cũ: discount là số tiền tuyệt đối, total do client
+    -- gửi. Vẫn chặn client hạ tổng tiền xuống dưới tiền hàng sau chiết khấu.
+    v_discount := greatest(0, coalesce(nullif(p_order->>'discount', '')::numeric, 0));
+    if v_discount > v_merch then
+      raise exception 'Chiết khấu không được lớn hơn tiền hàng.';
+    end if;
+    v_total := coalesce(nullif(p_order->>'total', '')::numeric,
+      v_merch - v_discount + v_ship_total);
+    if v_total < v_merch - v_discount
+       or v_total > v_merch - v_discount + v_ship_total + v_merch * 10 then
+      raise exception 'Tổng tiền không hợp lệ.';
+    end if;
+  end if;
   if v_total < 0 or v_total >= 1e13 then raise exception 'Tổng tiền không hợp lệ.'; end if;
 
   insert into public.orders(

@@ -59,6 +59,8 @@ create table if not exists public.trade_categories (
 create index if not exists trade_categories_shop_idx
   on public.trade_categories (shop_id, type, order_index);
 
+alter table public.trade_categories enable row level security;
+
 drop policy if exists "shop member read" on public.trade_categories;
 create policy "shop member read" on public.trade_categories
   for select using (public.is_shop_member(shop_id));
@@ -84,6 +86,8 @@ create table if not exists public.recurring_transactions (
 );
 create index if not exists recurring_shop_idx
   on public.recurring_transactions (shop_id, active);
+
+alter table public.recurring_transactions enable row level security;
 
 drop policy if exists "shop member read" on public.recurring_transactions;
 create policy "shop member read" on public.recurring_transactions

@@ -12,6 +12,8 @@ create table if not exists public.settings (
   unique (shop_id, key)
 );
 
+alter table public.settings enable row level security;
+
 drop policy if exists "shop member all" on public.settings;
 create policy "shop member all" on public.settings
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));

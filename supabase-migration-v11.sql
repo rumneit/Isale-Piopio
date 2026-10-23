@@ -17,6 +17,8 @@ create table if not exists public.loans (
 
 create index if not exists loans_shop_idx on public.loans (shop_id, occurred_at desc);
 
+alter table public.loans enable row level security;
+
 drop policy if exists "shop member all" on public.loans;
 create policy "shop member all" on public.loans
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));

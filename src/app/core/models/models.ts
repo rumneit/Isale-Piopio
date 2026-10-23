@@ -194,6 +194,9 @@ export interface Order {
   channel_id?: string | null;
   /** Migration v17 (additive) */
   payment_method?: string | null;
+  /** Chỉ dùng trong payload RPC tạo/sửa đơn (không phải cột DB). */
+  discount_percent?: number | null;
+  tax_percent?: number | null;
   /** Migration v22 (additive) — thanh toán & vận chuyển đồng bộ ISale */
   ship_fee?: number | null;
   ship_fee_by_customer?: boolean | null;

@@ -55,14 +55,14 @@ having o.debt_amount <> greatest(0, o.total - greatest(0, coalesce(sum(case when
 
 -- 6) Công nợ khách hàng phải bằng tổng nợ đơn + phần nợ thủ công.
 --    (Không chênh lệch nghĩa là đồng bộ.)
-select c.shop_id, c.id, c.full_name, c.debt,
+select c.shop_id, c.id, c.name, c.debt,
        coalesce(sum(o.debt_amount), 0) as order_debt
   from public.customers c
   left join public.orders o on o.customer_id = c.id and o.debt_amount > 0
  where c.deleted_at is null
  group by c.id
 having c.debt < coalesce(sum(o.debt_amount), 0) - 0.5
- order by c.shop_id, c.full_name;
+ order by c.shop_id, c.name;
 
 -- 7) Ví mặc định: đúng một ví/shop
 select shop_id, count(*) filter (where is_default) as default_accounts,
@@ -72,7 +72,7 @@ select shop_id, count(*) filter (where is_default) as default_accounts,
 having count(*) > 0 and count(*) filter (where is_default) <> 1;
 
 -- 8) Kiểm tra nhanh shop chính (PIOPIO)
-select o.code, o.total, o.debt_amount, o.paid, o.status, c.full_name, c.debt
+select o.code, o.total, o.debt_amount, o.paid, o.status, c.name, c.debt
   from public.orders o
   left join public.customers c on c.id = o.customer_id
  where o.shop_id = 'bb17824d-e6dc-446a-9179-334ce16ef63f'

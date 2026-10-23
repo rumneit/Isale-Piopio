@@ -20,6 +20,8 @@ create table if not exists public.point_transactions (
 create index if not exists point_transactions_shop_idx
   on public.point_transactions (shop_id, customer_id, created_at desc);
 
+alter table public.point_transactions enable row level security;
+
 drop policy if exists "shop member all" on public.point_transactions;
 create policy "shop member all" on public.point_transactions
   for all using (public.is_shop_member(shop_id)) with check (public.is_shop_member(shop_id));

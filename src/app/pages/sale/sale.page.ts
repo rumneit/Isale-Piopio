@@ -883,6 +883,8 @@ export class SalePage implements OnInit {
             customer_name: s.selectedCustomerName || 'Khách lẻ',
             status: s.status,
             discount: Math.round((s.items.reduce((sum, i) => sum + i.price * i.qty, 0) * Number(s.discountPercent ?? 0)) / 100),
+            discount_percent: Math.max(0, Number(s.discountPercent ?? 0)),
+            tax_percent: Math.max(0, Number(s.taxPercent ?? 0)),
             paid: billable,
             account_id: s.selectedAccountId,
             note: [s.note.trim(), s.shippingCode.trim() ? `Vận đơn: ${s.shippingCode.trim()}` : '', s.shippingPartner.trim() ? `ĐVVC: ${s.shippingPartner.trim()}` : '']

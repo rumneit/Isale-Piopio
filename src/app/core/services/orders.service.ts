@@ -191,9 +191,15 @@ export class OrdersService {
     const shopId = this.shopId;
     if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
 
-    const total =
-      input.total ??
-      items.reduce((s, i) => s + i.price * i.qty, 0) - (input.discount ?? 0);
+    const merchandise = items.reduce((s, i) => s + i.price * i.qty, 0);
+    const discount = input.discount_percent != null
+      ? Math.round((merchandise * Number(input.discount_percent)) / 100)
+      : (input.discount ?? 0);
+    const tax = input.tax_percent != null
+      ? Math.round((merchandise * Number(input.tax_percent)) / 100)
+      : 0;
+    const ship = input.ship_fee_by_customer === false ? 0 : (input.ship_fee ?? 0);
+    const total = input.total ?? merchandise - discount + tax + ship;
     const nonce = options.idempotencyKey ?? crypto.randomUUID();
     const { data: order, error } = await this.sb.client.rpc('inv_create_order', {
       p_shop: shopId,
