@@ -562,7 +562,9 @@ export class InvoiceTemplateService {
   private amountToVietnamese(value: number): string {
     if (!Number.isFinite(value) || value <= 0) return 'không đồng';
     const digits = ['không', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
-    const units = ['', ' nghìn', ' triệu', ' tỷ'];
+    // Đơn hàng cho phép tới < 10.000 tỷ (1e13) nên phải đủ nhóm đơn vị;
+    // trước đây dừng ở 'tỷ' nên số từ 1.000 tỷ trở lên bị đọc thiếu.
+    const units = ['', ' nghìn', ' triệu', ' tỷ', ' nghìn tỷ', ' triệu tỷ'];
     const readBlock = (n: number, full: boolean) => {
       const hundred = Math.floor(n / 100), ten = Math.floor((n % 100) / 10), one = n % 10;
       const out: string[] = [];

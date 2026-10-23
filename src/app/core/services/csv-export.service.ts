@@ -1,5 +1,17 @@
 import { Injectable } from '@angular/core';
 
+/** Escape 1 ô CSV + vô hiệu hóa công thức Excel (CSV injection). */
+export function escapeCsvCell(v: string | number | null | undefined): string {
+  let s = v == null ? '' : String(v);
+  // Tên khách/sản phẩm do người dùng nhập có thể bắt đầu bằng =, +, -, @ và bị
+  // Excel thực thi như công thức khi mở file xuất ra.
+  if (typeof v === 'string' && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  if (/[",\n\r]/.test(s)) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CsvExportService {
   /**
@@ -7,17 +19,9 @@ export class CsvExportService {
    * rồi tải về máy.
    */
   export(filename: string, headers: string[], rows: (string | number | null | undefined)[][]): void {
-    const escapeCell = (v: string | number | null | undefined): string => {
-      const s = v == null ? '' : String(v);
-      if (/[",\n\r]/.test(s)) {
-        return '"' + s.replace(/"/g, '""') + '"';
-      }
-      return s;
-    };
-
-    const lines = [headers.map(escapeCell).join(',')];
+    const lines = [headers.map(escapeCsvCell).join(',')];
     for (const row of rows) {
-      lines.push(row.map(escapeCell).join(','));
+      lines.push(row.map(escapeCsvCell).join(','));
     }
 
     // \uFEFF = BOM để Excel nhận diện UTF-8

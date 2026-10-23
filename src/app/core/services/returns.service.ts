@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { safeIlikeTerm } from '../utils/postgrest-search';
+import { newDocumentCode } from '../utils/document-code';
 
 export interface ReturnNoteItem {
   product_id: string | null;
@@ -21,6 +22,10 @@ export interface ReturnNote {
   total: number;
   refunded: boolean;
   note: string | null;
+  /** Phần hoàn bằng tiền mặt (chỉ phần khách đã trả). */
+  cash_refund?: number;
+  /** Phần bù trừ vào công nợ của đơn (khách chưa trả). */
+  debt_credit?: number;
   created_at: string;
 }
 
@@ -34,9 +39,7 @@ export class ReturnsService {
   }
 
   newCode(): string {
-    const d = new Date();
-    const ymd = `${String(d.getFullYear()).slice(2)}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
-    return `TH-${ymd}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    return newDocumentCode('TH');
   }
 
   async list(search = ''): Promise<ReturnNote[]> {
@@ -63,6 +66,22 @@ export class ReturnsService {
   /**
    * Tạo phiếu trả hàng: hoàn tồn kho + (tùy chọn) hoàn tiền khách + trừ điểm tích lũy.
    */
+  /** Các phiếu trả đã lập cho một đơn (dùng để chặn trả vượt số đã mua). */
+  async listByOrder(orderId: string): Promise<ReturnNote[]> {
+    if (!this.sb.isConfigured || !this.shopId) return [];
+    const { data, error } = await this.sb
+      .from('return_notes')
+      .select('*')
+      .eq('shop_id', this.shopId)
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    return ((data ?? []) as any[]).map((row) => ({
+      ...row,
+      items: Array.isArray(row.items) ? row.items : [],
+    })) as ReturnNote[];
+  }
+
   async create(
     input: {
       order_id: string;
@@ -70,6 +89,8 @@ export class ReturnsService {
       customer_id: string | null;
       refunded: boolean;
       note: string | null;
+      /** Nonce ổn định cho phiếu đang lập — thử lại không tạo phiếu trùng. */
+      idempotencyKey?: string;
     },
     items: ReturnNoteItem[]
   ): Promise<ReturnNote> {
@@ -88,7 +109,7 @@ export class ReturnsService {
         note: input.note,
       },
       p_items: items,
-      p_nonce: crypto.randomUUID(),
+      p_nonce: input.idempotencyKey ?? crypto.randomUUID(),
     });
     if (error) {
       if (error.code === 'PGRST202' || /inv_create_return_note|schema cache/i.test(error.message)) {

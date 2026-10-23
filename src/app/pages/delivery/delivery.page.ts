@@ -129,7 +129,7 @@ export class DeliveryPage implements OnInit {
             text: s.label,
             handler: async () => {
               try {
-                await this.ordersService.update(order.id, { status: s.value });
+                await this.ordersService.setStatus(order.id, s.value);
                 await this.load();
                 this.toast(`Đã chuyển sang "${s.label}"`);
               } catch (e: any) {

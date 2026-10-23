@@ -299,7 +299,7 @@ export class OnlineOrderPage implements OnInit {
           text: 'Chuyển đổi',
           handler: async () => {
             try {
-              await this.ordersService.update(o.id, { status: 'draft' });
+              await this.ordersService.setStatus(o.id, 'draft');
               this.toast(`Đã chuyển ${o.code} sang đơn thường`);
               await this.load();
             } catch (e: any) {

@@ -253,7 +253,7 @@ export class OrderDetailPage implements OnInit {
     );
     const editable = !['cancelled', 'quote'].includes(order.status);
     if (!order.paid && editable && total > 0 && net >= total - 0.5) {
-      await this.ordersService.update(order.id, { paid: true }).catch(() => {});
+      await this.ordersService.setPaid(order.id, true).catch(() => {});
       this.order.update((current) =>
         current && current.id === order.id ? { ...current, paid: true } : current
       );
@@ -324,7 +324,7 @@ export class OrderDetailPage implements OnInit {
         payment_type: 'CASH',
         source: 'order',
       });
-      if (fullyPaid) await this.ordersService.update(order.id, { paid: true });
+      if (fullyPaid) await this.ordersService.setPaid(order.id, true);
       await this.load();
       this.toast('Đã ghi nhận thanh toán');
     } catch (e: any) {
@@ -396,7 +396,7 @@ export class OrderDetailPage implements OnInit {
       }
       this.busy.set(true);
       try {
-        await this.ordersService.update(order.id, { paid: true });
+        await this.ordersService.setPaid(order.id, true);
         await this.load();
         this.toast('Đã đánh dấu đã thanh toán');
       } catch (e: any) {
@@ -407,15 +407,15 @@ export class OrderDetailPage implements OnInit {
       return;
     }
 
-    // Đã có khoản thu thực tế: tạo bút toán điều chỉnh giảm để công nợ và
-    // doanh thu cùng quay về đúng, thay vì chỉ lật cờ paid rồi bị lệch sổ.
+    // Đã có khoản thu thực tế: RPC v43 đảo đúng khoản thu của đơn (không tạo
+    // một khoản CHI giả — khoản chi đó sẽ làm sai báo cáo lợi nhuận và số dư ví).
     if (this.hasRecordedPayments()) {
       const recorded = this.netRecordedAmount();
       const confirm = await this.alertCtrl.create({
         header: 'Chuyển về còn nợ',
         message:
           `Đơn đã ghi nhận thanh toán ${this.formatMoney(recorded)}. ` +
-          `Hệ thống sẽ tạo khoản điều chỉnh giảm tương ứng để công nợ quay về ${this.formatMoney(order.total)}. Tiếp tục?`,
+          `Hệ thống sẽ đảo khoản thu đã ghi và đưa ${this.formatMoney(order.total)} trở lại công nợ. Tiếp tục?`,
         buttons: [
           { text: 'Hủy', role: 'cancel' },
           { text: 'Đồng ý', role: 'confirm' },
@@ -424,38 +424,15 @@ export class OrderDetailPage implements OnInit {
       await confirm.present();
       const { role } = await confirm.onWillDismiss();
       if (role !== 'confirm') return;
-
-      this.busy.set(true);
-      try {
-        await this.ordersService.update(order.id, { paid: false });
-        await this.transactionsService.create({
-          type: 'expense',
-          category: 'Chi khác',
-          amount: recorded,
-          note: `Điều chỉnh giảm thanh toán đơn ${order.code}`,
-          occurred_at: new Date().toISOString(),
-          order_id: order.id,
-          payment_type: 'CASH',
-          source: 'order',
-        });
-        await this.load();
-        this.toast('Đã chuyển sang còn nợ');
-      } catch (e: any) {
-        // Nếu bước điều chỉnh lỗi, tải lại để cờ paid tự khớp với khoản thu còn lại.
-        await this.load().catch(() => {});
-        this.toast(e?.message ?? 'Cập nhật thất bại', 'danger');
-      } finally {
-        this.busy.set(false);
-      }
-      return;
     }
 
     this.busy.set(true);
     try {
-      await this.ordersService.update(order.id, { paid: false });
+      await this.ordersService.setPaid(order.id, false);
       await this.load();
       this.toast('Đã chuyển sang còn nợ');
     } catch (e: any) {
+      await this.load().catch(() => {});
       this.toast(e?.message ?? 'Cập nhật thất bại', 'danger');
     } finally {
       this.busy.set(false);
@@ -472,7 +449,7 @@ export class OrderDetailPage implements OnInit {
         if (order.status === s.value) return;
         this.busy.set(true);
         try {
-          await this.ordersService.update(order.id, { status: s.value });
+          await this.ordersService.setStatus(order.id, s.value);
           await this.load();
           this.toast(`Đã chuyển sang "${s.label}"`);
         } catch (e: any) {
@@ -499,7 +476,7 @@ export class OrderDetailPage implements OnInit {
         if ((order.payment_method ?? 'CASH') === m.value) return;
         this.busy.set(true);
         try {
-          await this.ordersService.update(order.id, { payment_method: m.value });
+          await this.ordersService.setPaymentMethod(order.id, m.value);
           await this.load();
           this.toast(`Hình thức thanh toán: ${m.label}`);
         } catch (e: any) {

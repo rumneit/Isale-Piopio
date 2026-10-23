@@ -68,6 +68,8 @@ interface SaleItem {
 
 /** Trạng thái đầy đủ của 1 đơn trong lượt bán (đồng bộ ISale multi-add) */
 interface SaleOrderSnap {
+  /** Khóa chống gửi lặp ổn định cho đơn này (giữ nguyên khi lưu lỗi và thử lại). */
+  nonce: string;
   orderCode: string;
   orderDate: string;
   selectedCustomerId: string | null;
@@ -158,6 +160,12 @@ export class SalePage implements OnInit {
   // Nhiều đơn song song (ISale multi-add): danh sách + vị trí đang mở
   readonly orderTabs = signal<SaleOrderSnap[]>([]);
   readonly activeOrderIdx = signal(0);
+  /**
+   * Nonce của đơn đang mở. Phải ổn định qua các lần chuyển tab và các lần thử
+   * lưu lại: nếu sinh mới mỗi request thì lần thử lại sau lỗi mạng sẽ tạo đơn
+   * trùng và trừ tồn/ghi thu hai lần.
+   */
+  private activeNonce: string = crypto.randomUUID();
 
   /** Đang sửa một đơn đã tạo (mở từ nút bút chì ở chi tiết đơn hàng) */
   readonly editingOrderId = signal<string | null>(null);
@@ -345,6 +353,7 @@ export class SalePage implements OnInit {
   /** Chốt trạng thái hiện tại thành 1 snapshot */
   private currentSnap(): SaleOrderSnap {
     return {
+      nonce: this.activeNonce,
       orderCode: this.orderCode,
       orderDate: this.orderDate,
       selectedCustomerId: this.selectedCustomerId,
@@ -372,6 +381,7 @@ export class SalePage implements OnInit {
 
   /** Nạp snapshot vào các trường đang mở */
   private applySnap(s: SaleOrderSnap) {
+    this.activeNonce = s.nonce || crypto.randomUUID();
     this.orderCode = s.orderCode;
     this.orderDate = s.orderDate;
     this.selectedCustomerId = s.selectedCustomerId;
@@ -499,6 +509,7 @@ export class SalePage implements OnInit {
     this.orderTabs.update((list) => list.map((s, idx) => (idx === this.activeOrderIdx() ? this.currentSnap() : s)));
     const fresh: SaleOrderSnap = {
       ...this.currentSnap(),
+      nonce: crypto.randomUUID(),
       orderCode: this.ordersService.newCode(),
       selectedCustomerId: null,
       selectedCustomerName: '',
@@ -866,6 +877,20 @@ export class SalePage implements OnInit {
         }
       }
     }
+    // "Khách đưa" chỉ là tiền khách đưa để tính tiền thừa. Nếu khách đưa
+    // thiếu, KHÔNG được lưu đơn thành đã thanh toán đủ (sai sổ quỹ/công nợ).
+    for (const order of withItems) {
+      const billable = !['draft', 'quote', 'debt', 'ship_debt', 'consignment', 'cancelled'].includes(order.status);
+      const tender = Number(order.customerPaid ?? 0);
+      if (billable && tender > 0 && tender + 0.5 < this.dueOf(order)) {
+        this.toast(
+          `Đơn ${order.orderCode}: khách đưa ${this.formatMoney(tender)} nhưng phải trả ${this.formatMoney(this.dueOf(order))}. ` +
+            'Hãy chọn trạng thái "Công nợ" nếu khách trả một phần.',
+          'danger'
+        );
+        return;
+      }
+    }
     const empties = batch.length - withItems.length;
     this.busy.set(true);
     try {
@@ -903,7 +928,11 @@ export class SalePage implements OnInit {
             ...(extras.has('shipping_address') ? { shipping_address: s.shippingAddress.trim() || null } : {}),
           },
           s.items.map((i) => ({ product_id: i.product_id, name: i.name, price: i.price, qty: i.qty })),
-          { recordIncome: billable && this.dueOf(s) > 0 }
+          {
+            recordIncome: billable && this.dueOf(s) > 0,
+            // Cùng nonce cho mọi lần thử của đơn này → server trả đơn cũ thay vì tạo trùng.
+            idempotencyKey: s.nonce,
+          }
         );
         saved++;
       }

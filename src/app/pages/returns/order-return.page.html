@@ -38,12 +38,12 @@
 
       @for (draft of drafts(); track draft.item.id; let i = $index) {
         <div class="return-item">
-          <ion-checkbox [(ngModel)]="drafts()[i].selected" labelPlacement="start" justify="start" />
+          <ion-checkbox [(ngModel)]="drafts()[i].selected" [disabled]="draft.maxQty <= 0" labelPlacement="start" justify="start" />
           <div class="return-item-main">
             <div class="return-item-name">{{ draft.item.name }}</div>
             <div class="return-item-row">
-              <ion-input class="return-qty" type="number" min="1" [max]="draft.item.qty" [(ngModel)]="drafts()[i].qty" />
-              <span class="return-x">/ {{ draft.item.qty }}</span>
+              <ion-input class="return-qty" type="number" min="1" [max]="draft.maxQty" [disabled]="draft.maxQty <= 0" [(ngModel)]="drafts()[i].qty" />
+              <span class="return-x">/ {{ draft.maxQty }}@if (draft.maxQty < draft.item.qty) { <em> (đã trả {{ draft.item.qty - draft.maxQty }})</em> }</span>
               <ion-badge color="light">{{ formatMoney(draft.item.price * draft.qty) }}</ion-badge>
             </div>
           </div>
@@ -57,7 +57,9 @@
           <ion-toggle [(ngModel)]="refunded">
             <ion-label>
               Hoàn tiền cho khách
-              <ion-note>Tự tạo giao dịch chi "Trả hàng" số tiền {{ formatMoney(total) }}</ion-note>
+              <ion-note>
+                Chỉ hoàn tiền mặt phần khách đã trả. Phần chưa trả được tự động giảm công nợ của đơn.
+              </ion-note>
             </ion-label>
           </ion-toggle>
         </ion-item>
@@ -66,7 +68,8 @@
         </ion-item>
       </ion-list>
       <ion-note class="return-note-hint">
-        Tồn kho sẽ được hoàn lại tự động. Điểm tích lũy của khách (nếu có) bị trừ tương ứng.
+        Tồn kho sẽ được hoàn lại tự động. Phiếu trả không được vượt quá số lượng đã mua trừ các lần trả trước.
+        Giá hoàn luôn lấy theo giá trên đơn gốc; hệ thống tự tách phần hoàn tiền mặt và phần giảm công nợ.
       </ion-note>
     </div>
 

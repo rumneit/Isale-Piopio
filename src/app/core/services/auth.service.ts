@@ -112,14 +112,19 @@ export class AuthService {
         memberShop = (assignedShop as Shop | null) ?? null;
       }
 
-      // Xác định shop đang hoạt động: override (chủ shop) >
-      // shop gán trong profile > shop sở hữu đầu tiên.
+      // Xác định shop đang hoạt động.
+      // - Chủ cửa hàng: override đã chọn > shop trong profile > shop sở hữu đầu tiên.
+      // - Nhân viên: LUÔN dùng shop được gán trong profile. Nếu không, một nhân
+      //   viên từng đăng nhập trước khi được thêm sẽ bị localStorage trỏ về
+      //   shop rỗng của chính họ và không bao giờ thấy dữ liệu cửa hàng.
       const overrideId = localStorage.getItem('piopio-active-shop');
-      let activeShop =
-        (overrideId && ownedShops.find((s) => s.id === overrideId)) ||
-        (profile?.shop_id ? ownedShops.find((s) => s.id === profile.shop_id) ?? memberShop : null) ||
-        ownedShops[0] ||
-        null;
+      const activeShopIsOwner = profile?.role === 'owner';
+      let activeShop = activeShopIsOwner
+        ? (overrideId && ownedShops.find((s) => s.id === overrideId)) ||
+          (profile?.shop_id ? ownedShops.find((s) => s.id === profile.shop_id) ?? memberShop : null) ||
+          ownedShops[0] ||
+          null
+        : memberShop ?? (profile?.shop_id ? ownedShops.find((s) => s.id === profile.shop_id) : null) ?? null;
 
       if (!activeShop && profile?.role === 'owner') {
         // Auto-provision a shop for the new owner

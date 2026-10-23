@@ -7,6 +7,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/login/login.page').then((m) => m.LoginPage),
     canActivate: [guestGuard],
   },
+  // Link đặt lại mật khẩu từ email: chưa có session cho tới khi trang tự
+  // đổi token trong hash, nên không gắn authGuard/guestGuard.
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./pages/reset-password/reset-password.page').then((m) => m.ResetPasswordPage),
+  },
   {
     path: 'home',
     loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePage),

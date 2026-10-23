@@ -76,6 +76,8 @@ export class ReceivedNoteAddPage implements OnInit {
   private alertCtrl = inject(AlertController);
 
   readonly busy = signal(false);
+  /** Giữ nguyên qua các lần bấm Lưu để retry không tạo phiếu/tồn kho trùng. */
+  private readonly nonce = crypto.randomUUID();
   readonly products = signal<Product[]>([]);
   readonly items = signal<ReceivedNoteItem[]>([]);
   readonly suppliers = signal<Supplier[]>([]);
@@ -270,6 +272,7 @@ export class ReceivedNoteAddPage implements OnInit {
           due_date: this.dueDate || null,
           note: this.note.trim() || null,
           parent_id: this.continueRoot?.root_id ?? null,
+          idempotencyKey: this.nonce,
         },
         payloadItems
       );

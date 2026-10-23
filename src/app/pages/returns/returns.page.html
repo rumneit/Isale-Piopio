@@ -41,6 +41,17 @@
                   }
                   · {{ note.created_at | date: 'dd/MM HH:mm' }}
                 </p>
+                @if ((note.cash_refund ?? 0) > 0 || (note.debt_credit ?? 0) > 0) {
+                  <p>
+                    @if ((note.cash_refund ?? 0) > 0) {
+                      Hoàn mặt {{ formatMoney(note.cash_refund) }}
+                    }
+                    @if ((note.cash_refund ?? 0) > 0 && (note.debt_credit ?? 0) > 0) { · }
+                    @if ((note.debt_credit ?? 0) > 0) {
+                      Giảm công nợ {{ formatMoney(note.debt_credit) }}
+                    }
+                  </p>
+                }
               </ion-label>
               <ion-badge slot="end" [color]="note.refunded ? 'warning' : 'medium'">
                 -{{ formatMoney(note.total) }}

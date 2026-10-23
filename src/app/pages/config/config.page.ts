@@ -332,7 +332,7 @@ export class ConfigPage implements OnInit {
     try {
       const shopId = this.auth.shop()?.id;
       if (shopId) {
-        await this.sb
+        const { error: shopError } = await this.sb
           .from('shops')
           .update({
             name: this.shopName.trim(),
@@ -347,10 +347,15 @@ export class ConfigPage implements OnInit {
             bank_code: this.bankCode.trim() || null,
           })
           .eq('id', shopId);
+        if (shopError) throw shopError;
       }
       const userId = (this.auth.session() as any)?.user?.id;
       if (userId) {
-        await this.sb.from('profiles').update({ full_name: this.fullName.trim() }).eq('id', userId);
+        const { error: profileError } = await this.sb
+          .from('profiles')
+          .update({ full_name: this.fullName.trim() })
+          .eq('id', userId);
+        if (profileError) throw profileError;
       }
 
       // Lưu cấu hình khác
@@ -385,7 +390,10 @@ export class ConfigPage implements OnInit {
     }
     this.changingPw.set(true);
     try {
-      await this.sb.auth.updateUser({ password: this.newPassword });
+      // auth.updateUser trả { error } chứ không throw — phải kiểm tra, nếu không
+      // người dùng thấy "Đã đổi mật khẩu" dù mật khẩu chưa đổi.
+      const { error } = await this.sb.auth.updateUser({ password: this.newPassword });
+      if (error) throw error;
       this.newPassword = '';
       this.confirmPassword = '';
       this.toast('Đã đổi mật khẩu');

@@ -1,0 +1,149 @@
+id,module,item,technique,status,evidence
+A01,Auth,Render trang đăng nhập,E2E,PASS,qa/e2e-smoke.mjs E1
+A02,Auth,Đăng nhập đúng với tài khoản thật,Use case,BLOCKED,Không có tài khoản test
+A03,Auth,Sai mật khẩu / thông báo lỗi,Equivalence,BLOCKED,Không có tài khoản test
+A04,Auth,Quên mật khẩu gửi email,Error guessing,PARTIAL,Đã sửa nuốt lỗi; chưa gửi email thật
+A05,Auth,Link recovery đặt mật khẩu mới,Use case,PARTIAL,Trang reset-password + 4 unit test tách token; chưa gửi email thật
+A06,Auth,Đổi mật khẩu trong Cấu hình,Use case,PARTIAL,Đã sửa báo thành công khống; chưa chạy live
+A07,Auth,Hết session giữa chừng,Error guessing,BLOCKED,Không có session thật
+A08,Auth,Đăng xuất xóa session/localStorage,Use case,CODE,auth.service.ts logout
+A09,Auth,Đăng nhập nhiều nơi,Concurrency,BLOCKED,Không có tài khoản
+A10,Auth,Brute force / khóa tài khoản,Security,BLOCKED,Phụ thuộc cấu hình Supabase
+A11,Auth,Tạo/khóa nhân viên,Use case,PARTIAL,Thêm/xoá thành viên theo email (v44) + SQL T10; chưa gửi email mời, không ban auth
+A12,Auth,Phân quyền tới từng nút,Coverage,CODE,permissions.ts + menu + guard
+A13,Auth,Chặn URL trực tiếp khi thiếu quyền,E2E,PASS,qa/e2e-smoke.mjs E6 (sale + shipments)
+A14,Auth,IDOR đơn/khách shop khác,Security,PARTIAL,Service lọc shop_id; RLS chưa test live
+A15,Auth,Audit log thao tác nhạy cảm,Use case,CODE,log.service + activity_logs
+A16,Auth,Đăng ký mới tạo vai trò gì,Use case,CODE,handle_new_user luôn role=owner
+B01,Dashboard,Menu ẩn theo quyền,Use case,CODE,app.component visibleMenuItems
+B02,Dashboard,Quick action trang chủ ẩn theo quyền,Use case,PARTIAL,Chưa lọc; bấm sẽ bị guard đẩy về /home
+B03,Dashboard,Số liệu KPI khớp DB,Reconciliation,BLOCKED,Không có DB live
+B04,Dashboard,DataService.refreshHome dùng đơn hủy?,Code review,OPEN,Hàm không dùng ở UI; nếu dùng sẽ sai số
+B05,Dashboard,Empty state,Use case,CODE,Template có app-empty
+C01,Product,Danh sách phân trang server,Performance,CODE,products.service.listPaged
+C02,Product,Màn bán hàng tải toàn bộ SKU,Performance,OPEN,Sale gọi productsService.list()
+C03,Product,Thêm/sửa sản phẩm,Use case,CODE,product-edit.page
+C04,Product,Trùng SKU/barcode,Equivalence,CODE,Chưa thấy unique index SKU/barcode
+C05,Product,Quy đổi đơn vị khi bán,Use case,OPEN,Sale dùng giá gốc; units chưa áp vào dòng bán
+C06,Product,Ảnh: loại/dung lượng,Equivalence,CODE,Validate MIME + 5MiB + path shop
+C07,Product,Tìm có dấu/không dấu,Equivalence,CODE,SalePage.norm + postgrest-search
+C08,Product,Import Excel lỗi file,Error guessing,BLOCKED,Cần file+môi trường thật
+C09,Product,Export CSV chống formula injection,Security,PASS,src/.../csv-export.service.spec.ts
+C10,Product,Xóa sản phẩm đã có đơn,Use case,CODE,FK set null; cần xác nhận nghiệp vụ
+C11,Product,Quét barcode,Use case,BLOCKED,Không có máy quét
+C12,Product,Giá âm/quá lớn,Equivalence,CODE,Server chặn <0 và >=1e13
+D01,Purchase,Tạo phiếu nhập atomic,RPC,CODE,inv_create_received_note
+D02,Purchase,Retry không tạo phiếu trùng,Idempotency,PARTIAL,Đã cố định nonce; chưa chạy live
+D03,Purchase,Nhập một phần / chờ nhập thêm,State,CODE,v29 status partial
+D04,Purchase,Maker-checker duyệt phiếu,State,CODE,inv_approve_note
+D05,Purchase,Công nợ NCC phần còn lại,Reconciliation,CODE,supplier_debts insert
+D06,Purchase,Xóa phiếu đã ghi sổ,State,CODE,Service chặn; RLS v35
+D07,Purchase,In phiếu nhập,Use case,BLOCKED,Máy in thật
+D08,Purchase,Tồn kho tăng đúng sau nhập,Reconciliation,CODE,inv_apply_note
+D09,Purchase,paid_amount > total bị chặn,Equivalence,CODE,least(total,...)
+E01,Sale,Tổng tiền CK/VAT/ship,E2E,PASS,qa/e2e-smoke.mjs E2: 115.000 ₫
+E02,Sale,Chiết khấu 0/100/101%,Boundary,CODE,Server chặn >100
+E03,Sale,VAT 0/1000/1001%,Boundary,CODE,Server chặn >1000
+E04,Sale,Khách trả ship bật/tắt,Decision table,CODE,ship_fee_by_customer
+E05,Sale,Khách đưa thiếu tiền,E2E,PASS,qa/e2e-smoke.mjs E3
+E06,Sale,Số lượng 0/âm,Equivalence,CODE,Server qty<=0 raise
+E07,Sale,Số lượng thập phân,Equivalence,PARTIAL,UI floor; server nhận numeric
+E08,Sale,Bán vượt tồn,Equivalence,CODE,v36 _inv_assert_sale_stock
+E09,Sale,Retry sau lỗi mạng không tạo đơn trùng,E2E,PASS,qa/e2e-smoke.mjs E4 cùng nonce
+E10,Sale,Double-click nút Lưu,Concurrency,CODE,busy signal
+E11,Sale,Nhiều đơn song song 1 lượt,Use case,CODE,orderTabs + nonce riêng
+E12,Sale,Thu một phần ngay khi bán,Use case,OPEN,Chỉ có "Khách đưa"; chưa ghi nợ phần thiếu
+E13,Sale,Tạo khách mới trong đơn,Use case,CODE,customer-picker modal
+E14,Sale,Mã đơn duy nhất,Boundary,PASS,unit document-code; unique index v43
+E15,Sale,Đơn công nợ không ghi thu,Decision table,CODE,v41 trigger + SQL T1
+F01,Order,Đơn nợ → Hoàn tất có ghi thu,State,PASS,SQL qa/sql-integrity.test.mjs T1
+F02,Order,Chặn trạng thái không hợp lệ,Equivalence,CODE,v43 whitelist
+F03,Order,Hủy đơn hoàn tồn,State,CODE,v27 _inv_order_status_chg
+F04,Order,Hủy đơn xóa khoản thu,State,CODE,v41 orders_nonbillable_after
+F05,Order,Đánh dấu đã trả ghi thu,State,PASS,SQL qa/sql-integrity.test.mjs T1
+F06,Order,Chuyển về còn nợ đảo thu,State,PASS,SQL qa/sql-integrity.test.mjs T2
+F07,Order,Xóa đơn đã thu tiền,State,PASS,SQL qa/sql-integrity.test.mjs T3
+F08,Order,Xóa nhiều đơn,Use case,CODE,inv_delete_orders
+F09,Order,Sửa toàn bộ đơn,Use case,CODE,inv_update_order_full
+F10,Order,Sửa đơn có thu nợ từng phần,State,OPEN,v40 sửa cả dòng Thu nợ; xem BUG-OPEN-05
+F11,Order,Trả vượt số đã mua,State,PASS,SQL qa/sql-integrity.test.mjs T4
+F12,Order,Trả hàng sửa giá để hoàn nhiều tiền,Security,PASS,SQL qa/sql-integrity.test.mjs T4
+F13,Order,Trả hàng trên đơn đã hủy,State,PASS,SQL qa/sql-integrity.test.mjs T5
+F14,Order,Trả hàng trừ công nợ khách,Reconciliation,PASS,SQL v44 T7-T9: hoàn mặt 0 khi chưa thu, bù nợ đúng
+F15,Order,Tìm/lọc/sắp xếp đơn,Use case,CODE,orders.service.list
+F16,Order,Phân trang danh sách đơn,Performance,OPEN,list() không limit
+F17,Order,In lại đơn,Use case,BLOCKED,Máy in thật
+G01,Inventory,Sổ cái tồn kho append-only,Reconciliation,CODE,inventory_ledger + trigger
+G02,Inventory,Chặn bán âm kho,Equivalence,CODE,v36
+G03,Inventory,Kiểm kê chốt diff,State,CODE,inv_complete_stockcount
+G04,Inventory,Chuyển kho in-transit,State,CODE,v28 RPC
+G05,Inventory,Sửa stock trực tiếp qua API,Objective,OPEN,Chỉ audit; không chặn
+G06,Inventory,Tổng nhập-xuất = tồn,Reconciliation,BLOCKED,Chưa có DB live
+G07,Inventory,Cảnh báo hết hàng,Use case,CODE,Notification service
+G08,Inventory,FIFO/FEFO theo lô,Use case,OPEN,Chưa triển khai
+G09,Inventory,Lô & hạn dùng,Use case,PARTIAL,Chỉ có expiry_date trên sản phẩm
+G10,Inventory,Đa kho/đa vị trí,Use case,OPEN,Chưa có mô hình kho/vị trí
+H01,Print,Render template hóa đơn,Use case,CODE,7 unit test invoice-template
+H02,Print,Chặn script/on* trong template,Security,CODE,validate + sanitize
+H03,Print,Số tiền bằng chữ,Boundary,PARTIAL,Đã mở rộng tới triệu tỷ; chưa test 1e12
+H04,Print,Khổ A5/A4/80mm,Use case,CODE,baseCss + normalizePaperSize
+H05,Print,QR VietQR,Use case,CODE,Tạo URL từ bank_code/account
+H06,Print,Barcode Code128,Use case,CODE,JsBarcode + fallback
+H07,Print,Tên/địa chỉ cực dài không vỡ trang,Edge,BLOCKED,Cần in/PDF thật
+H08,Print,Tiếng Việt có dấu,E2E,PASS,E2E hiển thị đúng dấu
+H09,Print,Máy in offline/hết giấy,Error guessing,BLOCKED,Phần cứng
+I01,Debt,Công nợ phát sinh theo đơn,Reconciliation,PASS,SQL T1
+I02,Debt,Thu nợ một phần,Reconciliation,PASS,SQL T2
+I03,Debt,Thu vượt dư nợ,Equivalence,CODE,crm_adjust_customer_debt chặn
+I04,Debt,Sổ cái công nợ balance_after,Reconciliation,CODE,customer_debt_ledger
+I05,Debt,Số dư ví = khai báo + giao dịch,Reconciliation,BLOCKED,Cần dữ liệu thật
+I06,Debt,Chuyển tiền nội bộ,Use case,CODE,transfer_money RPC
+I07,Debt,Sửa/xóa giao dịch hệ thống,Security,CODE,transactions_guard
+I08,Debt,Điều chỉnh giảm thanh toán,Reconciliation,PASS,Sửa khoản chi giả — SQL T2
+I09,Debt,Công nợ NCC,Reconciliation,CODE,sup_debts/sup_pay_debt
+I10,Debt,Báo cáo tuổi nợ,Use case,CODE,report/debt
+I11,Debt,Xóa đơn đã thu,Reconciliation,PASS,SQL T3
+I12,Debt,Báo cáo thu-chi khớp giao dịch,Reconciliation,CODE,report_kpis
+I13,Debt,Kiểu tiền numeric không float,Schema,CODE,numeric(14/16,2)
+J01,Customer,CRUD khách hàng,Use case,CODE,crm RPC + page
+J02,Customer,Trùng SĐT/email,Equivalence,PASS,9 unit test duplicate-detection
+J03,Customer,Xóa khách đã có đơn,Use case,CODE,soft delete + FK
+J04,Customer,Import/export khách,Use case,BLOCKED,Cần file thật
+J05,Customer,Gộp khách trùng,Use case,CODE,crm_merge_customers
+J06,Customer,Nhà cung cấp CRUD,Use case,CODE,suppliers.service
+K01,Report,Doanh thu loại đơn hủy/báo giá,E2E,PASS,E2E report + code RPC
+K02,Report,Doanh thu khớp DB thật,Reconciliation,BLOCKED,Không có DB live
+K03,Report,Lợi nhuận gộp dùng COGS server,E2E,PASS,E2E 734.500 ₫
+K04,Report,Lọc ngày/tuần/tháng/năm,Equivalence,CODE,rangeStart/dateStr
+K05,Report,Ngày 29/02 & múi giờ,Edge,NOT_TESTED,Chưa có bộ dữ liệu ngày đặc biệt
+K06,Report,Dữ liệu rỗng,Use case,CODE,empty state
+K07,Report,Dữ liệu lớn,Performance,BLOCKED,Chưa có DB 100k đơn
+K08,Report,Xuất CSV,Security,PASS,csv-export.service.spec.ts
+K09,Report,Giới hạn 2000 dòng fallback,Performance,PARTIAL,Đường chính dùng RPC không giới hạn
+K10,Report,Báo cáo nhập-xuất-tồn,Reconciliation,CODE,report_inventory
+L01,System,Tìm kiếm toàn cục,Use case,CODE,Search trong từng trang
+L02,System,Thông báo không trùng,Use case,PARTIAL,Đọc-theo-shop lưu localStorage
+L03,System,Cài đặt chỉ owner ghi,Objective,CODE,v36 settings RLS
+L04,System,Template hóa đơn validate,Use case,PASS,7 unit test
+L05,System,Backup & phục hồi thật,Use case,NOT_TESTED,Không có quyền Supabase
+L06,System,Nhật ký hệ thống,Use case,CODE,activity_logs
+L07,System,API token không lộ,Objective,OPEN,Lưu plaintext; chưa có verifier
+L08,System,Cấu hình tích hợp,Use case,CODE,integration owner-only
+M01,NFR,Lint,E2E,PASS,npm run lint
+M02,NFR,Unit test,E2E,PASS,59/59
+M03,NFR,Build production,E2E,PASS,npm run build (3 warning style budget)
+M04,NFR,Typecheck,E2E,PASS,tsc --noEmit
+M05,NFR,Console error trên luồng chính,E2E,PASS,qa/e2e-smoke.mjs
+M06,NFR,RBAC vận đơn và bán hàng,E2E,PASS,qa/e2e-smoke.mjs E6
+M07,NFR,XSS stored/reflected,Security,CODE,Angular escape + sanitize template
+M08,NFR,SQL injection,Security,PASS,postgrest-search.spec + whitelist RPC
+M09,NFR,CSV injection,Security,PASS,csv-export.service.spec
+M10,NFR,CSRF,Objective,CODE,Dùng bearer token; không cookie session
+M11,NFR,HTTPS/security headers,Objective,BLOCKED,Cấu hình Vercel/Supabase
+M12,NFR,WCAG 2.2 AA,Security/UX,PARTIAL,a11y-label service; chưa screen reader
+M13,NFR,Responsive 360px-4K,Compatibility,BLOCKED,Chưa chạy ma trận viewport
+M14,NFR,Chrome/Firefox/Safari/Edge,Compatibility,BLOCKED,Chỉ Chromium headless
+M15,NFR,Đa ngôn ngữ & định dạng số/ngày,Objective,PARTIAL,Login có VN/EN; còn lại tiếng Việt
+M16,NFR,Bundle/Core Web Vitals,Performance,PARTIAL,Build 1.7MB; chưa đo LCP/INP
+M17,NFR,Tải đồng thời/race,Concurrency,BLOCKED,Chưa có môi trường tải
+M18,NFR,Backup/PITR,Objective,BLOCKED,Không có quyền hạ tầng

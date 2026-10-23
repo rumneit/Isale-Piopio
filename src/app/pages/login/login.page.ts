@@ -145,12 +145,13 @@ export class LoginPage {
               return false;
             }
             try {
-              await this.sb.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + '/#/login',
+              const { error } = await this.sb.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/#/reset-password',
               });
+              if (error) throw error;
               const t = await this.alertCtrl.create({
                 header: 'Đã gửi',
-                message: `Kiểm tra hộp thư ${email} và làm theo link đặt lại mật khẩu.`,
+                message: `Kiểm tra hộp thư ${email} (cả mục Spam) và bấm link đặt lại mật khẩu. Link có hiệu lực giới hạn, hãy dùng ngay.`,
                 buttons: ['OK'],
               });
               await t.present();

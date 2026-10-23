@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { LogService } from './log.service';
 import { Order, OrderItem } from '../models/models';
 import { safeIlikeTerm } from '../utils/postgrest-search';
+import { newDocumentCode } from '../utils/document-code';
 
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
@@ -16,9 +17,7 @@ export class OrdersService {
   }
 
   newCode(): string {
-    const d = new Date();
-    const ymd = `${String(d.getFullYear()).slice(2)}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
-    return `DH-${ymd}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    return newDocumentCode('DH');
   }
 
   async list(search = '', status = 'all', statusField: 'all' | string = 'all'): Promise<Order[]> {
@@ -150,26 +149,96 @@ export class OrdersService {
     return OrdersService.paymentMethods.find((m) => m.value === code)?.label ?? code;
   }
 
-  /** Đổi trạng thái nhiều đơn (ISale: bulk status) */
-  async bulkUpdateStatus(ids: string[], status: string): Promise<void> {
-    if (!this.sb.isConfigured || !this.shopId || !ids.length) return;
-    const { error } = await this.sb
-      .from('orders')
-      .update({ status })
-      .in('id', ids)
-      .eq('shop_id', this.shopId!);
-    if (error) throw error;
+  private static isMissingLifecycleRpc(error: { code?: string; message?: string } | null): boolean {
+    const msg = String(error?.message ?? '');
+    return (
+      error?.code === 'PGRST202' ||
+      /inv_set_order_status|inv_set_order_paid|inv_delete_order|inv_delete_orders|Could not find the function|schema cache/i.test(msg)
+    );
   }
 
-  /** Xóa nhiều đơn (ISale: multi-delete) */
+  /**
+   * Đổi trạng thái đơn qua RPC v43: server đổi trạng thái trong cùng transaction
+   * với bút toán kho/công nợ và bảo đảm đơn "đã thanh toán" luôn có khoản thu.
+   * Fallback UPDATE trực tiếp chỉ khi DB chưa chạy v43.
+   */
+  async setStatus(id: string, status: string): Promise<void> {
+    if (!this.sb.isConfigured || !this.shopId) return;
+    const { error } = await this.sb.client.rpc('inv_set_order_status', {
+      p_shop: this.shopId,
+      p_order_id: id,
+      p_status: status,
+    });
+    if (!error) return;
+    if (!OrdersService.isMissingLifecycleRpc(error)) throw error;
+    const fallback = await this.sb
+      .from('orders')
+      .update({ status })
+      .eq('id', id)
+      .eq('shop_id', this.shopId);
+    if (fallback.error) throw fallback.error;
+  }
+
+  /**
+   * Đặt cờ đã thanh toán qua RPC v43. Server ghi/đảo khoản thu tương ứng để
+   * sổ quỹ và công nợ không lệch; fallback UPDATE khi DB chưa chạy v43.
+   */
+  async setPaid(id: string, paid: boolean): Promise<void> {
+    if (!this.sb.isConfigured || !this.shopId) return;
+    const { error } = await this.sb.client.rpc('inv_set_order_paid', {
+      p_shop: this.shopId,
+      p_order_id: id,
+      p_paid: paid,
+    });
+    if (!error) return;
+    if (!OrdersService.isMissingLifecycleRpc(error)) throw error;
+    const fallback = await this.sb
+      .from('orders')
+      .update({ paid })
+      .eq('id', id)
+      .eq('shop_id', this.shopId);
+    if (fallback.error) throw fallback.error;
+  }
+
+  /** Đổi hình thức thanh toán qua RPC v43 (fallback UPDATE khi chưa migrate). */
+  async setPaymentMethod(id: string, method: string | null): Promise<void> {
+    if (!this.sb.isConfigured || !this.shopId) return;
+    const { error } = await this.sb.client.rpc('inv_set_order_payment', {
+      p_shop: this.shopId,
+      p_order_id: id,
+      p_method: method,
+    });
+    if (!error) return;
+    if (!OrdersService.isMissingLifecycleRpc(error)) throw error;
+    const fallback = await this.sb
+      .from('orders')
+      .update({ payment_method: method })
+      .eq('id', id)
+      .eq('shop_id', this.shopId);
+    if (fallback.error) throw fallback.error;
+  }
+
+  /** Đổi trạng thái nhiều đơn (ISale: bulk status) — từng đơn qua RPC v43. */
+  async bulkUpdateStatus(ids: string[], status: string): Promise<void> {
+    if (!this.sb.isConfigured || !this.shopId || !ids.length) return;
+    for (const id of ids) await this.setStatus(id, status);
+  }
+
+  /** Xóa nhiều đơn (ISale: multi-delete) — RPC v43 kiểm tra sổ sách trước khi xóa. */
   async bulkRemove(ids: string[]): Promise<void> {
     if (!this.sb.isConfigured || !this.shopId || !ids.length) return;
-    const { error } = await this.sb
+    const { error } = await this.sb.client.rpc('inv_delete_orders', {
+      p_shop: this.shopId,
+      p_ids: ids,
+    });
+    if (!error) return;
+    if (!OrdersService.isMissingLifecycleRpc(error)) throw error;
+    const fallback = await this.sb
       .from('orders')
       .delete()
       .in('id', ids)
       .eq('shop_id', this.shopId!);
-    if (error) throw error;
+    if (fallback.error) throw fallback.error;
   }
 
   async getWithItems(id: string): Promise<{ order: Order | null; items: OrderItem[] }> {
@@ -304,7 +373,14 @@ export class OrdersService {
   }
 
   async remove(id: string): Promise<void> {
-    const { error } = await this.sb.from('orders').delete().eq('id', id).eq('shop_id', this.shopId!);
-    if (error) throw error;
+    if (!this.sb.isConfigured || !this.shopId) return;
+    const { error } = await this.sb.client.rpc('inv_delete_order', {
+      p_shop: this.shopId,
+      p_order_id: id,
+    });
+    if (!error) return;
+    if (!OrdersService.isMissingLifecycleRpc(error)) throw error;
+    const fallback = await this.sb.from('orders').delete().eq('id', id).eq('shop_id', this.shopId);
+    if (fallback.error) throw fallback.error;
   }
 }

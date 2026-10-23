@@ -36,6 +36,8 @@ interface DraftReturn {
   item: OrderItem;
   selected: boolean;
   qty: number;
+  /** Số còn được trả = số đã mua − số đã trả ở các phiếu trước. */
+  maxQty: number;
 }
 
 @Component({
@@ -81,6 +83,8 @@ export class OrderReturnPage implements OnInit {
 
   note = '';
   error = '';
+  /** Giữ nguyên qua các lần bấm Lưu để retry không sinh phiếu trả trùng. */
+  private readonly nonce = crypto.randomUUID();
 
   constructor() {
     addIcons({ saveOutline, closeOutline, returnDownBackOutline, cubeOutline });
@@ -89,7 +93,7 @@ export class OrderReturnPage implements OnInit {
   get total(): number {
     return this.drafts()
       .filter((d) => d.selected && d.qty > 0)
-      .reduce((s, d) => s + d.item.price * Math.min(d.qty, d.item.qty), 0);
+      .reduce((s, d) => s + d.item.price * Math.min(d.qty, d.maxQty), 0);
   }
 
   get selectedCount(): number {
@@ -101,10 +105,27 @@ export class OrderReturnPage implements OnInit {
     if (!id) return;
     this.busy.set(true);
     try {
-      const { order, items } = await this.ordersService.getWithItems(id);
+      const [{ order, items }, previous] = await Promise.all([
+        this.ordersService.getWithItems(id),
+        this.returnsService.listByOrder(id).catch(() => []),
+      ]);
       if (order) {
         this.order.set(order);
-        this.drafts.set(items.map((item) => ({ item, selected: false, qty: item.qty })));
+        // Trừ số lượng đã trả ở các phiếu trước — không cho trả vượt số đã mua.
+        const returned = new Map<string, number>();
+        for (const note of previous) {
+          for (const it of note.items) {
+            const key = it.product_id ?? `name:${it.name}`;
+            returned.set(key, (returned.get(key) ?? 0) + Number(it.qty ?? 0));
+          }
+        }
+        this.drafts.set(
+          items.map((item) => {
+            const key = item.product_id ?? `name:${item.name}`;
+            const maxQty = Math.max(0, Number(item.qty) - (returned.get(key) ?? 0));
+            return { item, selected: false, qty: maxQty, maxQty };
+          })
+        );
       }
     } catch (e: any) {
       this.error = e?.message ?? 'Không tải được đơn hàng.';
@@ -133,7 +154,7 @@ export class OrderReturnPage implements OnInit {
         product_id: d.item.product_id,
         name: d.item.name,
         price: d.item.price,
-        qty: Math.min(d.qty, d.item.qty),
+        qty: Math.min(d.qty, d.maxQty),
       }));
 
     if (!items.length) {
@@ -150,12 +171,19 @@ export class OrderReturnPage implements OnInit {
           customer_id: order.customer_id,
           refunded: this.refunded(),
           note: this.note.trim() || null,
+          idempotencyKey: this.nonce,
         },
         items
       );
+      const cash = Number(created.cash_refund ?? 0);
+      const credit = Number(created.debt_credit ?? 0);
+      const parts: string[] = [];
+      if (cash > 0) parts.push(`hoàn tiền mặt ${this.formatMoney(cash)}`);
+      if (credit > 0) parts.push(`giảm công nợ ${this.formatMoney(credit)}`);
+      const moneyNote = parts.length ? `; ${parts.join(', ')}` : '; không phát sinh hoàn tiền';
       const t = await this.toastCtrl.create({
-        message: `Đã tạo phiếu trả ${created.code} — tồn kho đã được hoàn lại`,
-        duration: 2200,
+        message: `Đã tạo phiếu trả ${created.code} — tồn kho đã hoàn lại${moneyNote}`,
+        duration: 3200,
         color: 'success',
         position: 'bottom',
       });

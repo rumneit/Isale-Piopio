@@ -119,7 +119,7 @@ export class QuotesPage implements OnInit {
           text: 'Chốt đơn',
           handler: async () => {
             try {
-              await this.ordersService.update(order.id, { status: 'pending' });
+              await this.ordersService.setStatus(order.id, 'pending');
               this.toast(`Đã chốt đơn ${order.code}`);
               await this.load();
             } catch (e: any) {

@@ -82,6 +82,18 @@ export class ReportsService {
     }
   }
 
+  /**
+   * Báo cáo tổng hợp cho trang Biểu đồ / Báo cáo theo sản phẩm.
+   *
+   * Nguồn số liệu ưu tiên là RPC server-side v26 (report_kpis /
+   * report_timeseries / report_top_products) — cùng nguồn với Dashboard nên
+   * không còn cảnh hai trang báo cáo ra hai con số khác nhau. RPC đã loại
+   * đơn nháp / báo giá / đã hủy và tính giá vốn (COGS).
+   *
+   * Fallback chỉ dùng khi DB chưa chạy migration v26; khi đó cũng phải loại
+   * các trạng thái không phát sinh doanh thu (trước đây cộng cả đơn hủy/báo
+   * giá nên doanh thu bị thổi phồng).
+   */
   async getReport(range: ReportRange): Promise<ReportResult> {
     const empty: ReportResult = {
       revenue: 0,
@@ -94,12 +106,47 @@ export class ReportsService {
     };
     if (!this.sb.isConfigured || !this.shopId) return empty;
 
-    const startIso = this.rangeStart(range).toISOString();
+    const start = this.rangeStart(range);
+    const from = this.dateStr(start);
+    const to = this.dateStr(new Date());
+    try {
+      const [kpis, series, top] = await Promise.all([
+        this.kpis(from, to),
+        this.timeseries('day', from, to),
+        this.topProducts(from, to, 20),
+      ]);
+      if (kpis?.current) {
+        const c = kpis.current;
+        return {
+          revenue: Number(c.revenue ?? 0),
+          ordersCount: Number(c.orders ?? 0),
+          income: Number(c.income ?? 0),
+          expense: Number(c.expense ?? 0),
+          profit: Number(c.profit ?? 0),
+          topProducts: top.map((r) => ({
+            name: r.name ?? 'Khác',
+            qty: Number(r.qty ?? 0),
+            total: Number(r.revenue ?? 0),
+          })),
+          daily: series
+            .map((p) => ({
+              date: String(p.bucket).slice(0, 10),
+              revenue: Number(p.revenue ?? 0),
+              income: Number(p.income ?? 0),
+              expense: Number(p.expense ?? 0),
+            }))
+            .sort((a, b) => (a.date < b.date ? 1 : -1)),
+        };
+      }
+    } catch {
+      // DB chưa có RPC v26 → dùng fallback bên dưới.
+    }
 
+    const startIso = start.toISOString();
     const [ordersRes, transRes] = await Promise.all([
       this.sb
         .from('orders')
-        .select('id,total,created_at')
+        .select('id,total,created_at,status')
         .eq('shop_id', this.shopId)
         .gte('created_at', startIso)
         .order('created_at', { ascending: false })
@@ -115,32 +162,45 @@ export class ReportsService {
     if (ordersRes.error) throw ordersRes.error;
     if (transRes.error) throw transRes.error;
 
-    const orders: any[] = ordersRes.data ?? [];
+    // Chỉ đơn thực sự phát sinh doanh thu (khớp report_kpis v26).
+    const orders: any[] = (ordersRes.data ?? []).filter(
+      (o) => !['draft', 'quote', 'cancelled'].includes(String(o.status ?? ''))
+    );
     const trans: any[] = transRes.data ?? [];
 
     const revenue = orders.reduce((s, o) => s + (o.total ?? 0), 0);
     const income = trans.filter((t) => t.type === 'income').reduce((s, t) => s + (t.amount ?? 0), 0);
     const expense = trans.filter((t) => t.type === 'expense').reduce((s, t) => s + (t.amount ?? 0), 0);
 
-    // Top sản phẩm bán chạy
+    // Top sản phẩm bán chạy + giá vốn (lấy đủ đơn theo lô 100 id/lần).
     let topProducts: ReportTopProduct[] = [];
+    let cogs = 0;
     const orderIds = orders.map((o) => o.id);
     if (orderIds.length) {
-      const { data: items, error } = await this.sb
-        .from('order_items')
-        .select('name,qty,total')
-        .in('order_id', orderIds.slice(0, 500));
-      if (!error && items) {
-        const map = new Map<string, ReportTopProduct>();
-        for (const it of items as any[]) {
-          const key = it.name ?? 'Khác';
-          const cur = map.get(key) ?? { name: key, qty: 0, total: 0 };
-          cur.qty += Number(it.qty ?? 0);
-          cur.total += Number(it.total ?? 0);
-          map.set(key, cur);
-        }
-        topProducts = [...map.values()].sort((a, b) => b.total - a.total).slice(0, 20);
+      const items: any[] = [];
+      for (let i = 0; i < orderIds.length; i += 100) {
+        const { data, error } = await this.sb
+          .from('order_items')
+          .select('order_id,product_id,name,qty,total')
+          .in('order_id', orderIds.slice(i, i + 100));
+        if (error) throw error;
+        items.push(...(data ?? []));
       }
+      const { data: products } = await this.sb
+        .from('products')
+        .select('id,cost')
+        .eq('shop_id', this.shopId);
+      const costById = new Map((products ?? []).map((p: any) => [p.id, Number(p.cost ?? 0)]));
+      const map = new Map<string, ReportTopProduct>();
+      for (const it of items) {
+        const key = it.name ?? 'Khác';
+        const cur = map.get(key) ?? { name: key, qty: 0, total: 0 };
+        cur.qty += Number(it.qty ?? 0);
+        cur.total += Number(it.total ?? 0);
+        map.set(key, cur);
+        if (it.product_id) cogs += Number(it.qty ?? 0) * (costById.get(it.product_id) ?? 0);
+      }
+      topProducts = [...map.values()].sort((a, b) => b.total - a.total).slice(0, 20);
     }
 
     // Doanh thu theo ngày
@@ -163,7 +223,15 @@ export class ReportsService {
     }
     const daily = [...dailyMap.values()].sort((a, b) => (a.date < b.date ? 1 : -1));
 
-    return { revenue, ordersCount: orders.length, income, expense, profit: revenue - expense, topProducts, daily };
+    return {
+      revenue,
+      ordersCount: orders.length,
+      income,
+      expense,
+      profit: revenue - cogs,
+      topProducts,
+      daily,
+    };
   }
 
   // ==================== v26: tổng hợp server-side qua RPC ====================

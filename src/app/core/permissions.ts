@@ -82,6 +82,8 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   // Bán hàng
   order: 'sell',
   sale: 'sell',
+  // Vận đơn chứa địa chỉ/COD khách hàng — không được mở cho vai trò không bán hàng.
+  shipments: 'sell',
   returns: 'sell',
   'online-order': 'sell',
   'cafe-tables': 'sell',

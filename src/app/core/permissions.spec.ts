@@ -30,6 +30,9 @@ describe('permissions (RBAC)', () => {
     expect(permissionForRoute('/external-api')).toBe('owner');
     expect(permissionForRoute('/suppliers')).toBe('inventory');
     expect(permissionForRoute('/supplier-debts')).toBe('money');
+    // Vận đơn chứa địa chỉ + COD khách: phải yêu cầu quyền bán hàng.
+    expect(permissionForRoute('/shipments')).toBe('sell');
+    expect(permissionForRoute('/shipments/detail/abc')).toBe('sell');
     expect(permissionForRoute('/custom-field')).toBe('owner');
     expect(permissionForRoute('/custom-table/abc')).toBe('owner');
   });

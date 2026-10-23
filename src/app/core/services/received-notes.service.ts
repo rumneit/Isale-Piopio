@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { safeIlikeTerm } from '../utils/postgrest-search';
+import { newDocumentCode } from '../utils/document-code';
 
 export interface ReceivedNoteItem {
   product_id: string | null;
@@ -46,9 +47,7 @@ export class ReceivedNotesService {
   }
 
   newCode(): string {
-    const d = new Date();
-    const ymd = `${String(d.getFullYear()).slice(2)}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
-    return `PN-${ymd}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    return newDocumentCode('PN');
   }
 
   async list(search = ''): Promise<ReceivedNote[]> {
@@ -82,6 +81,8 @@ export class ReceivedNotesService {
       due_date?: string | null;
       /** v29: phiếu "nhập tiếp phần thiếu" tham chiếu phiếu gốc. */
       parent_id?: string | null;
+      /** Nonce ổn định cho phiếu đang lập — thử lại không tạo/tồn kho trùng. */
+      idempotencyKey?: string;
     },
     items: ReceivedNoteItem[]
   ): Promise<ReceivedNote> {
@@ -102,7 +103,8 @@ export class ReceivedNotesService {
       parent_id: input.parent_id ?? null,
     };
     const { data, error } = await this.sb.client.rpc('inv_create_received_note', {
-      p_shop: shopId, p_note: note, p_items: items, p_nonce: crypto.randomUUID(),
+      p_shop: shopId, p_note: note, p_items: items,
+      p_nonce: input.idempotencyKey ?? crypto.randomUUID(),
     });
     if (error) {
       if (error.code === 'PGRST202' || /inv_create_received_note|schema cache/i.test(error.message)) {
