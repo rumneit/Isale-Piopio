@@ -5,51 +5,130 @@
     <router-outlet />
   </main>
 
-  <ion-menu class="app-menu" contentId="main-content" side="start" type="overlay" id="app-menu" menu-id="app-menu">
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>{{ shopName }}</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content>
-      <div class="app-menu-profile">
-        <div class="app-menu-avatar">
-          <ion-icon name="person-outline" />
+  <ion-menu
+    class="app-menu"
+    contentId="main-content"
+    side="start"
+    type="overlay"
+    id="app-menu"
+    menu-id="app-menu"
+    aria-label="Menu chính"
+  >
+    <ion-header class="ion-no-border app-menu-header">
+      <div class="app-menu-hero">
+        <div class="app-menu-brand">
+          <div class="app-menu-brand-main">
+            <span class="app-menu-logo" aria-hidden="true">
+              <ion-icon name="storefront-outline" />
+            </span>
+            <span class="app-menu-wordmark">
+              <strong>PioPio</strong>
+              <span>Quản lý cửa hàng</span>
+            </span>
+          </div>
+          <ion-menu-toggle auto-hide="false">
+            <button type="button" class="menu-close" aria-label="Đóng menu">
+              <ion-icon name="close-outline" aria-hidden="true" />
+            </button>
+          </ion-menu-toggle>
         </div>
-        <div>
-          <div class="app-menu-name">{{ auth.displayName() }}</div>
-          <div class="app-menu-email">{{ email }}</div>
+
+        @if (auth.shopsOwned().length > 1) {
+          <button type="button" class="menu-shop" (click)="openShopSwitcher()" [title]="'Đổi cửa hàng — ' + shopName">
+            <ion-icon name="storefront-outline" aria-hidden="true" />
+            <span class="menu-shop-text">
+              <span class="menu-shop-label">Cửa hàng đang dùng</span>
+              <span class="menu-shop-name">{{ shopName }}</span>
+            </span>
+            <ion-icon name="swap-horizontal-outline" class="menu-shop-swap" aria-hidden="true" />
+          </button>
+        } @else {
+          <div class="menu-shop menu-shop-static">
+            <ion-icon name="storefront-outline" aria-hidden="true" />
+            <span class="menu-shop-text">
+              <span class="menu-shop-label">Cửa hàng đang dùng</span>
+              <span class="menu-shop-name">{{ shopName }}</span>
+            </span>
+          </div>
+        }
+
+        <div class="app-menu-user">
+          <div class="app-menu-avatar" aria-hidden="true">{{ initials }}</div>
+          <div class="app-menu-user-info">
+            <div class="app-menu-name">{{ auth.displayName() }}</div>
+            <div class="app-menu-email">{{ email }}</div>
+          </div>
         </div>
       </div>
+    </ion-header>
 
-      @if (auth.shopsOwned().length > 1) {
-        <button class="shop-switcher" (click)="openShopSwitcher()">
-          <ion-icon name="storefront-outline" />
-          <span class="shop-switcher-name">{{ shopName }}</span>
-          <ion-icon name="swap-horizontal-outline" class="shop-switcher-icon" />
-        </button>
-      }
-
-      <ion-list>
-        @for (item of visibleMenuItems(); track item.path) {
-          <ion-menu-toggle auto-hide="false">
-            <ion-item [routerLink]="item.path" routerLinkActive="ion-activatable" detail="true">
-              <ion-icon slot="start" [name]="item.icon" />
-              <ion-label>{{ item.title }}</ion-label>
-            </ion-item>
-          </ion-menu-toggle>
+    <div class="app-menu-search" role="search">
+      <div class="menu-search">
+        <ion-icon name="search-outline" aria-hidden="true" />
+        <input
+          type="search"
+          [value]="menuQuery()"
+          (input)="onMenuSearch($event)"
+          placeholder="Tìm mục trong menu..."
+          aria-label="Tìm mục trong menu"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        @if (menuQuery()) {
+          <button type="button" class="menu-search-clear" (click)="clearMenuSearch()" aria-label="Xóa tìm kiếm">
+            <ion-icon name="close-circle-outline" aria-hidden="true" />
+          </button>
         }
-      </ion-list>
+      </div>
+      <p class="menu-search-status" role="status" aria-live="polite">
+        @if (menuQuery()) {
+          {{ visibleMenuItems().length }} mục phù hợp
+        }
+      </p>
+    </div>
+
+    <ion-content>
+      @if (menuGroups().length) {
+        @for (group of menuGroups(); track group.title) {
+          <nav class="menu-section" [attr.aria-label]="group.title">
+            <div class="menu-section-title">{{ group.title }}</div>
+            <ion-list lines="none">
+              @for (item of group.items; track item.path) {
+                <ion-menu-toggle auto-hide="false">
+                  <ion-item
+                    button
+                    [routerLink]="item.path"
+                    routerLinkActive="menu-item-active"
+                    ariaCurrentWhenActive="page"
+                    detail="true"
+                  >
+                    <ion-icon slot="start" [name]="item.icon" aria-hidden="true" />
+                    <ion-label>{{ item.title }}</ion-label>
+                  </ion-item>
+                </ion-menu-toggle>
+              }
+            </ion-list>
+          </nav>
+        }
+      } @else {
+        <div class="menu-empty">
+          <ion-icon name="search-outline" aria-hidden="true" />
+          <p>Không tìm thấy mục phù hợp</p>
+          <button type="button" class="menu-empty-clear" (click)="clearMenuSearch()">Xóa tìm kiếm</button>
+        </div>
+      }
     </ion-content>
+
     <ion-footer>
-      <ion-list>
+      <div class="menu-footer-inner">
         <ion-menu-toggle auto-hide="false">
-          <ion-item button (click)="logout()" detail="false">
-            <ion-icon slot="start" name="log-out-outline" color="danger" />
-            <ion-label color="danger">Đăng xuất</ion-label>
-          </ion-item>
+          <button type="button" class="menu-logout" (click)="logout()">
+            <ion-icon name="log-out-outline" aria-hidden="true" />
+            <span>Đăng xuất</span>
+          </button>
         </ion-menu-toggle>
-      </ion-list>
+        <div class="menu-footnote">PioPio · Quản lý bán hàng</div>
+      </div>
     </ion-footer>
   </ion-menu>
 </ion-app>

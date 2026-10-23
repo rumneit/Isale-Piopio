@@ -1,10 +1,8 @@
-import { Component, OnInit, inject, computed } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject, computed, signal } from '@angular/core';
 import {
   IonApp,
   IonMenu,
   IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
   IonList,
   IonItem,
@@ -40,7 +38,9 @@ import {
   helpCircleOutline,
   settingsOutline,
   logOutOutline,
-  personOutline,
+  closeOutline,
+  searchOutline,
+  closeCircleOutline,
   gridOutline,
   returnDownBackOutline,
   calendarOutline,
@@ -96,8 +96,6 @@ export class NoReuseRouteStrategy extends IonicRouteStrategy implements RouteReu
     RouterOutlet,
     IonMenu,
     IonHeader,
-    IonToolbar,
-    IonTitle,
     IonContent,
     IonList,
     IonItem,
@@ -110,12 +108,14 @@ export class NoReuseRouteStrategy extends IonicRouteStrategy implements RouteReu
     RouterLinkActive,
   ],
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly auth = inject(AuthService);
   private router = inject(Router);
   private actionSheetCtrl = inject(ActionSheetController);
   private alertCtrl = inject(AlertController);
   private a11yLabels = inject(A11yLabelService);
+  private menuObserver?: MutationObserver;
+  private menuFocusTimer?: ReturnType<typeof setTimeout>;
 
   /**
    * Tự phục hồi khi tab đang mở dùng bản JS cũ (sau deploy mới):
@@ -145,6 +145,61 @@ export class AppComponent implements OnInit {
         this.recoverFromStaleChunk();
       }
     });
+  }
+
+  ngAfterViewInit(): void {
+    const menu = document.querySelector('ion-menu');
+    if (!menu) return;
+
+    // Ionic tự focus mục đầu tiên khi mở menu; đổi sang mục đang active để
+    // người dùng thấy ngay mình đang ở đâu, đồng thời cuộn mục đó vào khung nhìn.
+    this.menuObserver = new MutationObserver(() => {
+      if (!menu.classList.contains('show-menu')) {
+        clearTimeout(this.menuFocusTimer);
+        this.clearMenuSearch();
+        return;
+      }
+      clearTimeout(this.menuFocusTimer);
+      this.menuFocusTimer = setTimeout(() => this.focusActiveMenuItem(menu), 360);
+    });
+    this.menuObserver.observe(menu, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  ngOnDestroy(): void {
+    this.menuObserver?.disconnect();
+    clearTimeout(this.menuFocusTimer);
+  }
+
+  private focusActiveMenuItem(menu: Element): void {
+    if (!menu.classList.contains('show-menu')) return;
+    if (document.activeElement instanceof Element && document.activeElement.closest('.app-menu-search')) {
+      return;
+    }
+
+    const active = menu.querySelector<HTMLElement>('.menu-item-active');
+    if (!active) return;
+    const target = active.shadowRoot?.querySelector<HTMLElement>('a, button') ?? active;
+
+    // Đưa đầu nhóm chứa mục active lên đầu vùng cuộn để vẫn thấy tên nhóm,
+    // sau đó bảo đảm mục active không bị khuất dưới footer.
+    const section = active.closest('.menu-section');
+    const content = menu.querySelector('ion-content');
+    const scrollEl = content?.shadowRoot?.querySelector<HTMLElement>('.inner-scroll');
+    if (section && scrollEl) {
+      const contentRect = scrollEl.getBoundingClientRect();
+      const sectionRect = section.getBoundingClientRect();
+      scrollEl.scrollTop += sectionRect.top - contentRect.top - 4;
+
+      const activeRect = active.getBoundingClientRect();
+      const bottom = scrollEl.getBoundingClientRect().bottom;
+      if (activeRect.bottom > bottom) {
+        scrollEl.scrollTop += activeRect.bottom - bottom + 8;
+      }
+    } else {
+      active.scrollIntoView({ block: 'center', inline: 'nearest' });
+    }
+
+    target.focus({ preventScroll: true });
   }
 
   /**
@@ -221,10 +276,76 @@ export class AppComponent implements OnInit {
     { title: 'Trợ giúp', icon: 'help-circle-outline', path: '/help' },
   ];
 
-  /** Menu đã lọc theo quyền của người dùng hiện tại. */
-  readonly visibleMenuItems = computed(() =>
-    this.menuItems.filter((item) => !item.permission || this.auth.can(item.permission))
-  );
+  /** Thứ tự nhóm menu; mục mới chưa xếp nhóm sẽ rơi vào "Khác". */
+  private readonly menuSections: Array<{ title: string; paths: string[] }> = [
+    { title: 'Tổng quan', paths: ['/home'] },
+    {
+      title: 'Bán hàng',
+      paths: ['/order', '/shipments', '/returns', '/trade', '/sales-channels', '/cafe-tables'],
+    },
+    {
+      title: 'Kho hàng',
+      paths: ['/product', '/received-note', '/transfer', '/stock-check', '/import'],
+    },
+    {
+      title: 'Khách hàng & CRM',
+      paths: ['/contact', '/crm', '/crm/deals', '/crm/forecast', '/crm/quota', '/crm/approvals', '/calendar', '/note', '/contact/filter-duplicate'],
+    },
+    { title: 'Tài chính', paths: ['/money-account', '/debt', '/report'] },
+    {
+      title: 'Hệ thống',
+      paths: ['/activity-log', '/permission', '/integrations', '/shipping-partners', '/custom-field', '/custom-table', '/cyberlotus-tax', '/external-api', '/config', '/help'],
+    },
+  ];
+
+  readonly menuQuery = signal('');
+
+  /** Menu đã lọc theo quyền và ô tìm kiếm của người dùng hiện tại. */
+  readonly visibleMenuItems = computed(() => {
+    const query = this.normalizeMenuText(this.menuQuery().trim());
+    return this.menuItems.filter(
+      (item) =>
+        (!item.permission || this.auth.can(item.permission)) &&
+        (!query || this.normalizeMenuText(item.title).includes(query))
+    );
+  });
+
+  /** Nhóm các mục đang hiển thị để menu không còn là một danh sách dài, phẳng. */
+  readonly menuGroups = computed(() => {
+    const visible = this.visibleMenuItems();
+    const byPath = new Map(visible.map((item) => [item.path, item]));
+    const assigned = new Set<string>();
+    const groups = this.menuSections
+      .map(({ title, paths }) => {
+        const items = paths
+          .map((path) => byPath.get(path))
+          .filter((item): item is MenuItem => !!item);
+        items.forEach((item) => assigned.add(item.path));
+        return { title, items };
+      })
+      .filter((group) => group.items.length > 0);
+
+    const rest = visible.filter((item) => !assigned.has(item.path));
+    if (rest.length) groups.push({ title: 'Khác', items: rest });
+    return groups;
+  });
+
+  onMenuSearch(event: Event): void {
+    this.menuQuery.set((event.target as HTMLInputElement)?.value ?? '');
+  }
+
+  clearMenuSearch(): void {
+    this.menuQuery.set('');
+  }
+
+  /** Tìm không dấu để gõ "san pham" vẫn ra "Sản phẩm". */
+  private normalizeMenuText(value: string): string {
+    return (value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/gi, 'd')
+      .toLocaleLowerCase('vi');
+  }
 
   constructor() {
     addIcons({
@@ -242,7 +363,9 @@ export class AppComponent implements OnInit {
       helpCircleOutline,
       settingsOutline,
       logOutOutline,
-      personOutline,
+      closeOutline,
+      searchOutline,
+      closeCircleOutline,
       gridOutline,
       returnDownBackOutline,
       calendarOutline,
@@ -273,6 +396,16 @@ export class AppComponent implements OnInit {
 
   get email(): string {
     return (this.auth.session() as any)?.user?.email ?? '';
+  }
+
+  /** 1–2 chữ cái đầu để avatar menu có cá tính hơn icon mặc định. */
+  get initials(): string {
+    const source = (this.auth.displayName() || this.email || '?').trim();
+    const parts = source.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toLocaleUpperCase('vi');
+    }
+    return source.slice(0, 2).toLocaleUpperCase('vi');
   }
 
   get shopName(): string {
