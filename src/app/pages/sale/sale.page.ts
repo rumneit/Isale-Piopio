@@ -647,7 +647,7 @@ export class SalePage implements OnInit {
       const needed = Math.max(0, nextTotal - original);
       if (needed > Number(p.stock ?? 0)) {
         this.toast(
-          `Không đủ tồn kho cho "${p.name}". Còn ${p.stock}, cần thêm ${this.formatNum(needed)}.`,
+          `Không đủ tồn kho cho "${p.name}". Còn ${p.stock}, cần thêm ${this.formatNum(baseToAdd)}.`,
           'danger'
         );
         return false;
@@ -869,7 +869,7 @@ export class SalePage implements OnInit {
       const needed = Math.max(0, nextTotal - original);
       if (needed > Number(product.stock ?? 0)) {
         this.toast(
-          `Không đủ tồn kho cho "${item.name}". Còn ${product.stock}, cần thêm ${this.formatNum(needed)}.`,
+          `Không đủ tồn kho cho "${item.name}". Còn ${product.stock}, cần thêm ${this.formatNum(conversion)}.`,
           'danger'
         );
         return;
