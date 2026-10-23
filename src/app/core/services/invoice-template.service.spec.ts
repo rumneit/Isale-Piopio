@@ -88,6 +88,55 @@ describe('InvoiceTemplateService', () => {
     expect(context.hasShipping).toBe(false);
   });
 
+  it('prints the selected unit, unit quantity and unit price on the invoice', () => {
+    const order = {
+      id: 'order-u1', shop_id: 'shop-1', code: 'DH-U1', customer_id: null,
+      customer_name: 'Khách Thùng', status: 'completed', total: 4_500_000,
+      discount: 0, paid: true, note: null, ship_fee: 0, created_at: '2026-10-23T08:00:00.000Z',
+    };
+    const items = [
+      {
+        id: 'item-u1', order_id: 'order-u1', product_id: 'p1', name: 'Nước mắm',
+        price: 15_000, qty: 100, total: 1_500_000, unit: 'thùng', unit_qty: 1,
+        unit_conversion: 100, unit_price: 1_500_000,
+      },
+      {
+        id: 'item-u2', order_id: 'order-u1', product_id: 'p2', name: 'Nước mắm',
+        price: 15_000, qty: 200, total: 3_000_000, unit: 'thùng', unit_qty: 2,
+        unit_conversion: 100, unit_price: 1_500_000,
+      },
+    ];
+    const context: any = service.context({ order, items, shop: null });
+
+    expect(context.items[0].count).toBe(1);
+    expect(context.items[0].unit).toBe('thùng');
+    expect(context.items[0].priceFormatted).toBe('1.500.000');
+    expect(context.totalProductsQuantity).toBe(3);
+  });
+
+  it('does not invent a total quantity when an order mixes units', () => {
+    const order = {
+      id: 'order-u2', shop_id: 'shop-1', code: 'DH-U2', customer_id: null,
+      customer_name: 'Khách Hỗn Hợp', status: 'completed', total: 1_520_000,
+      discount: 0, paid: true, note: null, ship_fee: 0, created_at: '2026-10-23T08:00:00.000Z',
+    };
+    const items = [
+      {
+        id: 'item-u3', order_id: 'order-u2', product_id: 'p1', name: 'Nước mắm',
+        price: 15_000, qty: 100, total: 1_500_000, unit: 'thùng', unit_qty: 1,
+        unit_conversion: 100, unit_price: 1_500_000,
+      },
+      {
+        id: 'item-u4', order_id: 'order-u2', product_id: 'p1', name: 'Nước mắm',
+        price: 20_000, qty: 1, total: 20_000, unit: 'Cái', unit_qty: 1,
+        unit_conversion: 1, unit_price: 20_000,
+      },
+    ];
+    const context: any = service.context({ order, items, shop: null });
+
+    expect(context.totalProductsQuantity).toBe('—');
+  });
+
   it('escapes business data supplied to a template', () => {
     const html = service.render('<p>{{customerName}}</p>', { customerName: '<img src=x onerror=alert(1)>' });
     expect(html).toContain('&lt;img');

@@ -413,7 +413,15 @@ export class InvoiceTemplateService {
       totalFormatted: money(Number(item.total ?? Number(item.price) * Number(item.qty))),
       discountText: '',
     }));
-    const totalQty = input.items.reduce((sum, item) => sum + Number(item.qty ?? 0), 0);
+    // Tổng số lượng chỉ có nghĩa khi mọi dòng cùng một đơn vị. Nếu đơn có
+    // nhiều đơn vị (1 Thùng + 1 Cái), cộng số lượng sẽ sai; hiển thị "—".
+    const unitKeys = new Set(
+      input.items.map((item) => (item.unit ?? '').trim().toLocaleLowerCase('vi') || '__base__')
+    );
+    const totalQty =
+      unitKeys.size <= 1
+        ? input.items.reduce((sum, item) => sum + Number(item.unit_qty ?? item.qty ?? 0), 0)
+        : '—';
     const merchandise = input.items.reduce(
       (sum, item) => sum + Number(item.total ?? Number(item.price) * Number(item.qty)),
       0
