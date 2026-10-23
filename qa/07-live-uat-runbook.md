@@ -46,6 +46,11 @@ Chuẩn bị: 1 khách A, 1 sản phẩm giá bán 100.000, tồn ≥ 10.
 | R6 | Trả tiếp 1 món | Hoàn tiếp 100.000 ₫ | tổng expense trả hàng = 200.000; không âm quỹ |
 | R7 | Trả nốt 1 món | Hoàn 100.000 ₫ | tổng hoàn = 300.000 = đã thu; nợ 0 |
 
+Cách nhanh và an toàn nhất để chạy R1–R5 trên DB thật **không cần đăng nhập**: mở
+`qa/live-sql-uat.sql` trong SQL Editor và Run. File tự mở transaction, tạo dữ liệu QA,
+assert từng bước rồi **ROLLBACK** — không để lại bản ghi nào. Nếu thấy
+`TẤT CẢ ASSERT PASS` là đạt; nếu `FAIL R…` thì gửi nguyên văn lỗi.
+
 SQL đối chiếu sau R2 (thay `:shop`, `:order`):
 
 ```sql
