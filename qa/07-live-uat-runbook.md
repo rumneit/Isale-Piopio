@@ -6,10 +6,10 @@ và lấy bằng chứng để chuyển GO. Mọi bước dưới đây chạy t
 ## 0. Điều kiện vào
 
 - [ ] Đã backup/PITR còn hiệu lực (chụp màn hình ngày giờ + điểm khôi phục).
-- [ ] Đã chạy v43 (đã xác nhận bằng `node qa/probe-live.mjs`: 4/4 RPC v43 = APPLIED).
-- [ ] Đã chạy **v44** `supabase-migration-v44-return-debt-staff.sql` trong SQL Editor.
-- [ ] `node qa/probe-live.mjs` → tất cả dòng **APPLIED** (8/8).
-- [ ] Frontend mới đã deploy (`www/` từ commit hiện tại).
+- [x] Đã chạy v43 (xác nhận bằng `node qa/probe-live.mjs`).
+- [x] Đã chạy **v44** `supabase-migration-v44-return-debt-staff.sql` trong SQL Editor.
+- [x] `node qa/probe-live.mjs` → **8/8 APPLIED** (2026-10-23).
+- [x] Frontend mới đã deploy (`quanlykhopiopio.vercel.app`, `qa/prod-smoke.mjs` 7/7).
 
 ## 1. Xác nhận schema v44
 

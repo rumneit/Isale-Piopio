@@ -12,6 +12,7 @@
 | `sql-integrity.test.mjs` | **42 assert** tiền–nợ–tồn–trả hàng–nhân sự trên PostgreSQL thật (PGlite) |
 | `e2e-smoke.mjs` | **24 assert** UI trên build production với API giả lập |
 | `probe-live.mjs` | Kiểm tra RPC v43/v44 đã có trên DB thật (chỉ dùng anon key công khai) |
+| `prod-smoke.mjs` | Smoke bản deploy production (login, guard, reset route, 404) |
 | `evidence/` | Ảnh chụp + JSON kết quả E2E |
 
 ## Trạng thái bằng chứng
@@ -22,8 +23,9 @@
 | Unit test | **71/71** (13 file) |
 | SQL integrity (PGlite) | **42/42** (T1–T10; v44 chạy 2 lần để kiểm tra idempotent) |
 | E2E UI (mock API) | **24/24** (E1–E9) |
-| DB production | v43 đã áp; **v44 CHƯA áp** |
-| UAT dữ liệu thật | **CHƯA CHẠY** — dùng `07-live-uat-runbook.md` |
+| DB production | v43 + **v44 đã áp** (probe 8/8 APPLIED) |
+| Deploy production | **ĐÃ DEPLOY** — bundle mới + prod smoke 7/7 |
+| UAT dữ liệu thật (có đăng nhập) | **CHƯA CHẠY** — dùng `07-live-uat-runbook.md` |
 
 ## Chạy lại
 
@@ -36,6 +38,7 @@ npm run build
 npm i --no-save @electric-sql/pglite
 node qa/sql-integrity.test.mjs   # 42/42
 node qa/probe-live.mjs           # trạng thái migration trên DB thật
+node qa/prod-smoke.mjs           # smoke production (cần Chromium + libs như dưới)
 
 npx playwright install chromium
 FONTCONFIG_FILE=/tmp/fonts.conf \

@@ -13,9 +13,10 @@ Phạm vi: toàn bộ thay đổi đợt 1 + đợt 2 (19 file sửa, 8 file m�
 | Build production | `npm run build` | **PASS**, exit 0 | 3 warning style budget + 2 CommonJS (P3) |
 | SQL integrity | `node qa/sql-integrity.test.mjs` | **42/42 PASS** | PGlite; v44 chạy 2 lần |
 | E2E UI | `node qa/e2e-smoke.mjs` | **24/24 PASS** | build `www/`, Chromium 153 |
-| Probe DB thật | `node qa/probe-live.mjs` | **5/7 APPLIED** | v43 đủ; **v44 thiếu** |
+| Probe DB thật | `node qa/probe-live.mjs` | **8/8 APPLIED** | v43 + v44 đã áp |
 | Legacy route audit | `npm run audit` | **KHÔNG HOÀN TẤT** | script cũ chờ 401/timeout; thay bằng E2E mục tiêu |
-| UAT DB thật | `07-live-uat-runbook.md` | **CHƯA CHẠY** | cần tài khoản/DB thật |
+| Production smoke | `node qa/prod-smoke.mjs` | **7/7 PASS** | `quanlykhopiopio.vercel.app` |
+| UAT DB thật (có đăng nhập) | `07-live-uat-runbook.md` | **CHƯA CHẠY** | cần phiên đăng nhập thật |
 
 ## 2. Chi tiết
 
@@ -104,7 +105,16 @@ Không lỗi biên dịch. Cảnh báo: `sale.page.scss` 17,57 kB, `product-edit
 5. Chạy lại E2E trên domain thật với tài khoản thật cho 3 luồng: bán → in → thu nợ; trả hàng đơn nợ;
    thêm/xoá nhân viên.
 
-## 5. Môi trường repro
+## 5. Bằng chứng production (2026-10-23 18:30 UTC)
+
+- Push `cefb65c` lên `main`; Vercel auto-deploy; `index.html` đổi hash trong ~15 giây.
+- Bundle `main-MVQAIBGU.js`: có `piopio-recovery-hash`; chunk nhân viên chứa `inv_add_shop_member`,
+  chunk trả hàng chứa `cash_refund`/`debt_credit`/“giảm công nợ”.
+- `qa/prod-smoke.mjs`: login render, guard `/home` → `/login`, route reset không 404,
+  báo link hết hạn, trang 404 — 7/7, không lỗi console. Ảnh `prod-login.png`, `prod-reset.png`.
+- Headers: HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`.
+
+## 6. Môi trường repro
 
 ```bash
 npm ci

@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-23T18:32:18.321Z",
+  "base": "https://quanlykhopiopio.vercel.app",
+  "results": [
+    {
+      "name": "login render",
+      "ok": true,
+      "detail": "Bỏ qua menu, đến nội dung chính | PioPio - Đăng nhập | VN | EN | PioPio |  | Quản lý bán hàn"
+    },
+    {
+      "name": "không lỗi console",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "bị đưa về /login",
+      "ok": true,
+      "detail": "https://quanlykhopiopio.vercel.app/#/login"
+    },
+    {
+      "name": "trang reset tồn tại (không 404)",
+      "ok": true,
+      "detail": "Bỏ qua menu, đến nội dung chính | Đặt lại mật khẩu |  Mật khẩu mới | Liên kết đặt lại "
+    },
+    {
+      "name": "báo link không hợp lệ khi không có token",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "không lỗi console",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "có trang không tìm thấy",
+      "ok": true,
+      "detail": "Bỏ qua menu, đến nội dung chính | 404 | Không tìm thấy trang |  | Đường dẫn /khong-ton-t"
+    }
+  ]
+}

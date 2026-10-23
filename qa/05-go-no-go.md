@@ -2,20 +2,20 @@
 
 **Cập nhật:** 2026-10-23 (đợt 2)
 **Phiên bản:** nhánh `freebuff/8adbc358850df6f67320d216`, nền `main` + sửa QA + **migration v44**
-**Quyết định: NO-GO** — P0/P1 đã đóng trong mã, nhưng **v44 chưa được áp lên DB** và **UAT tiền–tồn–nợ
-trên dữ liệu thật chưa chạy**. Không thể ký GO khi hành vi production vẫn là bản cũ.
+**Quyết định: NO-GO (còn 1 bước)** — v44 đã áp (probe 8/8), frontend đã deploy production và smoke 7/7.
+Chỉ còn **UAT tiền–tồn–nợ có đăng nhập** chưa chạy, cùng backup/restore chưa có bằng chứng.
 
 ## 1. Trạng thái từng điều kiện GO
 
 | # | Điều kiện | Thực tế | Đạt? |
 |---|---|---|---|
-| 1 | Không còn P0 | BUG-15 (trả hàng đơn nợ chi tiền mặt) đã sửa bằng v44 + SQL T7–T9 + E2E E9. **Chưa áp v44** nên production vẫn còn hành vi cũ. | ⏳ |
+| 1 | Không còn P0 | BUG-15 đã sửa; **v44 đã áp** (probe 8/8 APPLIED), frontend có `cash_refund/debt_credit` trên bundle production. | ✅ |
 | 2 | Không còn P1 | BUG-16 (trang đặt lại mật khẩu) và BUG-17 (thêm/xoá nhân viên) đã có mã + test. Email recovery thật chưa gửi thử. | ✅ (code) |
 | 3 | 100% checklist đã test hoặc khai báo lý do | 148 mục: 33 PASS, 15 PARTIAL, 66 CODE, 22 BLOCKED, 10 OPEN (P2/P3), 2 NOT_TESTED. Đã khai báo đủ; **66 mục mới chỉ đọc mã**. | ⚠️ |
 | 4 | Mọi bug retest PASS | 17 bug đã sửa; 12 bug có test chạy lại PASS, 5 bug chỉ verify bằng build/typecheck (ghi PARTIAL). 9 vấn đề P2/P3 còn mở, không chặn GO. | ⚠️ |
-| 5 | Regression hành trình vàng PASS | Unit 71/71, SQL 42/42, E2E 24/24, lint/tsc/build PASS. Chưa chạy trên DB thật. | ⚠️ |
+| 5 | Regression hành trình vàng PASS | Unit 71/71, SQL 42/42, E2E 24/24, lint/tsc/build PASS; production smoke 7/7. Chưa chạy luồng tiền có đăng nhập. | ⚠️ |
 | 6 | Tiền–tồn–công nợ khớp 100% | SQL chứng minh 10 nhóm kịch bản; **chưa đối soát 20 đơn + 20 phiếu nhập + 20 công nợ trên DB thật**. | ❌ |
-| 7 | Hạ tầng an toàn | Chưa có bằng chứng backup/restore, PITR, rate limit, security headers. | ❌ |
+| 7 | Hạ tầng an toàn | HSTS + nosniff + frame/referrer/permissions policy đã bật; **chưa có bằng chứng backup/restore, PITR, rate limit**. | ⚠️ |
 
 ## 2. Điểm chất lượng
 
@@ -30,10 +30,9 @@ trên dữ liệu thật chưa chạy**. Không thể ký GO khi hành vi produc
 
 ## 3. Ba bước còn lại để GO (theo thứ tự)
 
-1. **Áp migration v44** `supabase-migration-v44-return-debt-staff.sql` (sau backup).
-   Xác nhận: `node qa/probe-live.mjs` → **8/8 APPLIED**.
-2. **Deploy frontend** từ build hiện tại (`npm run build` → `www/`).
-   Kiểm tra `/#/reset-password` mở được, không 404.
+1. ~~Áp migration v44~~ — **đã xong**, `node qa/probe-live.mjs` → 8/8 APPLIED.
+2. ~~Deploy frontend~~ — **đã xong**, `main-MVQAIBGU.js` chứa route reset, UI nhân viên và `cash_refund`;
+   `qa/prod-smoke.mjs` → 7/7 (login, guard, reset route, 404, không lỗi console).
 3. **Chạy `qa/07-live-uat-runbook.md`** trên staging rồi production:
    - R1–R7 (trả hàng ↔ công nợ) có ảnh + SQL;
    - 3 truy vấn đối soát 20/20/20 trả **0 dòng lệch**;
