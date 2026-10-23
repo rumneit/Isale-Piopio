@@ -8,7 +8,7 @@ Phạm vi: toàn bộ thay đổi đợt 1 + đợt 2 (19 file sửa, 8 file m�
 | Hạng mục | Lệnh | Kết quả | Ghi chú |
 |---|---|---|---|
 | Typecheck | `npx tsc -p tsconfig.app.json --noEmit` | **PASS**, exit 0 | |
-| Unit test | `npm run test:ci` | **63/63 PASS** (12 file) | +4 test `recovery-link` |
+| Unit test | `npm run test:ci` | **71/71 PASS** (13 file) | +4 recovery-link; +8 test từ main sau hợp nhất |
 | Lint | `npm run lint` | **PASS** — All files pass | |
 | Build production | `npm run build` | **PASS**, exit 0 | 3 warning style budget + 2 CommonJS (P3) |
 | SQL integrity | `node qa/sql-integrity.test.mjs` | **42/42 PASS** | PGlite; v44 chạy 2 lần |
@@ -22,14 +22,11 @@ Phạm vi: toàn bộ thay đổi đợt 1 + đợt 2 (19 file sửa, 8 file m�
 ### 2.1 Unit test
 
 ```
-✓ permissions.spec.ts (9)          ✓ shipping.spec.ts (8)
-✓ duplicate-detection.spec.ts (9)  ✓ tax.spec.ts (8)
-✓ invoice-template.service.spec.ts (7)
-✓ crm-deals.spec.ts (4)            ✓ customer-tools.spec.ts (4)
-✓ recovery-link.spec.ts (4)   ← mới (hash lồng, link lỗi, không phải recovery)
-✓ csv-export.service.spec.ts (3)   ✓ document-code.spec.ts (3)
-✓ settings.service.spec.ts (2)     ✓ postgrest-search.spec.ts (2)
-Test Files 12 passed | Tests 63 passed
+13 file, 71 test PASS — permissions, shipping, tax, invoice-template,
+duplicate-detection, crm-deals, customer-tools, csv-export, document-code,
+settings, postgrest-search, recovery-link (mới) và product-units (từ main).
++4 test recovery-link của đợt này; +8 test đơn vị/hoá đơn khi hợp nhất nhánh main.
+Test Files 13 passed | Tests 71 passed
 ```
 
 ### 2.2 SQL integrity (PGlite)

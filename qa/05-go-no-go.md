@@ -13,7 +13,7 @@ trên dữ liệu thật chưa chạy**. Không thể ký GO khi hành vi produc
 | 2 | Không còn P1 | BUG-16 (trang đặt lại mật khẩu) và BUG-17 (thêm/xoá nhân viên) đã có mã + test. Email recovery thật chưa gửi thử. | ✅ (code) |
 | 3 | 100% checklist đã test hoặc khai báo lý do | 148 mục: 33 PASS, 15 PARTIAL, 66 CODE, 22 BLOCKED, 10 OPEN (P2/P3), 2 NOT_TESTED. Đã khai báo đủ; **66 mục mới chỉ đọc mã**. | ⚠️ |
 | 4 | Mọi bug retest PASS | 17 bug đã sửa; 12 bug có test chạy lại PASS, 5 bug chỉ verify bằng build/typecheck (ghi PARTIAL). 9 vấn đề P2/P3 còn mở, không chặn GO. | ⚠️ |
-| 5 | Regression hành trình vàng PASS | Unit 63/63, SQL 42/42, E2E 24/24, lint/tsc/build PASS. Chưa chạy trên DB thật. | ⚠️ |
+| 5 | Regression hành trình vàng PASS | Unit 71/71, SQL 42/42, E2E 24/24, lint/tsc/build PASS. Chưa chạy trên DB thật. | ⚠️ |
 | 6 | Tiền–tồn–công nợ khớp 100% | SQL chứng minh 10 nhóm kịch bản; **chưa đối soát 20 đơn + 20 phiếu nhập + 20 công nợ trên DB thật**. | ❌ |
 | 7 | Hạ tầng an toàn | Chưa có bằng chứng backup/restore, PITR, rate limit, security headers. | ❌ |
 
@@ -49,7 +49,7 @@ Sau khi có 3 bằng chứng trên, QA ký GO. Không tuyên bố “không còn
   báo link hết hạn, đổi xong đăng xuất.
 - **Nhân sự:** thêm/xoá nhân viên theo email, preset quyền theo vai trò, chặn kéo tài khoản đã có dữ liệu riêng,
   ưu tiên đúng shop được gán cho nhân viên.
-- **Bằng chứng mới:** 42 assert SQL (T7–T10), 24 assert E2E (E7–E9), 63 unit test, ảnh `e2e-reset.png`,
+- **Bằng chứng mới:** 42 assert SQL (T7–T10), 24 assert E2E (E7–E9), 71 unit test, ảnh `e2e-reset.png`,
   `e2e-return-debt.png`.
 - **Công cụ:** `qa/probe-live.mjs` kiểm tra migration trên DB thật; `qa/07-live-uat-runbook.md` để UAT.
 

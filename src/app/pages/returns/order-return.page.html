@@ -38,13 +38,18 @@
 
       @for (draft of drafts(); track draft.item.id; let i = $index) {
         <div class="return-item">
-          <ion-checkbox [(ngModel)]="drafts()[i].selected" [disabled]="draft.maxQty <= 0" labelPlacement="start" justify="start" />
+          <ion-checkbox [(ngModel)]="drafts()[i].selected" [disabled]="draft.maxUnits <= 0" labelPlacement="start" justify="start" />
           <div class="return-item-main">
             <div class="return-item-name">{{ draft.item.name }}</div>
             <div class="return-item-row">
-              <ion-input class="return-qty" type="number" min="1" [max]="draft.maxQty" [disabled]="draft.maxQty <= 0" [(ngModel)]="drafts()[i].qty" />
-              <span class="return-x">/ {{ draft.maxQty }}@if (draft.maxQty < draft.item.qty) { <em> (đã trả {{ draft.item.qty - draft.maxQty }})</em> }</span>
-              <ion-badge color="light">{{ formatMoney(draft.item.price * draft.qty) }}</ion-badge>
+              <ion-input class="return-qty" type="number" min="1" [max]="draft.maxUnits" [disabled]="draft.maxUnits <= 0" [(ngModel)]="drafts()[i].qty" />
+              <span class="return-x">
+                / {{ draft.maxUnits }} {{ draft.item.unit || '' }}
+                @if (draft.maxUnits * unitConversion(draft.item) < draft.item.qty) {
+                  <em> (đã trả {{ formatQty(draft.item.qty - draft.maxUnits * unitConversion(draft.item)) }})</em>
+                }
+              </span>
+              <ion-badge color="light">{{ formatMoney(unitPrice(draft.item) * draft.qty) }}</ion-badge>
             </div>
           </div>
         </div>

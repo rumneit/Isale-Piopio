@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-23T18:09:08.713Z",
+  "at": "2026-10-23T18:27:52.054Z",
   "results": [
     {
       "name": "có form đăng nhập",
@@ -34,7 +34,7 @@
     {
       "name": "retry dùng CÙNG nonce (không tạo đơn trùng)",
       "ok": true,
-      "detail": "ee54fd5c-6c8a-452f-abc9-e2a4a578e1c3 / ee54fd5c-6c8a-452f-abc9-e2a4a578e1c3"
+      "detail": "fc7b4e7c-e192-4f16-8433-2a98ba9f7d3d / fc7b4e7c-e192-4f16-8433-2a98ba9f7d3d"
     },
     {
       "name": "server nhận discount_percent=10, tax_percent=5, ship=20000",

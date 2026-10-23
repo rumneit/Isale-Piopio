@@ -148,7 +148,20 @@
                   <div class="sale-item-main">
                     <div class="sale-item-name" [title]="item.name">{{ item.name }}</div>
                     <div class="sale-item-meta">
-                      <span class="sale-item-unit">{{ item.unit ?? '—' }}</span>
+                      <button
+                        type="button"
+                        class="sale-item-unit"
+                        [class.unit-pick]="hasAlternateUnits(item)"
+                        [disabled]="!hasAlternateUnits(item)"
+                        (click)="changeItemUnit(i)"
+                        [attr.aria-label]="'Chọn đơn vị cho ' + item.name"
+                        [title]="hasAlternateUnits(item) ? 'Bấm để đổi đơn vị' : item.unit || ''"
+                      >
+                        {{ item.unit ?? '—' }}
+                        @if (hasAlternateUnits(item)) {
+                          <ion-icon name="chevron-down-outline" />
+                        }
+                      </button>
                       <span class="price-edit">
                         <ion-input
                           type="number"
@@ -231,7 +244,7 @@
                 <!-- Thẻ kiểu Isale: ảnh + tên nổi trên ảnh + nút thêm + giá/tồn dưới ảnh -->
                 <div class="catalog-grid">
                   @for (p of pickerPaged(); track p.id) {
-                    <button class="catalog-tile" (click)="addProduct(p)" [title]="p.name">
+                    <button class="catalog-tile" (click)="addProductFromTile(p)" [title]="p.name">
                       <span class="tile-img">
                         <ion-icon name="cube-outline" />
                         @if (p.image) {
@@ -242,6 +255,9 @@
                       </span>
                       <span class="tile-meta">
                         <span class="tile-price">{{ formatMoney(p.price) }}</span>
+                        @if (productUnits(p).length > 1) {
+                          <span class="tile-units">{{ productUnits(p).length }} đơn vị</span>
+                        }
                         <span class="tile-stock" [class.out]="p.stock <= 0">Tồn {{ p.stock }}</span>
                       </span>
                     </button>

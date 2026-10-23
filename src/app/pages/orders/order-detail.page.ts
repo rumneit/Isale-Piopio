@@ -645,7 +645,14 @@ export class OrderDetailPage implements OnInit {
     return new Intl.NumberFormat('vi-VN').format(v ?? 0) + ' ₫';
   }
 
-  totalQty(): number {
-    return this.items().reduce((s, i) => s + Number(i.qty ?? 0), 0);
+  totalQty(): number | string {
+    const items = this.items();
+    // Chỉ cộng số lượng khi các dòng cùng đơn vị; đơn trộn Thùng + Cái
+    // không có một "tổng số lượng" có nghĩa.
+    const unitKeys = new Set(
+      items.map((i) => (i.unit ?? '').trim().toLocaleLowerCase('vi') || '__base__')
+    );
+    if (unitKeys.size > 1) return '—';
+    return items.reduce((s, i) => s + Number(i.unit_qty ?? i.qty ?? 0), 0);
   }
 }

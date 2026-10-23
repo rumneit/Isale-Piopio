@@ -406,13 +406,22 @@ export class InvoiceTemplateService {
     const itemRows = input.items.map((item, index) => ({
       index: index + 1,
       productName: item.name,
-      unit: (item as any).unit ?? '',
-      count: item.qty,
-      priceFormatted: money(item.price),
+      unit: item.unit ?? '',
+      // Đơn vị khách đã chọn (Thùng/Lốc...) nếu có; đơn cũ vẫn hiển thị đơn vị gốc.
+      count: item.unit_qty ?? item.qty,
+      priceFormatted: money(item.unit_price ?? item.price),
       totalFormatted: money(Number(item.total ?? Number(item.price) * Number(item.qty))),
       discountText: '',
     }));
-    const totalQty = input.items.reduce((sum, item) => sum + Number(item.qty ?? 0), 0);
+    // Tổng số lượng chỉ có nghĩa khi mọi dòng cùng một đơn vị. Nếu đơn có
+    // nhiều đơn vị (1 Thùng + 1 Cái), cộng số lượng sẽ sai; hiển thị "—".
+    const unitKeys = new Set(
+      input.items.map((item) => (item.unit ?? '').trim().toLocaleLowerCase('vi') || '__base__')
+    );
+    const totalQty =
+      unitKeys.size <= 1
+        ? input.items.reduce((sum, item) => sum + Number(item.unit_qty ?? item.qty ?? 0), 0)
+        : '—';
     const merchandise = input.items.reduce(
       (sum, item) => sum + Number(item.total ?? Number(item.price) * Number(item.qty)),
       0

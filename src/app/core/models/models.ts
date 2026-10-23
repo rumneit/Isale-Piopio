@@ -218,9 +218,19 @@ export interface OrderItem {
   order_id: string;
   product_id: string | null;
   name: string;
+  /** Giá quy về 1 đơn vị gốc (order_items.price) */
   price: number;
+  /** Số lượng quy về đơn vị gốc — dùng cho tồn kho/báo cáo */
   qty: number;
   total: number;
+  /** Migration v43 — đơn vị khách đã chọn khi bán (VD: Thùng) */
+  unit?: string | null;
+  /** Số lượng theo đơn vị đã chọn (VD: 2 Thùng) */
+  unit_qty?: number | null;
+  /** 1 đơn vị đã chọn = bao nhiêu đơn vị gốc (VD: 40) */
+  unit_conversion?: number | null;
+  /** Giá bán theo đơn vị đã chọn (VD: 720.000 ₫/Thùng) */
+  unit_price?: number | null;
 }
 
 /** Đơn vận chuyển (migration v25 — đồng bộ ISale /shipping, 11 trạng thái chuẩn 3PL) */

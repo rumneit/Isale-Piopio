@@ -186,7 +186,11 @@
               <ion-item>
                 <ion-label>
                   <h3>{{ item.name }}</h3>
-                  <p>{{ item.qty }} × {{ formatMoney(item.price) }}</p>
+                  @if (item.unit) {
+                    <p>{{ item.unit_qty ?? item.qty }} {{ item.unit }} × {{ formatMoney(item.unit_price ?? item.price) }}</p>
+                  } @else {
+                    <p>{{ item.qty }} × {{ formatMoney(item.price) }}</p>
+                  }
                 </ion-label>
                 <ion-badge slot="end" color="light">{{ formatMoney(item.total) }}</ion-badge>
               </ion-item>

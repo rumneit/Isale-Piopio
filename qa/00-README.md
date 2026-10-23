@@ -19,7 +19,7 @@
 | Hạng mục | Kết quả |
 |---|---|
 | Typecheck / lint / build | PASS |
-| Unit test | **63/63** (12 file) |
+| Unit test | **71/71** (13 file) |
 | SQL integrity (PGlite) | **42/42** (T1–T10; v44 chạy 2 lần để kiểm tra idempotent) |
 | E2E UI (mock API) | **24/24** (E1–E9) |
 | DB production | v43 đã áp; **v44 CHƯA áp** |
@@ -29,7 +29,7 @@
 
 ```bash
 npm ci
-npm run test:ci        # 63 unit test
+npm run test:ci        # 71 unit test
 npm run lint
 npm run build
 

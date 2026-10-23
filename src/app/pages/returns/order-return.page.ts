@@ -35,9 +35,12 @@ import { Order, OrderItem } from '../../core/models/models';
 interface DraftReturn {
   item: OrderItem;
   selected: boolean;
+  /** Số lượng theo đơn vị khách đã mua (Thùng/Lốc...). */
   qty: number;
-  /** Số còn được trả = số đã mua − số đã trả ở các phiếu trước. */
-  maxQty: number;
+  /** Tối đa theo đơn vị khách đã mua, đã trừ các lần trả trước. */
+  maxUnits: number;
+  /** Tối đa theo đơn vị gốc, đã trừ các lần trả trước. */
+  maxBase: number;
 }
 
 @Component({
@@ -93,7 +96,21 @@ export class OrderReturnPage implements OnInit {
   get total(): number {
     return this.drafts()
       .filter((d) => d.selected && d.qty > 0)
-      .reduce((s, d) => s + d.item.price * Math.min(d.qty, d.maxQty), 0);
+      .reduce((s, d) => s + this.unitPrice(d.item) * Math.min(d.qty, d.maxUnits), 0);
+  }
+
+  /** 1 đơn vị khách đã mua = bao nhiêu đơn vị gốc. */
+  unitConversion(item: OrderItem): number {
+    const n = Number(item.unit_conversion);
+    return Number.isFinite(n) && n > 0 ? n : 1;
+  }
+
+  unitPrice(item: OrderItem): number {
+    return item.unit_price != null ? Number(item.unit_price) : Number(item.price ?? 0);
+  }
+
+  formatQty(v: number): string {
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 3 }).format(v ?? 0);
   }
 
   get selectedCount(): number {
@@ -111,7 +128,8 @@ export class OrderReturnPage implements OnInit {
       ]);
       if (order) {
         this.order.set(order);
-        // Trừ số lượng đã trả ở các phiếu trước — không cho trả vượt số đã mua.
+        // Trừ số lượng đã trả ở các phiếu trước (quy về đơn vị gốc) — không cho
+        // trả vượt số đã mua, kể cả khi khách mua theo Thùng/Lốc.
         const returned = new Map<string, number>();
         for (const note of previous) {
           for (const it of note.items) {
@@ -122,8 +140,11 @@ export class OrderReturnPage implements OnInit {
         this.drafts.set(
           items.map((item) => {
             const key = item.product_id ?? `name:${item.name}`;
-            const maxQty = Math.max(0, Number(item.qty) - (returned.get(key) ?? 0));
-            return { item, selected: false, qty: maxQty, maxQty };
+            const conversion = this.unitConversion(item);
+            const maxBase = Math.max(0, Number(item.qty) - (returned.get(key) ?? 0));
+            const maxUnits = Math.max(0, Math.floor(maxBase / conversion + 1e-9));
+            const wanted = item.unit_qty != null ? Number(item.unit_qty) : maxUnits;
+            return { item, selected: false, qty: Math.min(wanted, maxUnits), maxUnits, maxBase };
           })
         );
       }
@@ -150,12 +171,18 @@ export class OrderReturnPage implements OnInit {
 
     const items: ReturnNoteItem[] = this.drafts()
       .filter((d) => d.selected && d.qty > 0)
-      .map((d) => ({
-        product_id: d.item.product_id,
-        name: d.item.name,
-        price: d.item.price,
-        qty: Math.min(d.qty, d.maxQty),
-      }));
+      .map((d) => {
+        const unitQty = Math.min(d.qty, d.maxUnits);
+        // Phiếu trả kho lưu số lượng/giá theo đơn vị gốc để hoàn tồn kho đúng;
+        // giao diện chỉ hiển thị theo đơn vị khách đã mua.
+        const baseQty = Math.min(unitQty * this.unitConversion(d.item), d.maxBase);
+        return {
+          product_id: d.item.product_id,
+          name: d.item.name,
+          price: d.item.price,
+          qty: baseQty,
+        };
+      });
 
     if (!items.length) {
       this.error = 'Chọn ít nhất một sản phẩm cần trả.';
