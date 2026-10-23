@@ -673,6 +673,9 @@ export class SalePage implements OnInit {
     return true;
   }
 
+  /** Chặn mở 2 action sheet đơn vị khi bấm đúp thẻ/nhãn đơn vị. */
+  private unitPickerOpen = false;
+
   /** Bấm vào thẻ sản phẩm: nếu có nhiều đơn vị thì hỏi chọn đơn vị trước. */
   async addProductFromTile(p: Product): Promise<void> {
     const units = this.productUnits(p);
@@ -680,9 +683,15 @@ export class SalePage implements OnInit {
       if (this.addProduct(p)) this.toast(`Đã thêm: ${p.name}`);
       return;
     }
-    const chosen = await this.pickUnit(p);
-    if (!chosen) return;
-    if (this.addProduct(p, 1, chosen)) this.toast(`Đã thêm: ${p.name} (${chosen.name})`);
+    if (this.unitPickerOpen) return;
+    this.unitPickerOpen = true;
+    try {
+      const chosen = await this.pickUnit(p);
+      if (!chosen) return;
+      if (this.addProduct(p, 1, chosen)) this.toast(`Đã thêm: ${p.name} (${chosen.name})`);
+    } finally {
+      this.unitPickerOpen = false;
+    }
   }
 
   /** ActionSheet chọn đơn vị — giống danh sách "Đơn vị" khi thêm sản phẩm của ISale. */
@@ -712,7 +721,14 @@ export class SalePage implements OnInit {
     const product = this.products().find((p) => p.id === item?.product_id);
     if (!item || !product) return;
     if (this.productUnits(product).length <= 1) return;
-    const chosen = await this.pickUnit(product, item.unit);
+    if (this.unitPickerOpen) return;
+    this.unitPickerOpen = true;
+    let chosen: SaleUnit | null = null;
+    try {
+      chosen = await this.pickUnit(product, item.unit);
+    } finally {
+      this.unitPickerOpen = false;
+    }
     if (!chosen || chosen.name === item.unit) return;
 
     const oldBaseQty = this.itemBaseQty(item);
