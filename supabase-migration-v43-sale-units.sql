@@ -52,6 +52,7 @@ declare
   v_qty numeric;
   v_conversion numeric;
   v_price numeric;
+  v_base_qty numeric;
 begin
   if not public.has_permission(p_shop, 'sell') then
     raise exception 'Bạn không có quyền lưu đơn vị bán.';
@@ -95,6 +96,21 @@ begin
       raise exception 'Giá theo đơn vị không hợp lệ.';
     end if;
 
+    select oi.qty into v_base_qty
+      from public.order_items oi
+     where oi.id = v_id
+       and oi.order_id = p_order_id
+       for update;
+    if not found then
+      raise exception 'Dòng sản phẩm không thuộc đơn hàng.';
+    end if;
+
+    -- Không tin metadata từ client: số lượng theo đơn vị quy đổi phải khớp
+    -- đúng số lượng gốc mà RPC tạo đơn đã ghi (qty vẫn là nguồn sự thật).
+    if abs(v_qty * v_conversion - v_base_qty) > 0.001 then
+      raise exception 'Số lượng theo đơn vị không khớp số lượng gốc.';
+    end if;
+
     update public.order_items
        set unit = v_unit,
            unit_qty = v_qty,
@@ -102,10 +118,6 @@ begin
            unit_price = v_price
      where id = v_id
        and order_id = p_order_id;
-
-    if not found then
-      raise exception 'Dòng sản phẩm không thuộc đơn hàng.';
-    end if;
   end loop;
 end;
 $$;

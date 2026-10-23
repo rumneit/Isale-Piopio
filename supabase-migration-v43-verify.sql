@@ -19,6 +19,11 @@ select count(*) as missing_unit_metadata
     or unit_conversion is null
     or unit_conversion <= 0;
 
+-- 2b) Số lượng theo đơn vị phải quy đổi đúng về số lượng gốc.
+select count(*) as mismatched_unit_qty
+  from public.order_items
+ where abs(unit_qty * unit_conversion - qty) > 0.001;
+
 -- 3) Các đơn bán theo đơn vị thay thế gần đây (unit_qty khác qty).
 select o.code,
        o.created_at,
