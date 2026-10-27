@@ -135,28 +135,28 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
         </colgroup>
         <tr>
             <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;"><b>{{labels.headIndex}}</b></td>
-            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"><b>{{labels.headName}}</b></td>
-            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; white-space: nowrap;"><b>{{labels.headUnit}}</b></td>
-            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><b>{{labels.headQty}}</b></td>
-            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><b>{{labels.headPrice}}</b></td>
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;"><b>{{labels.headName}}</b></td>
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle; white-space: nowrap;"><b>{{labels.headUnit}}</b></td>
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;"><b>{{labels.headQty}}</b></td>
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;"><b>{{labels.headPrice}}</b></td>
             {{#unless hideDiscountColumn}}
-            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><b>{{labels.headDiscount}}</b></td>
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;"><b>{{labels.headDiscount}}</b></td>
             {{/unless}}
-            <td style="border-right: 1px solid #000; border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><b>{{labels.headAmount}}</b></td>
+            <td style="border-right: 1px solid #000; border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;"><b>{{labels.headAmount}}</b></td>
         </tr>
         {{#each items}}
         <tr>
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">{{index}}</td>
-            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; white-space: normal; word-break: break-word; overflow-wrap: anywhere;">
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle; white-space: normal; word-break: break-word; overflow-wrap: anywhere;">
                 {{productName}}{{{extrasHtml}}}
             </td>
-            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; white-space: nowrap;">{{unit}}</td>
-            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{count}}</td>
-            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{priceFormatted}}</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle; white-space: nowrap;">{{unit}}</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;">{{count}}</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;">{{priceFormatted}}</td>
             {{#unless ../hideDiscountColumn}}
-            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{discountText}}</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;">{{discountText}}</td>
             {{/unless}}
-            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;">
                 {{totalFormatted}}{{#if ../hideDiscountColumn}}{{#if discountText}}<br><span style="font-size: 0.8em;">{{discountText}}</span>{{/if}}{{/if}}
             </td>
         </tr>
