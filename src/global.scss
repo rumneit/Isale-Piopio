@@ -31,6 +31,7 @@ ion-action-sheet .action-sheet-wrapper {
 ion-action-sheet .action-sheet-group:not(.action-sheet-group-cancel) {
   flex: 1 1 auto;
   min-height: 0;
+  max-height: calc(min(82vh, 640px) - 52px) !important;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
