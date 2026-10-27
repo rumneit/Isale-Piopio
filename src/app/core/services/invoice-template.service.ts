@@ -491,6 +491,9 @@ export class InvoiceTemplateService {
       emptyRows: Array.from({ length: emptyCount }, (_, i) => itemRows.length + i),
       totalProductsQuantity: totalQty,
       totalProductsAmountFormatted: money(merchandise),
+      // Alias cấp cao dùng bởi mẫu hóa đơn khổ lớn. Mẫu bill nhỏ dùng
+      // order.oldDebtFormatted; giữ cả hai để template cũ/mới đều hiện số nợ.
+      oldDebtFormatted: money(oldDebt),
       customerName: order.customer_name || 'Khách lẻ', customerPhone: order.customer_phone ?? '', customerAddress: order.customer_address ?? order.shipping_address ?? '',
       hasStaff: !!input.staffDisplay, staffDisplay: input.staffDisplay ?? '', hideDiscountColumn: !!input.hideDiscountColumn,
       showStaffNameUnderSign: !!input.showStaffNameUnderSign,

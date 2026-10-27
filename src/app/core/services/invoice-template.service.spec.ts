@@ -160,7 +160,29 @@ describe('InvoiceTemplateService', () => {
     });
     const html = service.render(service.defaultFor('invoice'), context);
     expect(html).toContain('Công nợ hiện tại');
+    expect(html).toContain('250.000');
     expect(html.indexOf('Công nợ hiện tại')).toBeLessThan(html.indexOf('Tổng phải trả'));
+  });
+
+  it('keeps existing customer debt on a fully-paid new order bill', () => {
+    const context: any = service.context({
+      order: {
+        id: 'paid-order', shop_id: 'shop-1', code: 'DH-PAID', customer_id: 'customer-a',
+        customer_name: 'Khách hàng A', status: 'completed', total: 180_000,
+        discount: 0, paid: true, note: null, created_at: '2026-10-28T09:00:00.000Z',
+      },
+      items: [{ id: 'i-paid', order_id: 'paid-order', product_id: null, name: 'Đơn mới', price: 180_000, qty: 1, total: 180_000 }],
+      shop: null,
+      paidAmount: 180_000,
+      oldDebt: 420_000,
+    });
+
+    expect(context.hasOldDebt).toBe(true);
+    expect(context.order.paidFormatted).toBe('180.000');
+    expect(context.oldDebtFormatted).toBe('420.000');
+    const html = service.render(service.defaultFor('invoice'), context);
+    expect(html).toContain('Công nợ hiện tại');
+    expect(html).toContain('420.000');
   });
 
   it('uses zero empty rows by default', () => {
