@@ -299,7 +299,9 @@ export class OrdersPage implements OnInit {
   }
 
   openAdd() {
-    this.router.navigateByUrl('/order/add');
+    // Dùng duy nhất màn hình Bán hàng đầy đủ. Màn hình /order/add cũ không có
+    // thông tin khách mới và đơn vị bán Thùng/Lốc nên tạo ra dữ liệu thiếu.
+    this.router.navigateByUrl('/sale');
   }
 
   openHome() {

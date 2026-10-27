@@ -45,7 +45,8 @@ describe('InvoiceTemplateService', () => {
     expect(receipt).toContain('Thanh toán bằng điểm:');
     expect(receipt).toContain('Thuế:');
     expect(receipt).toContain('Phí vận chuyển:');
-    expect(receipt).toContain('Công nợ cũ:');
+    expect(receipt).toContain('Công nợ hiện tại:');
+    expect(receipt.indexOf('Công nợ hiện tại:')).toBeLessThan(receipt.indexOf('Tổng phải trả:'));
     expect(receipt).toContain('MB Bank');
     expect(receipt).toContain('C.khấu');
   });
@@ -114,7 +115,7 @@ describe('InvoiceTemplateService', () => {
     expect(context.totalProductsQuantity).toBe(3);
   });
 
-  it('derives the box price for legacy orders that are missing unit_price', () => {
+  it('derives the selected-unit price for every product when legacy unit_price is missing', () => {
     const order = {
       id: 'order-ht25', shop_id: 'shop-1', code: 'DH-HT25', customer_id: null,
       customer_name: 'Bún chả Hà Nội Q2', status: 'completed', total: 630_000,
@@ -133,6 +134,33 @@ describe('InvoiceTemplateService', () => {
     expect(context.items[0].priceFormatted).toBe('630.000');
     expect(context.items[0].price).toBe(630_000);
     expect(context.items[0].totalFormatted).toBe('630.000');
+
+    const generic: any = service.context({
+      order: { ...order, id: 'order-generic', code: 'DH-GENERIC', total: 288_000 },
+      items: [{
+        id: 'item-generic', order_id: 'order-generic', product_id: 'p-any',
+        name: 'Sản phẩm bất kỳ', price: 12_000, qty: 24, total: 288_000,
+        unit: 'Thùng (24 cái)', unit_conversion: 24, unit_price: null,
+      }],
+      shop: null,
+    });
+    expect(generic.items[0].priceFormatted).toBe('288.000');
+  });
+
+  it('places customer debt immediately before total payable on the large invoice', () => {
+    const context: any = service.context({
+      order: {
+        id: 'order-debt', shop_id: 'shop-1', code: 'DH-DEBT', customer_id: 'customer-1',
+        customer_name: 'Khách đang nợ', status: 'completed', total: 100_000,
+        discount: 0, paid: true, note: null, created_at: '2026-10-28T08:00:00.000Z',
+      },
+      items: [{ id: 'i', order_id: 'order-debt', product_id: null, name: 'SP', price: 100_000, qty: 1, total: 100_000 }],
+      shop: null,
+      oldDebt: 250_000,
+    });
+    const html = service.render(service.defaultFor('invoice'), context);
+    expect(html).toContain('Công nợ hiện tại');
+    expect(html.indexOf('Công nợ hiện tại')).toBeLessThan(html.indexOf('Tổng phải trả'));
   });
 
   it('uses zero empty rows by default', () => {

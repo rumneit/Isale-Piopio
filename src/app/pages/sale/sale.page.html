@@ -447,6 +447,12 @@
             <span class="sale-label">Địa chỉ</span>
             <ion-input [(ngModel)]="customerAddress" class="sale-input" placeholder="VD: 12 Nguyễn Trãi, TP HCM" />
           </div>
+          @if (!selectedCustomerId) {
+            <ion-button expand="block" fill="outline" (click)="saveCustomerFromForm()">
+              <ion-icon name="person-add-outline" slot="start" />
+              Lưu khách hàng mới
+            </ion-button>
+          }
           <div class="sale-row">
             <span class="sale-label">Chọn KH có sẵn</span>
             <button class="sale-btn" (click)="selectCustomer()">

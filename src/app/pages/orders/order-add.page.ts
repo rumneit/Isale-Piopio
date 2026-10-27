@@ -104,6 +104,12 @@ export class OrderAddPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.isQuoteMode.set(this.route.snapshot.queryParamMap.get('mode') === 'quote');
+    // Giữ trang cũ chỉ cho Báo giá. Mọi luồng tạo đơn thường phải dùng SalePage
+    // để có đủ thông tin khách và đơn vị bán.
+    if (!this.isQuoteMode()) {
+      await this.router.navigateByUrl('/sale', { replaceUrl: true });
+      return;
+    }
     try {
       const [products, customers, promotions, channels] = await Promise.all([
         this.productsService.list(),

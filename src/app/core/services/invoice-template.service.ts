@@ -213,16 +213,16 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
             <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">+{{order.shippingFeeFormatted}}</td>
         </tr>
         {{/if}}
-        <tr>
-            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"><strong>{{labels.total}}</strong></td>
-            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><strong>{{order.totalFormatted}}</strong></td>
-        </tr>
         {{#if hasOldDebt}}
         <tr>
             <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; background-color: #fff3e0;"><strong style="color: #dc3545;">{{labels.oldDebt}}</strong></td>
             <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right; background-color: #fff3e0;"><strong style="color: #dc3545;">{{oldDebtFormatted}}</strong></td>
         </tr>
         {{/if}}
+        <tr>
+            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"><strong>{{labels.total}}</strong></td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><strong>{{order.totalFormatted}}</strong></td>
+        </tr>
     </table>
 </div>
 
@@ -330,10 +330,10 @@ export const DEFAULT_RECEIPT_TEMPLATE = `{{!-- Mẫu bill khổ nhỏ --}}
   {{#if hasPointPayment}}<tr><td>{{labels.payByPoint}}:</td><td>-{{order.amountFromPointFormatted}}</td></tr>{{/if}}
   {{#if showTax}}<tr><td>{{labels.tax}}:</td><td>+{{order.taxFormatted}}</td></tr>{{/if}}
   {{#if hasShipping}}<tr><td>{{labels.shippingFee}}:</td><td>+{{order.shippingFeeFormatted}}</td></tr>{{/if}}
+  {{#if hasOldDebt}}<tr><td>{{labels.oldDebt}}:</td><td>{{order.oldDebtFormatted}}</td></tr>{{/if}}
   <tr class="grand"><td>{{labels.total}}:</td><td>{{order.totalFormatted}}</td></tr>
   <tr><td>{{labels.cash}}:</td><td>{{order.paidFormatted}}</td></tr>
   <tr><td>{{labels.change}}:</td><td>{{order.changeFormatted}}</td></tr>
-  {{#if hasOldDebt}}<tr><td>{{labels.oldDebt}}:</td><td>{{order.oldDebtFormatted}}</td></tr>{{/if}}
 </table>
 {{#if hasOrderPrintNote}}<p class="thanks"><em>{{orderPrintNote}}</em></p>{{/if}}
 {{#if showQr}}<div class="qr"><img src="{{qrCodeUrl}}" alt="QR thanh toán"><span>{{bank.name}} {{bankNumber}}</span><strong>{{labels.paid}} {{totalWithCurrency}}</strong></div>{{/if}}`;
@@ -413,7 +413,7 @@ export class InvoiceTemplateService {
       // Khi đó phải quy đổi giá gốc lên giá Thùng/Lốc, không được in giá lẻ.
       const unitPrice = item.unit_price != null
         ? Number(item.unit_price)
-        : item.unit_qty != null && conversion > 1
+        : conversion > 1
           ? Number(item.price ?? 0) * conversion
           : Number(item.price ?? 0);
       return {
@@ -470,7 +470,7 @@ export class InvoiceTemplateService {
       headUnit: 'Đơn vị', headQty: 'Số lượng', headPrice: 'Đơn giá', headDiscount: 'Chiết khấu', headAmount: 'Thành tiền',
       headPriceShort: 'Đ.giá', headQtyShort: 'S.lượng', headDiscountShort: 'C.khấu', headAmountShort: 'T.tiền', totalAmount: 'Tổng tiền hàng',
       totalPromotionDiscount: 'Khuyến mại', discount: 'Chiết khấu', payByPoint: 'Thanh toán bằng điểm', tax: 'Thuế',
-      shippingFee: 'Phí vận chuyển', netValue: 'Tạm tính', total: 'Tổng phải trả', oldDebt: 'Công nợ cũ',
+      shippingFee: 'Phí vận chuyển', netValue: 'Tạm tính', total: 'Tổng phải trả', oldDebt: 'Công nợ hiện tại',
       cash: 'Khách đưa', change: 'Tiền thừa', totalWritten: 'Tổng phải trả (viết bằng chữ):', note: 'Ghi chú:',
       customerTitle: 'KHÁCH HÀNG', buyer: 'NGƯỜI BÁN HÀNG', signHint: 'Ký và ghi rõ họ tên', qrPayment: 'Quét mã để thanh toán', paid: 'Thanh toán:',
     };

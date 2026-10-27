@@ -170,7 +170,7 @@ export class ScanPage implements OnDestroy {
   }
 
   createOrderWithProduct() {
-    this.router.navigateByUrl('/order/add');
+    this.router.navigateByUrl('/sale');
   }
 
   formatMoney(v: number | null | undefined): string {

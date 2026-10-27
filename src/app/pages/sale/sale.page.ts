@@ -45,6 +45,7 @@ import {
   walletOutline,
   readerOutline,
   warningOutline,
+  personAddOutline,
 } from 'ionicons/icons';
 import { ProductsService } from '../../core/services/products.service';
 import { OrdersService } from '../../core/services/orders.service';
@@ -304,6 +305,7 @@ export class SalePage implements OnInit {
       walletOutline,
       readerOutline,
       warningOutline,
+      personAddOutline,
     });
   }
 
@@ -994,10 +996,23 @@ export class SalePage implements OnInit {
    * Luồng này cũng nhận diện khách có sẵn để không tạo hồ sơ trùng.
    */
   async onCustomerPhoneBlur(): Promise<void> {
+    await this.promptSaveCustomer(false);
+  }
+
+  /** Nút lưu rõ ràng để người dùng không phải phụ thuộc riêng vào sự kiện blur. */
+  async saveCustomerFromForm(): Promise<void> {
+    await this.promptSaveCustomer(true);
+  }
+
+  private async promptSaveCustomer(force: boolean): Promise<void> {
     const phone = this.customerPhone.trim();
     const normalized = phone.replace(/\D/g, '');
-    if (this.selectedCustomerId || normalized.length < 8 || normalized.length > 15) return;
-    if (this.lastPromptedCustomerPhone === normalized) return;
+    if (this.selectedCustomerId) return;
+    if (normalized.length < 8 || normalized.length > 15) {
+      if (force) await this.toast('Hãy nhập số điện thoại hợp lệ để lưu khách hàng', 'danger');
+      return;
+    }
+    if (!force && this.lastPromptedCustomerPhone === normalized) return;
     this.lastPromptedCustomerPhone = normalized;
 
     try {
@@ -1018,7 +1033,10 @@ export class SalePage implements OnInit {
       }
 
       const shopName = this.selectedCustomerName.trim();
-      if (!shopName || shopName === 'Khách lẻ') return;
+      if (!shopName || shopName === 'Khách lẻ') {
+        if (force) await this.toast('Hãy nhập tên quán / khách hàng', 'danger');
+        return;
+      }
       const alert = await this.alertCtrl.create({
         header: 'Lưu khách hàng mới?',
         message: `Lưu “${shopName}” với số điện thoại ${phone} vào danh sách khách hàng?`,
