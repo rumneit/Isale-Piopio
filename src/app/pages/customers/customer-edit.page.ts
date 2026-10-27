@@ -66,6 +66,7 @@ export class CustomerEditPage implements OnInit {
   error = '';
 
   name = '';
+  contactPerson = '';
   code = '';
   phone = '';
   email = '';
@@ -99,6 +100,7 @@ export class CustomerEditPage implements OnInit {
         const c = await this.customersService.get(id);
         if (c) {
           this.name = c.name;
+          this.contactPerson = c.contact_person ?? '';
           this.code = c.code ?? '';
           this.phone = c.phone ?? '';
           this.email = c.email ?? '';
@@ -129,6 +131,7 @@ export class CustomerEditPage implements OnInit {
 
     const payload: Partial<Customer> = {
       name: this.name.trim(),
+      contact_person: this.contactPerson.trim() || null,
       code: this.code.trim() || null,
       phone: this.phone.trim() || null,
       email: this.email.trim() || null,

@@ -296,7 +296,7 @@ export class ConfigPage implements OnInit {
     this.dateFormat = this.settingsService.get('date_format') ?? 'dd/MM/yyyy';
     this.timeFormat = this.settingsService.get('time_format') ?? 'HH:mm';
     this.printNote = this.settingsService.get('print_note') ?? '';
-    this.emptyRows = this.settingsService.numberValue('invoice_empty_rows', 2);
+    this.emptyRows = this.settingsService.numberValue('invoice_empty_rows', 0);
     this.invoiceTemplate = this.settingsService.get('invoice_template_large')
       ?? this.settingsService.get('invoice_template')
       ?? this.defaultInvoiceTemplate;

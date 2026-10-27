@@ -245,18 +245,9 @@ export class OrdersService {
   /** Xóa nhiều đơn (ISale: multi-delete) — RPC v43 kiểm tra sổ sách trước khi xóa. */
   async bulkRemove(ids: string[]): Promise<void> {
     if (!this.sb.isConfigured || !this.shopId || !ids.length) return;
-    const { error } = await this.sb.client.rpc('inv_delete_orders', {
-      p_shop: this.shopId,
-      p_ids: ids,
-    });
-    if (!error) return;
-    if (!OrdersService.isMissingLifecycleRpc(error)) throw error;
-    const fallback = await this.sb
-      .from('orders')
-      .delete()
-      .in('id', ids)
-      .eq('shop_id', this.shopId!);
-    if (fallback.error) throw fallback.error;
+    // Xóa từng đơn để có thể đảo khoản thu tự động của các đơn nháp/cũ.
+    // RPC bulk cũ dừng cả lô ngay ở đơn đầu tiên từng ghi nhận thanh toán.
+    for (const id of ids) await this.remove(id);
   }
 
   async getWithItems(id: string): Promise<{ order: Order | null; items: OrderItem[] }> {
@@ -490,11 +481,31 @@ export class OrdersService {
 
   async remove(id: string): Promise<void> {
     if (!this.sb.isConfigured || !this.shopId) return;
-    const { error } = await this.sb.client.rpc('inv_delete_order', {
+    let { error } = await this.sb.client.rpc('inv_delete_order', {
       p_shop: this.shopId,
       p_order_id: id,
     });
     if (!error) return;
+    // v43 cố ý chặn xóa đơn từng có khoản thu. Với các đơn nháp được tạo ở
+    // phiên bản cũ, khoản thu "Bán hàng" lại được sinh tự động. Đảo đúng khoản
+    // thu tự động qua RPC rồi thử xóa lại; khoản Thu nợ thủ công vẫn được giữ và
+    // backend tiếp tục chặn để tránh mất tiền thật.
+    if (/đã ghi nhận thanh toán|recorded payment/i.test(String(error.message ?? ''))) {
+      const paidResult = await this.sb.client.rpc('inv_set_order_paid', {
+        p_shop: this.shopId,
+        p_order_id: id,
+        p_paid: false,
+      });
+      if (paidResult.error && !OrdersService.isMissingLifecycleRpc(paidResult.error)) {
+        throw paidResult.error;
+      }
+      const retried = await this.sb.client.rpc('inv_delete_order', {
+        p_shop: this.shopId,
+        p_order_id: id,
+      });
+      error = retried.error;
+      if (!error) return;
+    }
     if (!OrdersService.isMissingLifecycleRpc(error)) throw error;
     const fallback = await this.sb.from('orders').delete().eq('id', id).eq('shop_id', this.shopId);
     if (fallback.error) throw fallback.error;

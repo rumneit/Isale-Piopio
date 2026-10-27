@@ -118,6 +118,8 @@ export interface Customer {
   id: string;
   shop_id: string;
   name: string;
+  /** Người trực tiếp mua/đầu mối tại quán hoặc công ty (migration v15). */
+  contact_person?: string | null;
   code?: string | null;
   phone: string | null;
   email: string | null;
@@ -202,6 +204,8 @@ export interface Order {
   ship_fee_by_customer?: boolean | null;
   customer_phone?: string | null;
   customer_address?: string | null;
+  /** Công nợ của khách ngay trước khi đơn này được tạo (migration v45). */
+  customer_debt_before?: number | null;
   shipping_code?: string | null;
   shipping_partner?: string | null;
   shipper_name?: string | null;

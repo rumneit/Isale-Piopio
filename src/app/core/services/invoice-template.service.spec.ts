@@ -114,6 +114,32 @@ describe('InvoiceTemplateService', () => {
     expect(context.totalProductsQuantity).toBe(3);
   });
 
+  it('derives the box price for legacy orders that are missing unit_price', () => {
+    const order = {
+      id: 'order-ht25', shop_id: 'shop-1', code: 'DH-HT25', customer_id: null,
+      customer_name: 'Bún chả Hà Nội Q2', status: 'completed', total: 630_000,
+      discount: 0, paid: false, note: null, created_at: '2026-10-27T06:10:00.000Z',
+    };
+    const items = [{
+      id: 'item-ht25', order_id: 'order-ht25', product_id: 'ht25',
+      name: 'Hộp nhựa đế đen HT25 4 ngăn JadeBox',
+      price: 2_100, qty: 300, total: 630_000,
+      unit: 'Thùng (300 hộp)', unit_qty: 1, unit_conversion: 300, unit_price: null,
+    }];
+
+    const context: any = service.context({ order, items, shop: null });
+
+    expect(context.items[0].count).toBe(1);
+    expect(context.items[0].priceFormatted).toBe('630.000');
+    expect(context.items[0].price).toBe(630_000);
+    expect(context.items[0].totalFormatted).toBe('630.000');
+  });
+
+  it('uses zero empty rows by default', () => {
+    const context: any = service.previewContext(null);
+    expect(context.emptyRows).toEqual([]);
+  });
+
   it('does not invent a total quantity when an order mixes units', () => {
     const order = {
       id: 'order-u2', shop_id: 'shop-1', code: 'DH-U2', customer_id: null,

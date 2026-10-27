@@ -17,6 +17,15 @@ body {
   font-family: var(--ion-font-family);
 }
 
+/*
+ * Ionic action-sheet mặc định không giới hạn chiều cao khi danh sách option dài.
+ * Wrapper vì thế bị đẩy lên ngoài viewport và chuột không còn vùng cuộn đúng
+ * (thấy rõ ở Nhóm sản phẩm, Ngân hàng và các select dài khác).
+ */
+ion-action-sheet {
+  --max-height: min(82vh, 640px);
+}
+
 /* WCAG 2.2 AA: bàn phím luôn có dấu focus đủ tương phản, không phụ thuộc màu. */
 :where(button, a, input, textarea, select, [role='button'], [tabindex]:not([tabindex='-1'])):focus-visible,
 :where(ion-button, ion-fab-button, ion-input, ion-textarea, ion-select, ion-toggle):focus-within {

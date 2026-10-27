@@ -155,6 +155,16 @@ export class OrderDetailPage implements OnInit {
     Math.max(0, Number(this.order()?.total ?? 0) - this.paidAmount())
   );
 
+  /** Công nợ trước đơn: ưu tiên snapshot v45; đơn cũ suy ra từ dư nợ hiện tại. */
+  readonly customerDebtBeforeOrder = computed(() => {
+    const order = this.order();
+    if (!order?.customer_id) return 0;
+    if (order.customer_debt_before != null) {
+      return Math.max(0, Number(order.customer_debt_before));
+    }
+    return Math.max(0, Number(this.customer()?.debt ?? 0) - this.remainingAmount());
+  });
+
   /** Tiền hàng = tổng các dòng sản phẩm */
   readonly merchandise = computed(() =>
     this.items().reduce((sum, item) => sum + Number(item.total ?? Number(item.price) * Number(item.qty)), 0)
@@ -629,10 +639,11 @@ export class OrderDetailPage implements OnInit {
         shop: this.auth.shop(),
         qrCodeUrl: this.settings.booleanValue('print_qr') ? this.qrUrlFor(o) : '',
         printNote: this.settings.get('print_note') ?? '',
-        emptyRows: this.settings.numberValue('invoice_empty_rows', 2),
+        emptyRows: this.settings.numberValue('invoice_empty_rows', 0),
         hideDiscountColumn: this.settings.booleanValue('hide_discount_column', true),
         staffDisplay: this.auth.profile()?.full_name ?? '',
         paidAmount: this.paidAmount(),
+        oldDebt: this.customerDebtBeforeOrder(),
         showTax: !this.settings.booleanValue('hide_tax'),
       }), paperSize);
       if (!opened) this.toast('Trình chặn popup đang bật. Hãy cho phép popup để in.', 'warning');

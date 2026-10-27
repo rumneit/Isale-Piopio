@@ -20,6 +20,7 @@ import {
   IonFab,
   IonFabButton,
   ActionSheetController,
+  AlertController,
   ModalController,
   ToastController,
 } from '@ionic/angular';
@@ -102,6 +103,7 @@ interface SaleOrderSnap {
   customerPaid: number | null;
   shipFee: number | null;
   customerPhone: string;
+  customerContactPerson: string;
   customerAddress: string;
   note: string;
   shippingCode: string;
@@ -156,6 +158,7 @@ export class SalePage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private actionSheetCtrl = inject(ActionSheetController);
+  private alertCtrl = inject(AlertController);
   private modalCtrl = inject(ModalController);
   private toastCtrl = inject(ToastController);
 
@@ -219,7 +222,9 @@ export class SalePage implements OnInit {
   readonly orderStatusList = OrdersService.orderStatuses;
   /** Khách hàng: SĐT + địa chỉ nhanh trên đơn (v22) */
   customerPhone = '';
+  customerContactPerson = '';
   customerAddress = '';
+  private lastPromptedCustomerPhone = '';
   /** Vận chuyển (ISale: 5 trường, v22) */
   shippingCode = '';
   shippingPartner = '';
@@ -386,6 +391,7 @@ export class SalePage implements OnInit {
       customerPaid: this.customerPaid,
       shipFee: this.shipFee,
       customerPhone: this.customerPhone,
+      customerContactPerson: this.customerContactPerson,
       customerAddress: this.customerAddress,
       note: this.note,
       shippingCode: this.shippingCode,
@@ -414,6 +420,7 @@ export class SalePage implements OnInit {
     this.customerPaid = s.customerPaid;
     this.shipFee = s.shipFee;
     this.customerPhone = s.customerPhone;
+    this.customerContactPerson = s.customerContactPerson ?? '';
     this.customerAddress = s.customerAddress;
     this.note = s.note;
     this.shippingCode = s.shippingCode;
@@ -456,6 +463,7 @@ export class SalePage implements OnInit {
     this.customerPaid = order.paid ? Number(order.total ?? 0) : 0;
     this.shipFee = ship;
     this.customerPhone = order.customer_phone ?? '';
+    this.customerContactPerson = customer?.contact_person ?? '';
     this.customerAddress = order.customer_address ?? '';
     this.note = order.note ?? '';
     this.shippingCode = order.shipping_code ?? '';
@@ -541,6 +549,7 @@ export class SalePage implements OnInit {
       selectedCustomerName: '',
       selectedCustomerDebt: 0,
       customerPhone: '',
+      customerContactPerson: '',
       customerAddress: '',
       note: '',
       shippingCode: '',
@@ -964,6 +973,7 @@ export class SalePage implements OnInit {
       this.selectedCustomerId = data.id;
       this.selectedCustomerName = data.name;
       this.customerPhone = data.phone ?? '';
+      this.customerContactPerson = data.contact_person ?? '';
       this.customerAddress = data.address ?? '';
       this.selectedCustomerDebt = Number(data.debt ?? 0);
       this.toast(`Đã chọn: ${data.name}`);
@@ -973,9 +983,81 @@ export class SalePage implements OnInit {
       this.selectedCustomerId = null;
       this.selectedCustomerName = 'Khách lẻ';
       this.customerPhone = '';
+      this.customerContactPerson = '';
       this.customerAddress = '';
       this.selectedCustomerDebt = 0;
     }
+  }
+
+  /**
+   * iSale cũ hỏi lưu khách mới khi nhập một số điện thoại chưa tồn tại.
+   * Luồng này cũng nhận diện khách có sẵn để không tạo hồ sơ trùng.
+   */
+  async onCustomerPhoneBlur(): Promise<void> {
+    const phone = this.customerPhone.trim();
+    const normalized = phone.replace(/\D/g, '');
+    if (this.selectedCustomerId || normalized.length < 8 || normalized.length > 15) return;
+    if (this.lastPromptedCustomerPhone === normalized) return;
+    this.lastPromptedCustomerPhone = normalized;
+
+    try {
+      const existing = await this.customersService.findByPhone(phone);
+      if (existing) {
+        const alert = await this.alertCtrl.create({
+          header: 'Khách hàng đã tồn tại',
+          message: `Số ${phone} thuộc khách “${existing.name}”. Dùng thông tin khách này cho đơn?`,
+          buttons: [
+            { text: 'Không', role: 'cancel' },
+            { text: 'Dùng khách này', role: 'confirm' },
+          ],
+        });
+        await alert.present();
+        const { role } = await alert.onWillDismiss();
+        if (role === 'confirm') this.applyCustomer(existing);
+        return;
+      }
+
+      const shopName = this.selectedCustomerName.trim();
+      if (!shopName || shopName === 'Khách lẻ') return;
+      const alert = await this.alertCtrl.create({
+        header: 'Lưu khách hàng mới?',
+        message: `Lưu “${shopName}” với số điện thoại ${phone} vào danh sách khách hàng?`,
+        buttons: [
+          { text: 'Chỉ dùng cho đơn này', role: 'cancel' },
+          { text: 'Lưu khách hàng', role: 'confirm' },
+        ],
+      });
+      await alert.present();
+      const { role } = await alert.onWillDismiss();
+      if (role !== 'confirm') return;
+      const created = await this.customersService.create({
+        name: shopName,
+        contact_person: this.customerContactPerson.trim() || null,
+        phone,
+        address: this.customerAddress.trim() || null,
+        debt: 0,
+      });
+      this.customers.update((list) => [created, ...list.filter((c) => c.id !== created.id)]);
+      this.applyCustomer(created);
+      await this.toast(`Đã thêm khách hàng: ${created.name}`);
+    } catch (error: any) {
+      await this.toast(error?.message ?? 'Không thể lưu khách hàng', 'danger');
+    }
+  }
+
+  private applyCustomer(customer: Customer): void {
+    this.selectedCustomerId = customer.id;
+    this.selectedCustomerName = customer.name;
+    this.customerContactPerson = customer.contact_person ?? '';
+    this.customerPhone = customer.phone ?? '';
+    this.customerAddress = customer.address ?? '';
+    this.selectedCustomerDebt = Number(customer.debt ?? 0);
+  }
+
+  clearSelectedCustomerWhenEdited(): void {
+    if (!this.selectedCustomerId) return;
+    this.selectedCustomerId = null;
+    this.selectedCustomerDebt = 0;
   }
 
   /** Chữ cái đầu của khách đang chọn (avatar) */

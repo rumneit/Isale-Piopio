@@ -406,16 +406,29 @@ export class InvoiceTemplateService {
     // Dùng cùng một giá trị đã chuẩn hóa cho cả số và chữ để hai dòng trên bill
     // không thể lệch nhau vì null, NaN, số âm hoặc phần thập phân.
     const payableTotal = Math.round(amount(order.total));
-    const itemRows = input.items.map((item, index) => ({
-      index: index + 1,
-      productName: item.name,
-      unit: item.unit ?? '',
-      // Đơn vị khách đã chọn (Thùng/Lốc...) nếu có; đơn cũ vẫn hiển thị đơn vị gốc.
-      count: item.unit_qty ?? item.qty,
-      priceFormatted: money(item.unit_price ?? item.price),
-      totalFormatted: money(Number(item.total ?? Number(item.price) * Number(item.qty))),
-      discountText: '',
-    }));
+    const itemRows = input.items.map((item, index) => {
+      const count = Number(item.unit_qty ?? item.qty ?? 0);
+      const conversion = Number(item.unit_conversion ?? 1);
+      // Một số đơn cũ đã lưu tên/số lượng đơn vị thay thế nhưng thiếu unit_price.
+      // Khi đó phải quy đổi giá gốc lên giá Thùng/Lốc, không được in giá lẻ.
+      const unitPrice = item.unit_price != null
+        ? Number(item.unit_price)
+        : item.unit_qty != null && conversion > 1
+          ? Number(item.price ?? 0) * conversion
+          : Number(item.price ?? 0);
+      return {
+        index: index + 1,
+        productName: item.name,
+        unit: item.unit ?? '',
+        count,
+        quantity: count,
+        unitPrice,
+        price: unitPrice,
+        priceFormatted: money(unitPrice),
+        totalFormatted: money(Number(item.total ?? Number(item.price) * Number(item.qty))),
+        discountText: '',
+      };
+    });
     // Tổng số lượng chỉ có nghĩa khi mọi dòng cùng một đơn vị. Nếu đơn có
     // nhiều đơn vị (1 Thùng + 1 Cái), cộng số lượng sẽ sai; hiển thị "—".
     const unitKeys = new Set(
@@ -494,7 +507,7 @@ export class InvoiceTemplateService {
     };
   }
 
-  previewContext(shop: Shop | null, printNote = '', emptyRows = 2): Record<string, unknown> {
+  previewContext(shop: Shop | null, printNote = '', emptyRows = 0): Record<string, unknown> {
     const sampleOrder: Order = {
       id: 'preview', shop_id: shop?.id ?? 'preview', code: 'DH-PREVIEW', customer_id: null,
       customer_name: 'Khách hàng (mẫu)', customer_phone: '0901234567', customer_address: 'Địa chỉ giao hàng (mẫu)',

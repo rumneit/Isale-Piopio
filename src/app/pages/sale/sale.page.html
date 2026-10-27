@@ -432,12 +432,16 @@
             </div>
           }
           <div class="sale-row">
-            <span class="sale-label">Tên khách</span>
-            <ion-input [(ngModel)]="selectedCustomerName" class="sale-input" placeholder="VD: Nguyễn Văn A" />
+            <span class="sale-label">Tên quán</span>
+            <ion-input [(ngModel)]="selectedCustomerName" (ionInput)="clearSelectedCustomerWhenEdited()" class="sale-input" placeholder="VD: Bún chả Hà Nội" />
+          </div>
+          <div class="sale-row">
+            <span class="sale-label">Người mua hàng</span>
+            <ion-input [(ngModel)]="customerContactPerson" class="sale-input" placeholder="VD: Nguyễn Văn A" />
           </div>
           <div class="sale-row">
             <span class="sale-label">SĐT</span>
-            <ion-input type="tel" [(ngModel)]="customerPhone" class="sale-input" placeholder="VD: 09123456789" />
+            <ion-input type="tel" [(ngModel)]="customerPhone" (ionInput)="clearSelectedCustomerWhenEdited()" (ionBlur)="onCustomerPhoneBlur()" class="sale-input" placeholder="VD: 09123456789" />
           </div>
           <div class="sale-row">
             <span class="sale-label">Địa chỉ</span>

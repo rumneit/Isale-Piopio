@@ -99,10 +99,43 @@ export class CustomersService {
     return (data as Customer) ?? null;
   }
 
+  async findByPhone(phone: string): Promise<Customer | null> {
+    if (!this.sb.isConfigured || !this.shopId) return null;
+    const normalized = phone.replace(/\D/g, '');
+    if (normalized.length < 8) return null;
+    const { data, error } = await this.sb
+      .from('customers')
+      .select('*')
+      .eq('shop_id', this.shopId)
+      .eq('phone_normalized', normalized)
+      .is('deleted_at', null)
+      .maybeSingle();
+    if (error) {
+      if (error.code === '42703' || error.code === 'PGRST204') {
+        const legacy = await this.sb
+          .from('customers')
+          .select('*')
+          .eq('shop_id', this.shopId)
+          .eq('phone', phone.trim())
+          .maybeSingle();
+        if (legacy.error) throw legacy.error;
+        return (legacy.data as Customer) ?? null;
+      }
+      throw error;
+    }
+    return (data as Customer) ?? null;
+  }
+
   async create(input: Partial<Customer>): Promise<Customer> {
     const shopId = this.requireShop(); this.validate(input, false);
     const { data, error } = await this.sb.client.rpc('crm_create_customer', { p_shop: shopId, p_input: input });
-    if (!error && data) { const customer = data as Customer; void this.logService.log('create', 'customer', customer.name); return customer; }
+    if (!error && data) {
+      const customer = data as Customer;
+      await this.persistContactPerson(customer.id, input.contact_person);
+      customer.contact_person = input.contact_person?.trim() || null;
+      void this.logService.log('create', 'customer', customer.name);
+      return customer;
+    }
     if (!this.isMissingFunction(error)) throw this.friendlyError(error);
     const fallback = await this.sb.from('customers').insert({ ...this.legacyPayload(input), shop_id: shopId }).select().single();
     if (fallback.error) throw this.friendlyError(fallback.error);
@@ -113,7 +146,10 @@ export class CustomersService {
   async update(id: string, input: Partial<Customer>): Promise<void> {
     const shopId = this.requireShop(); this.validate(input, true);
     const { error } = await this.sb.client.rpc('crm_update_customer', { p_shop: shopId, p_customer_id: id, p_input: input });
-    if (!error) return;
+    if (!error) {
+      await this.persistContactPerson(id, input.contact_person);
+      return;
+    }
     if (!this.isMissingFunction(error)) throw this.friendlyError(error);
     const response = await this.sb.from('customers').update(this.legacyPayload(input)).eq('id', id).eq('shop_id', shopId);
     if (response.error) throw this.friendlyError(response.error);
@@ -212,8 +248,17 @@ export class CustomersService {
     if (input.debt != null && (!Number.isFinite(Number(input.debt)) || Number(input.debt) < 0)) throw new Error('Công nợ không hợp lệ.');
   }
   private legacyPayload(input: Partial<Customer>): Partial<Customer> {
-    const allowed: Array<keyof Customer> = ['name', 'code', 'phone', 'email', 'address', 'debt', 'gender', 'important', 'last_activity'];
+    const allowed: Array<keyof Customer> = ['name', 'contact_person', 'code', 'phone', 'email', 'address', 'debt', 'gender', 'important', 'last_activity'];
     return Object.fromEntries(Object.entries(input).filter(([key]) => allowed.includes(key as keyof Customer)));
+  }
+  private async persistContactPerson(id: string, value: string | null | undefined): Promise<void> {
+    if (value === undefined || !this.shopId) return;
+    const { error } = await this.sb
+      .from('customers')
+      .update({ contact_person: value?.trim() || null })
+      .eq('id', id)
+      .eq('shop_id', this.shopId);
+    if (error && error.code !== '42703' && error.code !== 'PGRST204') throw error;
   }
   private isMissingFunction(error: any): boolean { return !!error && (error.code === 'PGRST202' || error.code === '42883' || /function .* does not exist|schema cache/i.test(error.message ?? '')); }
   private friendlyError(error: any): Error {
