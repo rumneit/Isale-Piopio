@@ -136,7 +136,7 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
         <tr>
             <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;"><b>{{labels.headIndex}}</b></td>
             <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"><b>{{labels.headName}}</b></td>
-            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;"><b>{{labels.headUnit}}</b></td>
+            <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; white-space: nowrap;"><b>{{labels.headUnit}}</b></td>
             <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><b>{{labels.headQty}}</b></td>
             <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><b>{{labels.headPrice}}</b></td>
             {{#unless hideDiscountColumn}}
@@ -150,7 +150,7 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; white-space: normal; word-break: break-word; overflow-wrap: anywhere;">
                 {{productName}}{{{extrasHtml}}}
             </td>
-            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">{{unit}}</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; white-space: nowrap;">{{unit}}</td>
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{count}}</td>
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{priceFormatted}}</td>
             {{#unless ../hideDiscountColumn}}
@@ -403,6 +403,9 @@ export class InvoiceTemplateService {
       return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
     };
     const order = input.order;
+    // Dùng cùng một giá trị đã chuẩn hóa cho cả số và chữ để hai dòng trên bill
+    // không thể lệch nhau vì null, NaN, số âm hoặc phần thập phân.
+    const payableTotal = Math.round(amount(order.total));
     const itemRows = input.items.map((item, index) => ({
       index: index + 1,
       productName: item.name,
@@ -466,10 +469,10 @@ export class InvoiceTemplateService {
       },
       labels,
       order: {
-        ...order, orderCode: order.code, createdAt, totalFormatted: money(order.total), netValueFormatted: money(netValue),
+        ...order, orderCode: order.code, createdAt, totalFormatted: money(payableTotal), netValueFormatted: money(netValue),
         totalPromotionDiscountFormatted: money(promotionDiscount), discountOnTotalFormatted: money(discount),
         amountFromPointFormatted: money(pointPayment), taxFormatted: money(tax), shippingFeeFormatted: money(shipping),
-        paidFormatted: money(paid), changeFormatted: money(Math.max(0, paid - Number(order.total ?? 0))), oldDebtFormatted: money(oldDebt),
+        paidFormatted: money(paid), changeFormatted: money(Math.max(0, paid - payableTotal)), oldDebtFormatted: money(oldDebt),
       },
       items: itemRows,
       emptyRows: Array.from({ length: emptyCount }, (_, i) => itemRows.length + i),
@@ -484,8 +487,8 @@ export class InvoiceTemplateService {
       hasPointPayment: pointPayment > 0, showTax: !!input.showTax || tax > 0, hasTax: tax > 0,
       hasShipping: shipping > 0, hasOldDebt: oldDebt > 0,
       hasOrderNote: !!order.note, hasOrderPrintNote: !!input.printNote, orderPrintNote: input.printNote ?? '',
-      showQr: !!input.qrCodeUrl, qrCodeUrl: input.qrCodeUrl ?? '', amountToText: this.amountToVietnamese(Number(order.total ?? 0)),
-      totalWithCurrency: `${money(order.total)} ₫`, receiptCompact,
+      showQr: !!input.qrCodeUrl, qrCodeUrl: input.qrCodeUrl ?? '', amountToText: this.amountToVietnamese(payableTotal),
+      totalWithCurrency: `${money(payableTotal)} ₫`, receiptCompact,
       receiptColspan: receiptCompact ? 3 : 4, receiptSubtotalColspan: receiptCompact ? 2 : 3,
       bank: { name: shop?.bank_name ?? '' }, bankAccount: shop?.bank_owner ?? '', bankNumber: shop?.bank_account ?? '',
     };
@@ -582,18 +585,30 @@ export class InvoiceTemplateService {
       if (one) out.push(one === 1 && ten > 1 ? 'mốt' : one === 5 && ten > 0 ? 'lăm' : digits[one]);
       return out.join(' ');
     };
-    let n = Math.round(value), group = 0;
+    let n = Math.round(value);
+    const blocks: number[] = [];
+    while (n > 0 && blocks.length < units.length) {
+      blocks.push(n % 1000);
+      n = Math.floor(n / 1000);
+    }
+    const highestGroup = blocks.length - 1;
     const parts: string[] = [];
-    while (n > 0 && group < units.length) {
-      const block = n % 1000;
-      if (block) parts.unshift(readBlock(block, group > 0 && block < 100) + units[group]);
-      n = Math.floor(n / 1000); group++;
+    for (let group = highestGroup; group >= 0; group--) {
+      const block = blocks[group];
+      if (block) {
+        // Chỉ đọc đủ hàng trăm ở nhóm thấp hơn một nhóm có nghĩa. Nhóm cao
+        // nhất của 4.375.000 phải là “bốn triệu”, không phải “không trăm lẻ bốn triệu”.
+        const full = group < highestGroup && block < 100;
+        parts.push(readBlock(block, full) + units[group]);
+      }
     }
     return `${parts.join(' ').replace(/\s+/g, ' ').trim()} đồng`;
   }
 
   private baseCss(kind: InvoiceTemplateKind, width: string, paperSize: InvoicePaperSize): string {
-    const base = `*{box-sizing:border-box}body{margin:0 auto;padding:${kind === 'receipt' ? '10px 8px' : '18px'};width:${width};max-width:100%;background:#fff;color:#111;font:13px Arial,sans-serif;line-height:1.35}h1{text-align:center;font-size:18px;margin:14px 0}.shop-head{text-align:center;border-bottom:1px solid #111;padding-bottom:8px}.shop-head em,.receipt-head>*{display:block}.shop-logo,.receipt-logo{display:block;max-width:90px;max-height:64px;object-fit:contain;margin:0 auto 5px}.receipt-logo{max-width:70px;max-height:52px}.shop-name{font-size:15px}.shop-grid{display:grid;grid-template-columns:1fr 1fr;text-align:left;gap:20px;margin-top:8px}.bank-block{border-left:1px dotted #999;padding-left:20px}.invoice-meta>div,.receipt-meta>div,.receipt-bank>div{margin:2px 0}.receipt-bank{padding:6px 0;border-top:1px dashed #777;border-bottom:1px dashed #777}.dot-line{display:inline-block;min-width:180px;border-bottom:1px dotted #333}.invoice-table,.receipt-items,.receipt-total{width:100%;border-collapse:collapse;margin-top:10px}.invoice-table th,.invoice-table td{border:1px solid #111;padding:5px}.center{text-align:center}.number{text-align:right;white-space:nowrap}.written{margin-top:10px}.signatures{display:grid;grid-template-columns:1fr 1fr;text-align:center;margin-top:28px;min-height:90px}.staff-sign{display:block;margin-top:45px}.receipt-head{text-align:center;line-height:1.35}.receipt-meta{margin:8px 0}.receipt-items{border-top:1px dashed #777;border-bottom:1px dashed #777}.receipt-items th,.receipt-items td{padding:4px 2px;border-bottom:1px solid #bbb}.receipt-items .item-name td{padding-top:7px;border-bottom:0;font-weight:600}.receipt-items .subtotal td{border-bottom:0;border-top:1px dashed #777;padding-top:7px}.receipt-total td{padding:3px 2px}.receipt-total td:last-child{text-align:right;white-space:nowrap}.grand{font-weight:700;font-size:15px}.qr{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:10px;text-align:center}.qr img{max-width:${kind === 'receipt' ? '180px' : '90px'}}.thanks{text-align:center}@page{margin:8mm;size:${kind === 'receipt' ? '80mm auto' : 'A4'}}@media print{body{width:100%;padding:0}}`;
+    const screenPadding = kind === 'receipt' ? '10px 8px' : '18px 18px 18px 28px';
+    const pageMargin = kind === 'receipt' ? '8mm' : '8mm 8mm 8mm 12mm';
+    const base = `*{box-sizing:border-box}body{margin:0 auto;padding:${screenPadding};width:${width};max-width:100%;background:#fff;color:#111;font:13px Arial,sans-serif;line-height:1.35}h1{text-align:center;font-size:18px;margin:14px 0}.shop-head{text-align:center;border-bottom:1px solid #111;padding-bottom:8px}.shop-head em,.receipt-head>*{display:block}.shop-logo,.receipt-logo{display:block;max-width:90px;max-height:64px;object-fit:contain;margin:0 auto 5px}.receipt-logo{max-width:70px;max-height:52px}.shop-name{font-size:15px}.shop-grid{display:grid;grid-template-columns:1fr 1fr;text-align:left;gap:20px;margin-top:8px}.bank-block{border-left:1px dotted #999;padding-left:20px}.invoice-meta>div,.receipt-meta>div,.receipt-bank>div{margin:2px 0}.receipt-bank{padding:6px 0;border-top:1px dashed #777;border-bottom:1px dashed #777}.dot-line{display:inline-block;min-width:180px;border-bottom:1px dotted #333}.invoice-table,.receipt-items,.receipt-total{width:100%;border-collapse:collapse;margin-top:10px}.invoice-table th,.invoice-table td{border:1px solid #111;padding:5px}.center{text-align:center}.number{text-align:right;white-space:nowrap}.written{margin-top:10px}.signatures{display:grid;grid-template-columns:1fr 1fr;text-align:center;margin-top:28px;min-height:90px}.staff-sign{display:block;margin-top:45px}.receipt-head{text-align:center;line-height:1.35}.receipt-meta{margin:8px 0}.receipt-items{border-top:1px dashed #777;border-bottom:1px dashed #777}.receipt-items th,.receipt-items td{padding:4px 2px;border-bottom:1px solid #bbb}.receipt-items .item-name td{padding-top:7px;border-bottom:0;font-weight:600}.receipt-items .subtotal td{border-bottom:0;border-top:1px dashed #777;padding-top:7px}.receipt-total td{padding:3px 2px}.receipt-total td:last-child{text-align:right;white-space:nowrap}.grand{font-weight:700;font-size:15px}.qr{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:10px;text-align:center}.qr img{max-width:${kind === 'receipt' ? '180px' : '90px'}}.thanks{text-align:center}@page{margin:${pageMargin};size:${kind === 'receipt' ? '80mm auto' : 'A4'}}@media print{body{width:100%;padding:0}}`;
     // Cột "Sản phẩm" rộng + được xuống dòng để hiện đủ tên hàng trong kho
     const nameColumn =
       kind === 'invoice'
@@ -607,6 +622,7 @@ export class InvoiceTemplateService {
         : `.receipt-items .item-name td{white-space:normal;word-break:break-word;overflow-wrap:anywhere}`;
     if (kind !== 'invoice' || paperSize !== 'A5') return base + nameColumn;
     // Hóa đơn khổ lớn A5: thu gọn chữ/bảng để vừa 148mm
-    return base + nameColumn + `body{width:148mm;padding:6mm;font-size:10.5px}h1{font-size:15px;margin:10px 0}.shop-name{font-size:13px}.shop-grid{gap:10px}.bank-block{padding-left:10px}.shop-logo{max-width:64px;max-height:46px}.dot-line{min-width:120px}.invoice-table th,.invoice-table td{padding:3px;font-size:10px}.written{margin-top:6px}.signatures{margin-top:18px;min-height:70px}.staff-sign{margin-top:30px}.qr img{max-width:70px}@page{margin:5mm;size:A5}@media print{body{width:100%;padding:0}}`;
+    return base + nameColumn + `body{width:148mm;padding:6mm 6mm 6mm 9mm;font-size:10.5px}h1{font-size:15px;margin:10px 0}.shop-name{font-size:13px}.shop-grid{gap:10px}.bank-block{padding-left:10px}.shop-logo{max-width:64px;max-height:46px}.dot-line{min-width:120px}.invoice-table th,.invoice-table td{padding:3px;font-size:10px}.written{margin-top:6px}.signatures{margin-top:18px;min-height:70px}.staff-sign{margin-top:30px}.qr img{max-width:70px}@page{margin:5mm 5mm 5mm 8mm;size:A5}@media print{body{width:100%;padding:0}}`;
   }
 }
+

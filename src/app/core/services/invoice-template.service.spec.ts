@@ -137,6 +137,37 @@ describe('InvoiceTemplateService', () => {
     expect(context.totalProductsQuantity).toBe('—');
   });
 
+  it('keeps unit cells on one line and writes the exact payable total in words', () => {
+    const order = {
+      id: 'order-bill', shop_id: 'shop-1', code: 'DH-BILL', customer_id: null,
+      customer_name: 'Khách Bill', status: 'completed', total: 4_375_000,
+      discount: 0, paid: true, note: null, ship_fee: 0, created_at: '2026-10-26T06:06:00.000Z',
+    };
+    const context: any = service.context({
+      order,
+      items: [{ id: 'item-bill', order_id: 'order-bill', product_id: null, name: 'Sản phẩm', price: 4_375_000, qty: 1, total: 4_375_000, unit: 'Thùng (4000 đôi)' }],
+      shop: null,
+    });
+
+    expect(context.order.totalFormatted).toBe('4.375.000');
+    expect(context.amountToText).toBe('bốn triệu ba trăm bảy mươi lăm nghìn đồng');
+
+    const html = service.render(service.defaultFor('invoice'), context);
+    expect(html).toContain('white-space: nowrap;">Thùng (4000 đôi)</td>');
+    expect(html).toContain('bốn triệu ba trăm bảy mươi lăm nghìn đồng');
+  });
+
+  it('reads zero-padded lower number groups without padding the highest group', () => {
+    const order = {
+      id: 'order-words', shop_id: 'shop-1', code: 'DH-WORDS', customer_id: null,
+      customer_name: 'Khách', status: 'completed', total: 1_005_000,
+      discount: 0, paid: true, note: null, ship_fee: 0, created_at: '2026-10-26T06:06:00.000Z',
+    };
+    const context: any = service.context({ order, items: [], shop: null });
+
+    expect(context.amountToText).toBe('một triệu không trăm lẻ năm nghìn đồng');
+  });
+
   it('escapes business data supplied to a template', () => {
     const html = service.render('<p>{{customerName}}</p>', { customerName: '<img src=x onerror=alert(1)>' });
     expect(html).toContain('&lt;img');
@@ -155,3 +186,4 @@ describe('InvoiceTemplateService', () => {
     expect(html).toContain('<p>OK</p>');
   });
 });
+
