@@ -126,8 +126,8 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
     <table style="margin-top: 10px; margin-bottom: 10px; width: 100%; border-collapse: collapse; table-layout: fixed;">
         <colgroup>
             <col style="width: 6%;">
-            <col style="width: {{#if hideDiscountColumn}}44%{{else}}36%{{/if}};">
-            <col style="width: 11%;">
+            <col style="width: {{#if hideDiscountColumn}}35%{{else}}27%{{/if}};">
+            <col style="width: 20%;">
             <col style="width: 8%;">
             <col style="width: 14%;">
             {{#unless hideDiscountColumn}}<col style="width: 8%;">{{/unless}}
@@ -150,7 +150,7 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle; white-space: normal; word-break: break-word; overflow-wrap: anywhere;">
                 {{productName}}{{{extrasHtml}}}
             </td>
-            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle; white-space: nowrap;">{{unit}}</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 3px; text-align: center; vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9em;">{{unit}}</td>
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;">{{count}}</td>
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;">{{priceFormatted}}</td>
             {{#unless ../hideDiscountColumn}}
@@ -501,8 +501,8 @@ export class InvoiceTemplateService {
       status: 'completed', total: 900900, discount: 0, paid: true, note: null, created_at: new Date().toISOString(),
     };
     const sampleItems: OrderItem[] = [
-      { id: '1', order_id: 'preview', product_id: null, name: 'Sản phẩm mẫu A', price: 150000, qty: 2, total: 300000 },
-      { id: '2', order_id: 'preview', product_id: null, name: 'Sản phẩm mẫu B', price: 200300, qty: 3, total: 600900 },
+      { id: '1', order_id: 'preview', product_id: null, name: 'Sản phẩm mẫu A', price: 150000, qty: 2, total: 300000, unit: 'Bộ' },
+      { id: '2', order_id: 'preview', product_id: null, name: 'Sản phẩm mẫu B', price: 200300, qty: 3, total: 600900, unit: 'Thùng (4000 đôi)' },
     ];
     return this.context({
       order: sampleOrder,

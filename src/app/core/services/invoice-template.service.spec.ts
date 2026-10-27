@@ -153,7 +153,8 @@ describe('InvoiceTemplateService', () => {
     expect(context.amountToText).toBe('bốn triệu ba trăm bảy mươi lăm nghìn đồng');
 
     const html = service.render(service.defaultFor('invoice'), context);
-    expect(html).toContain('vertical-align: middle; white-space: nowrap;">Thùng (4000 đôi)</td>');
+    expect(html).toContain('width: 20%;');
+    expect(html).toContain('white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9em;">Thùng (4000 đôi)</td>');
     expect(html).toContain('text-align: center; vertical-align: middle; white-space: normal; word-break: break-word; overflow-wrap: anywhere;">\n                Sản phẩm');
     expect(html).toContain('text-align: center; vertical-align: middle;">4.375.000</td>');
     expect(html).toContain('bốn triệu ba trăm bảy mươi lăm nghìn đồng');
