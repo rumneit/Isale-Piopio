@@ -22,8 +22,21 @@ body {
  * Wrapper vì thế bị đẩy lên ngoài viewport và chuột không còn vùng cuộn đúng
  * (thấy rõ ở Nhóm sản phẩm, Ngân hàng và các select dài khác).
  */
-ion-action-sheet {
-  --max-height: min(82vh, 640px);
+ion-action-sheet .action-sheet-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-height: min(82vh, 640px) !important;
+}
+
+ion-action-sheet .action-sheet-group:not(.action-sheet-group-cancel) {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+ion-action-sheet .action-sheet-group-cancel {
+  flex: 0 0 auto;
 }
 
 /* WCAG 2.2 AA: bàn phím luôn có dấu focus đủ tương phản, không phụ thuộc màu. */
