@@ -30,7 +30,7 @@ export const routes: Routes = [
   // Orders
   { path: 'order', loadComponent: () => import('./pages/orders/orders.page').then((m) => m.OrdersPage), canActivate: [authGuard, permissionGuard] },
   { path: 'sale', loadComponent: () => import('./pages/sale/sale.page').then((m) => m.SalePage), canActivate: [authGuard, permissionGuard] },
-  { path: 'order/add', loadComponent: () => import('./pages/orders/order-add.page').then((m) => m.OrderAddPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'order/add', redirectTo: 'sale', pathMatch: 'full' },
   { path: 'order/:id/return', loadComponent: () => import('./pages/returns/order-return.page').then((m) => m.OrderReturnPage), canActivate: [authGuard, permissionGuard] },
   { path: 'order/:id', loadComponent: () => import('./pages/orders/order-detail.page').then((m) => m.OrderDetailPage), canActivate: [authGuard, permissionGuard] },
   // Returns
@@ -78,6 +78,7 @@ export const routes: Routes = [
   { path: 'delivery', loadComponent: () => import('./pages/delivery/delivery.page').then((m) => m.DeliveryPage), canActivate: [authGuard, permissionGuard] },
   // Quotes
   { path: 'quote', loadComponent: () => import('./pages/quotes/quotes.page').then((m) => m.QuotesPage), canActivate: [authGuard, permissionGuard] },
+  { path: 'quote/add', loadComponent: () => import('./pages/orders/order-add.page').then((m) => m.OrderAddPage), canActivate: [authGuard, permissionGuard] },
   // Promotions
   { path: 'promotion', loadComponent: () => import('./pages/promotions/promotions.page').then((m) => m.PromotionsPage), canActivate: [authGuard, permissionGuard] },
   { path: 'promotion/add', loadComponent: () => import('./pages/promotions/promotion-edit.page').then((m) => m.PromotionEditPage), canActivate: [authGuard, permissionGuard] },

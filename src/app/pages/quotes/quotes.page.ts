@@ -106,7 +106,7 @@ export class QuotesPage implements OnInit {
   }
 
   openAdd() {
-    this.router.navigate(['/order/add'], { queryParams: { mode: 'quote' } });
+    this.router.navigate(['/quote/add'], { queryParams: { mode: 'quote' } });
   }
 
   async closeDeal(order: Order) {
