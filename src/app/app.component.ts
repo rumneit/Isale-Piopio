@@ -47,7 +47,6 @@ import {
   bookOutline,
   timeOutline,
   arrowRedoOutline,
-  restaurantOutline,
   cloudUploadOutline,
   downloadOutline,
   linkOutline,
@@ -255,7 +254,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { title: 'Kiểm kho', icon: 'clipboard-outline', path: '/stock-check', permission: 'inventory' },
     { title: 'Lịch', icon: 'calendar-outline', path: '/calendar', permission: 'crm' },
     { title: 'Ghi chú', icon: 'book-outline', path: '/note', permission: 'crm' },
-    { title: 'Quản bàn', icon: 'restaurant-outline', path: '/cafe-tables', permission: 'sell' },
     { title: 'Nhập dữ liệu', icon: 'cloud-upload-outline', path: '/import', permission: 'inventory' },
     { title: 'Lịch sử thay đổi', icon: 'pulse-outline', path: '/activity-log', permission: 'crm' },
     { title: 'Phân quyền', icon: 'lock-closed-outline', path: '/permission', permission: 'owner' },
@@ -281,7 +279,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { title: 'Tổng quan', paths: ['/home'] },
     {
       title: 'Bán hàng',
-      paths: ['/order', '/shipments', '/returns', '/trade', '/sales-channels', '/cafe-tables'],
+      paths: ['/order', '/shipments', '/returns', '/trade', '/sales-channels'],
     },
     {
       title: 'Kho hàng',
@@ -372,7 +370,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       bookOutline,
       timeOutline,
       arrowRedoOutline,
-      restaurantOutline,
       cloudUploadOutline,
       downloadOutline,
       linkOutline,
@@ -432,3 +429,4 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 }
+
