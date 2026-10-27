@@ -440,12 +440,12 @@
             <ion-input [(ngModel)]="customerContactPerson" class="sale-input" placeholder="VD: Nguyễn Văn A" />
           </div>
           <div class="sale-row">
-            <span class="sale-label">SĐT</span>
-            <ion-input type="tel" [(ngModel)]="customerPhone" (ionInput)="clearSelectedCustomerWhenEdited()" (ionBlur)="onCustomerPhoneBlur()" class="sale-input" placeholder="VD: 09123456789" />
-          </div>
-          <div class="sale-row">
             <span class="sale-label">Địa chỉ</span>
             <ion-input [(ngModel)]="customerAddress" class="sale-input" placeholder="VD: 12 Nguyễn Trãi, TP HCM" />
+          </div>
+          <div class="sale-row">
+            <span class="sale-label">SĐT</span>
+            <ion-input type="tel" [(ngModel)]="customerPhone" (ionInput)="clearSelectedCustomerWhenEdited()" (ionBlur)="onCustomerPhoneBlur()" class="sale-input" placeholder="VD: 09123456789" />
           </div>
           @if (!selectedCustomerId) {
             <ion-button expand="block" fill="outline" (click)="saveCustomerFromForm()">
