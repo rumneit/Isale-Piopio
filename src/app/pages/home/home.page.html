@@ -20,17 +20,6 @@
 
 <ion-content class="app-page">
   <div class="app-page-container">
-    <!-- Tip banner theo tab -->
-    @if (!isTipDismissed(currentTab.id)) {
-      <div class="tip-banner">
-        <ion-icon name="bulb-outline" class="tip-icon" />
-        <span class="tip-text">{{ currentTab.tip }}</span>
-        <button class="tip-close" (click)="dismissTip(currentTab.id)">
-          <ion-icon name="close-outline" />
-        </button>
-      </div>
-    }
-
     <!-- 4 tab thao tác nhanh -->
     <ion-segment class="app-home-segment home-tabs" [value]="selectedTab()" (ionChange)="selectTab($any($event))" [scrollable]="true">
       @for (tab of tabs; track tab.id) {
@@ -121,3 +110,4 @@
     </div>
   }
 </ion-content>
+

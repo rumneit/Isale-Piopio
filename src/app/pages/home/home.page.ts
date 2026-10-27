@@ -26,7 +26,6 @@ import {
   notifications,
   settingsOutline,
   textOutline,
-  bulbOutline,
   closeOutline,
   basket,
   barcode,
@@ -92,7 +91,6 @@ interface QuickAction {
 interface HomeTab {
   id: string;
   label: string;
-  tip: string;
   actions: QuickAction[];
 }
 
@@ -138,7 +136,6 @@ export class HomePage implements OnInit {
   private productExcel = inject(ProductExcelService);
 
   readonly selectedTab = signal('selling');
-  readonly tipDismissed = signal<Record<string, boolean>>({});
   readonly walletLoading = signal(true);
   readonly hasDefaultWallet = signal(true);
   readonly creatingWallet = signal(false);
@@ -148,7 +145,6 @@ export class HomePage implements OnInit {
     {
       id: 'selling',
       label: 'Bán hàng',
-      tip: 'Mẹo: Tạo đơn nhanh bằng cách quét mã vạch sản phẩm ngay trên thanh thao tác.',
       actions: [
         { id: 'sell', label: 'Bán hàng', icon: 'basket', color: '#6030ff', path: '/sale' },
         { id: 'scan-order', label: 'Tạo đơn: quét mã', icon: 'barcode', color: '#47bdb5', path: '__scan__' },
@@ -164,7 +160,6 @@ export class HomePage implements OnInit {
     {
       id: 'inventory',
       label: 'Kho/Sản phẩm',
-      tip: "Mẹo: Để đổi trả hàng, hãy dùng tính năng 'Trả hàng' trong chi tiết đơn hàng.",
       actions: [
         { id: 'products', label: 'Sản phẩm', icon: 'cart', color: '#e6bf00', path: '/product' },
         { id: 'received', label: 'Phiếu nhập kho', icon: 'clipboard', color: '#e6bf00', path: '/received-note' },
@@ -183,7 +178,6 @@ export class HomePage implements OnInit {
     {
       id: 'contacts',
       label: 'Khách hàng',
-      tip: 'Mẹo: Chia sẻ mã giới thiệu cho bạn bè để cả hai cùng nhận ưu đãi PRO.',
       actions: [
         { id: 'customers', label: 'Khách hàng', icon: 'people', color: '#3dc2ff', path: '/contact' },
         { id: 'notes', label: 'Ghi chú - Ảnh', icon: 'document-text', color: '#ff7043', path: '/note' },
@@ -196,7 +190,6 @@ export class HomePage implements OnInit {
     {
       id: 'crm',
       label: 'CRM',
-      tip: 'Mẹo: Ghi lại hoạt động chăm sóc để theo dõi khách tiềm năng nhất quán.',
       actions: [
         { id: 'crm-help', label: 'CRM Help', icon: 'help-circle-outline', color: '#6030ff', path: '/help' },
         { id: 'crm-leads', label: 'Khách tiềm năng', icon: 'person-add-outline', color: '#47bdb5', path: '/crm' },
@@ -228,7 +221,6 @@ export class HomePage implements OnInit {
       notifications,
       settingsOutline,
       textOutline,
-      bulbOutline,
       closeOutline,
       basket,
       barcode,
@@ -294,14 +286,6 @@ export class HomePage implements OnInit {
 
   selectTab(ev: CustomEvent) {
     this.selectedTab.set(ev.detail.value as string);
-  }
-
-  isTipDismissed(tabId: string): boolean {
-    return !!this.tipDismissed()[tabId];
-  }
-
-  dismissTip(tabId: string) {
-    this.tipDismissed.update((m) => ({ ...m, [tabId]: true }));
   }
 
   openPath(path: string) {
@@ -387,3 +371,4 @@ export class HomePage implements OnInit {
     await t.present();
   }
 }
+

@@ -2,45 +2,6 @@ ion-content {
   --background: var(--app-page-bg);
 }
 
-/* ---------- Tip banner (ISale: nền hồng warning) ---------- */
-.tip-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: rgba(var(--ion-color-warning-rgb), 0.1);
-  border: 1px solid rgba(var(--ion-color-warning-rgb), 0.28);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 14px;
-
-  .tip-icon {
-    font-size: 18px;
-    color: var(--ion-color-warning);
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-
-  .tip-text {
-    flex: 1;
-    font-size: 13px;
-    line-height: 1.45;
-    color: var(--app-text);
-  }
-
-  .tip-close {
-    flex-shrink: 0;
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    color: var(--ion-color-danger);
-
-    ion-icon {
-      font-size: 18px;
-    }
-  }
-}
-
 /* ---------- Tabs ---------- */
 .home-tabs {
   margin-bottom: 14px;
@@ -367,3 +328,4 @@ html.ion-palette-dark .config-box {
   justify-content: flex-end;
   gap: 8px;
 }
+
