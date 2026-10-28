@@ -278,7 +278,7 @@ export class OrdersService {
     const ship = input.ship_fee_by_customer === false ? 0 : (input.ship_fee ?? 0);
     const total = input.total ?? merchandise - discount + tax + ship;
     const nonce = options.idempotencyKey ?? crypto.randomUUID();
-    const { data: order, error } = await this.sb.client.rpc('inv_create_order', {
+    const { data: order, error } = await this.sb.client.rpc('inv_create_order_v48', {
       p_shop: shopId,
       p_order: { ...input, code: input.code ?? this.newCode(), total },
       p_items: items,
@@ -289,16 +289,12 @@ export class OrdersService {
       if (error.code === '42703' && /channel_id/i.test(error.message)) {
         throw new Error('Cơ sở dữ liệu thiếu cột orders.channel_id. Hãy chạy supabase-migration-v38-sale-order-channel-fix.sql trước khi tạo đơn.');
       }
-      if (error.code === 'PGRST202' || /inv_create_order|schema cache/i.test(error.message)) {
-        throw new Error('Cơ sở dữ liệu chưa có migration v34. Hãy chạy supabase-migration-v34-release-hardening.sql trước khi tạo đơn.');
+      if (error.code === 'PGRST202' || /inv_create_order_v48|schema cache/i.test(error.message)) {
+        throw new Error('Cơ sở dữ liệu chưa có migration v48 để lưu đơn vị bán nguyên tử. Hãy chạy supabase-migration-v48-atomic-order-units.sql.');
       }
       throw error;
     }
     const created = order as Order;
-    // Lưu đơn vị khách đã chọn (Thùng/Lốc/...) để chi tiết đơn và hoá đơn
-    // hiển thị đúng. Đây là metadata phụ; lỗi ở bước này không được làm hỏng
-    // đơn vừa tạo (tồn kho/doanh thu đã được RPC xử lý xong).
-    await this.syncItemUnits(created.id, items);
     this.logService.log('create', 'order', created.code);
     return created;
   }
@@ -335,7 +331,7 @@ export class OrdersService {
   ): Promise<Order> {
     const shopId = this.shopId;
     if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
-    const { data, error } = await this.sb.client.rpc('inv_update_order_full', {
+    const { data, error } = await this.sb.client.rpc('inv_update_order_full_v48', {
       p_shop: shopId,
       p_order_id: orderId,
       p_order: order,
@@ -343,9 +339,9 @@ export class OrdersService {
       p_adjust_income: true,
     });
     if (error) {
-      if (error.code === 'PGRST202' || /inv_update_order_full|schema cache/i.test(error.message)) {
+      if (error.code === 'PGRST202' || /inv_update_order_full_v48|schema cache/i.test(error.message)) {
         throw new Error(
-          'Cơ sở dữ liệu chưa có hàm sửa đơn đầy đủ (migration v40). Hãy chạy file supabase-migration-v40-sale-order-edit.sql trong Supabase SQL Editor, đợi vài giây để schema cache nạp lại rồi thử lại.'
+          'Cơ sở dữ liệu chưa có hàm sửa đơn nguyên tử (migration v48). Hãy chạy file supabase-migration-v48-atomic-order-units.sql trong Supabase SQL Editor.'
         );
       }
       if (error.code === '42883' || /_inv_lock_products|_inv_stock_status|_inv_order_item/i.test(error.message)) {
@@ -376,101 +372,8 @@ export class OrdersService {
         console.warn('Không lưu được ví nhận tiền:', rpc.error.message);
       }
     }
-    await this.syncItemUnits(orderId, items);
     this.logService.log('update', 'order', updated?.code ?? orderId);
     return updated;
-  }
-
-  /**
-   * Gắn metadata đơn vị (Thùng/Lốc/...) vào các dòng order_items vừa tạo/sửa.
-   *
-   * `order_items.qty` vẫn là số lượng quy về đơn vị gốc — nhờ vậy trigger tồn
-   * kho, báo cáo và các RPC cũ không phải thay đổi. Hàm này chỉ cập nhật
-   * unit/unit_qty/unit_conversion/unit_price để giao diện hiển thị đúng đơn vị.
-   */
-  async syncItemUnits(orderId: string, items: OrderLineInput[]): Promise<void> {
-    try {
-      await this.syncItemUnitsUnsafe(orderId, items);
-    } catch (e: any) {
-      console.warn('Không lưu được đơn vị bán:', e?.message ?? e);
-    }
-  }
-
-  private async syncItemUnitsUnsafe(orderId: string, items: OrderLineInput[]): Promise<void> {
-    const tagged = items.filter(
-      (i) =>
-        !!i.unit &&
-        Number(i.unit_conversion) > 0 &&
-        i.unit_qty != null &&
-        i.unit_price != null
-    );
-    const shopId = this.shopId;
-    if (!tagged.length || !shopId) return;
-
-    const { data, error } = await this.sb
-      .from('order_items')
-      .select('id, product_id, name, price, qty')
-      .eq('order_id', orderId);
-    if (error) {
-      console.warn('Không đọc được dòng đơn để lưu đơn vị:', error.message);
-      return;
-    }
-
-    // Ghép theo id trước; dòng mới (hoặc dòng bị RPC xoá/tạo lại) thì ghép theo
-    // sản phẩm + tên + giá/số lượng gốc. Mỗi dòng DB chỉ được ghép một lần.
-    const pool = [...(data ?? [])] as Array<{
-      id: string;
-      product_id: string | null;
-      name: string;
-      price: number;
-      qty: number;
-    }>;
-    const payload: Array<{
-      id: string;
-      unit: string;
-      unit_conversion: number;
-      unit_qty: number;
-      unit_price: number;
-    }> = [];
-
-    for (const item of tagged) {
-      let row: (typeof pool)[number] | undefined;
-      if (item.id) {
-        const byId = pool.findIndex((r) => r.id === item.id);
-        if (byId >= 0) row = pool.splice(byId, 1)[0];
-      }
-      if (!row) {
-        const byValues = pool.findIndex(
-          (r) =>
-            (r.product_id ?? null) === (item.product_id ?? null) &&
-            r.name === item.name &&
-            Math.abs(Number(r.qty) - Number(item.qty)) < 0.0001 &&
-            Math.abs(Number(r.price) - Number(item.price)) < 0.005
-        );
-        if (byValues >= 0) row = pool.splice(byValues, 1)[0];
-      }
-      if (!row) continue;
-      payload.push({
-        id: row.id,
-        unit: String(item.unit),
-        unit_conversion: Number(item.unit_conversion),
-        unit_qty: Number(item.unit_qty),
-        unit_price: Number(item.unit_price),
-      });
-    }
-    if (!payload.length) return;
-
-    const { error: rpcError } = await this.sb.client.rpc('inv_set_order_item_units', {
-      p_shop: shopId,
-      p_order_id: orderId,
-      p_items: payload,
-    });
-    if (
-      rpcError &&
-      !/inv_set_order_item_units|schema cache|function|does not exist/i.test(rpcError.message)
-    ) {
-      console.warn('Không lưu được đơn vị bán:', rpcError.message);
-    }
   }
 
   async update(id: string, patch: Partial<Order>): Promise<void> {

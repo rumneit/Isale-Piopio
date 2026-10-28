@@ -32,6 +32,7 @@ export interface ProviderMeta {
  */
 @Injectable({ providedIn: 'root' })
 export class IntegrationsService {
+  private static readonly secretKeys = new Set(['api_key', 'access_token', 'webhook_token']);
   private sb = inject(SupabaseService);
   private auth = inject(AuthService);
   private logService = inject(LogService);
@@ -87,17 +88,35 @@ export class IntegrationsService {
     if (error) throw error;
     return ((data ?? []) as any[]).map((r) => ({
       ...r,
-      config: r.config && typeof r.config === 'object' ? r.config : {},
+      config: r.config && typeof r.config === 'object'
+        ? Object.fromEntries(Object.entries(r.config).filter(([key]) => !IntegrationsService.secretKeys.has(key)))
+        : {},
     })) as IntegrationSetting[];
   }
 
   async save(provider: IntegrationProvider, enabled: boolean, config: Record<string, any>): Promise<void> {
     const shopId = this.shopId;
     if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
+    const plaintextSecrets = Object.entries(config).filter(
+      ([key, value]) => IntegrationsService.secretKeys.has(key) && String(value ?? '').trim()
+    );
+    if (plaintextSecrets.length) {
+      throw new Error(
+        'Không lưu khóa bí mật trực tiếp trên trình duyệt. Hãy cấu hình secret trong backend/Edge Function trước khi bật tích hợp.'
+      );
+    }
+    if (enabled) {
+      throw new Error(
+        'Chưa thể bật tích hợp khi backend/Edge Function quản lý secret chưa được cấu hình.'
+      );
+    }
+    const safeConfig = Object.fromEntries(
+      Object.entries(config).filter(([key]) => !IntegrationsService.secretKeys.has(key))
+    );
     const { error } = await this.sb
       .from('integration_settings')
       .upsert(
-        { shop_id: shopId, provider, enabled, config, updated_at: new Date().toISOString() },
+        { shop_id: shopId, provider, enabled, config: safeConfig, updated_at: new Date().toISOString() },
         { onConflict: 'shop_id,provider' }
       );
     if (error) throw error;

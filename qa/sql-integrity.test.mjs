@@ -121,6 +121,8 @@ const v43 = readFileSync('supabase-migration-v43-order-money-integrity.sql', 'ut
 const v44 = readFileSync('supabase-migration-v44-return-debt-staff.sql', 'utf8');
 const v45 = readFileSync('supabase-migration-v45-order-delete-print-customer.sql', 'utf8');
 const v46 = readFileSync('supabase-migration-v46-delete-any-order.sql', 'utf8');
+const v43Units = readFileSync('supabase-migration-v43-sale-units.sql', 'utf8');
+const v48 = readFileSync('supabase-migration-v48-atomic-order-units.sql', 'utf8');
 
 const db = new PGlite();
 await db.exec(BASE);
@@ -131,6 +133,9 @@ await db.exec(v44); // chạy lại phải idempotent
 await db.exec(v45);
 await db.exec(v46);
 await db.exec(v46); // migration xóa đơn cũng phải idempotent
+await db.exec(v43Units);
+await db.exec(v48);
+await db.exec(v48); // wrapper metadata cũng phải idempotent
 
 let passed = 0;
 const failures = [];
@@ -406,6 +411,72 @@ console.log('\n== T10: thêm/xoá nhân viên theo email ==');
     unknown = /Chưa có tài khoản/.test(String(e.message));
   }
   check('báo đúng khi email chưa đăng ký', unknown, true);
+}
+
+console.log('\n== T11: tạo đơn + metadata đơn vị là một transaction ==');
+{
+  const p = (await one(
+    `insert into public.products(shop_id,name,unit,price,stock)
+     values ($1,'Hộp QA','Cái',10,1000) returning id`, [SHOP]
+  )).id;
+  const items = [{
+    product_id: p, name: 'Hộp QA', price: 10, qty: 40,
+    unit: 'Thùng', unit_qty: 2, unit_conversion: 20, unit_price: 200,
+  }];
+  const created = await one(
+    `select public.inv_create_order_v48($1,$2,$3,$4,false) o`,
+    [SHOP, { code: 'DH-T11', status: 'draft', paid: false, total: 400 }, items,
+     '48111111-1111-4111-8111-111111111111']
+  );
+  const row = await one(
+    `select unit, unit_qty, unit_conversion, unit_price from order_items where order_id=$1`,
+    [created.o.id]
+  );
+  check('lưu đúng đơn vị thùng', row.unit, 'Thùng');
+  check('lưu đúng số thùng', Number(row.unit_qty), 2);
+  check('lưu đúng tỷ lệ quy đổi', Number(row.unit_conversion), 20);
+  check('lưu đúng giá thùng', Number(row.unit_price), 200);
+
+  const before = Number(await val(`select count(*) from orders`));
+  let rolledBack = false;
+  try {
+    await db.query(
+      `select public.inv_create_order_v48($1,$2,$3,$4,false)`,
+      [SHOP, { code: 'DH-T11-BAD', status: 'draft', paid: false, total: 400 },
+       [{ ...items[0], unit_qty: 3 }], '48222222-2222-4222-8222-222222222222']
+    );
+  } catch (e) {
+    rolledBack = /không khớp/.test(String(e.message));
+  }
+  check('metadata sai làm toàn bộ RPC thất bại', rolledBack, true);
+  check('không để lại đơn nửa chừng', Number(await val(`select count(*) from orders`)), before);
+}
+
+console.log('\n== T12: hai request cùng nonce không tạo đơn trùng ==');
+{
+  const p = (await one(
+    `insert into public.products(shop_id,name,unit,price,stock)
+     values ($1,'SP Concurrent','Cái',25,1000) returning id`, [SHOP]
+  )).id;
+  const nonce = '48333333-3333-4333-8333-333333333333';
+  const args = [
+    SHOP,
+    { code: 'DH-CONCURRENT', status: 'draft', paid: false, total: 250 },
+    [{ product_id: p, name: 'SP Concurrent', price: 25, qty: 10,
+       unit: 'Thùng', unit_qty: 1, unit_conversion: 10, unit_price: 250 }],
+    nonce,
+  ];
+  const [a, b] = await Promise.all([
+    db.query(`select public.inv_create_order_v48($1,$2,$3,$4,false) o`, args),
+    db.query(`select public.inv_create_order_v48($1,$2,$3,$4,false) o`, args),
+  ]);
+  check('hai request trả cùng order id', a.rows[0].o.id, b.rows[0].o.id);
+  check('database chỉ có một đơn cho nonce', Number(await val(
+    `select count(*) from orders where idempotency_key=$1`, [nonce]
+  )), 1);
+  check('database chỉ có một dòng sản phẩm', Number(await val(
+    `select count(*) from order_items where order_id=$1`, [a.rows[0].o.id]
+  )), 1);
 }
 
 console.log(`\n${passed} passed, ${failures.length} failed`);

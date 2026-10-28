@@ -1,4 +1,4 @@
-// Kiểm tra nhanh DB production đã có schema/RPC của v43-v45 chưa.
+// Kiểm tra nhanh DB production đã có schema/RPC của v43-v48 chưa.
 // Chỉ dùng anon key công khai trong src/environments/environment.prod.ts,
 // không đăng nhập, không đọc/ghi dữ liệu nghiệp vụ.
 //
@@ -26,6 +26,8 @@ const probes = [
   ['v44 inv_add_shop_member', 'inv_add_shop_member', { p_shop: ZERO, p_email: 'qa@example.com', p_role: 'staff' }],
   ['v44 inv_remove_shop_member', 'inv_remove_shop_member', { p_shop: ZERO, p_profile: ZERO }],
   ['v44 order_debt_value', 'order_debt_value', { p_order_id: ZERO, p_total: 0, p_paid: false, p_status: 'debt' }],
+  ['v48 inv_create_order_v48', 'inv_create_order_v48', { p_shop: ZERO, p_order: {}, p_items: [], p_nonce: ZERO, p_record_income: false }],
+  ['v48 inv_update_order_full_v48', 'inv_update_order_full_v48', { p_shop: ZERO, p_order_id: ZERO, p_order: {}, p_items: [], p_adjust_income: true }],
 ];
 
 let missing = 0;
@@ -42,6 +44,17 @@ for (const [label, fn, body] of probes) {
   else state = `UNEXPECTED ${res.status} ${text.slice(0, 120)}`;
   if (state !== 'APPLIED') missing++;
   console.log(`${state.padEnd(8)} ${label}`);
+}
+
+// Cột hash/prefix của v47.
+{
+  const res = await fetch(`${url}/rest/v1/api_tokens?select=id,token_prefix&limit=0`, {
+    headers: { apikey: key },
+  });
+  const text = await res.text();
+  const state = res.status === 400 && /does not exist/i.test(text) ? 'MISSING' : 'APPLIED';
+  if (state !== 'APPLIED') missing++;
+  console.log(`${state.padEnd(8)} v47 api_tokens.token_prefix`);
 }
 
 // Cột mới của v44: PostgREST trả 400 "column ... does not exist" nếu chưa áp.
@@ -71,7 +84,7 @@ for (const [label, fn, body] of probes) {
 
 console.log(
   missing === 0
-    ? '\nTất cả schema/RPC có thể kiểm tra read-only đến v45 đã có trên DB. v46 cần admin/staging để xác minh thân hàm.'
+    ? '\nTất cả schema/RPC có thể kiểm tra read-only đến v48 đã có trên DB.'
     : `\n${missing} mục schema chưa có — cần chạy migration tương ứng trong Supabase SQL Editor.`
 );
 process.exitCode = missing === 0 ? 0 : 1;

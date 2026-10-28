@@ -87,7 +87,7 @@ async function makeContext(browser, { loggedIn = true, profile = ownerProfile, t
     if (url.pathname.includes('/rest/v1/rpc/')) {
       const fn = url.pathname.split('/').pop();
       const body = req.postData() ? JSON.parse(req.postData()) : {};
-      if (fn === 'inv_create_order') {
+      if (fn === 'inv_create_order_v48') {
         state.rpcCalls.push(body);
         if (state.failNextOrderRpc) {
           state.failNextOrderRpc = false;

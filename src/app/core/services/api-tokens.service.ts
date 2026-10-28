@@ -7,7 +7,10 @@ export interface ApiToken {
   id: string;
   shop_id: string;
   name: string;
-  token: string;
+  /** Prefix công khai để nhận diện token; không phải secret có thể sử dụng. */
+  token_prefix: string;
+  /** Chỉ tồn tại trong kết quả create, không được lưu trong database. */
+  plain_token?: string;
   scopes: string;
   last_used_at: string | null;
   revoked: boolean;
@@ -31,11 +34,17 @@ export class ApiTokensService {
     return 'piopio_' + [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
   }
 
+  static async hashToken(token: string): Promise<string> {
+    const bytes = new TextEncoder().encode(token);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
   async list(): Promise<ApiToken[]> {
     if (!this.sb.isConfigured || !this.shopId) return [];
     const { data, error } = await this.sb
       .from('api_tokens')
-      .select('*')
+      .select('id, shop_id, name, token_prefix, scopes, last_used_at, revoked, created_at')
       .eq('shop_id', this.shopId)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -45,14 +54,17 @@ export class ApiTokensService {
   async create(name: string, scopes: string): Promise<ApiToken> {
     const shopId = this.shopId;
     if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
+    const plainToken = ApiTokensService.generateToken();
+    const tokenHash = await ApiTokensService.hashToken(plainToken);
+    const tokenPrefix = plainToken.slice(0, 14);
     const { data, error } = await this.sb
       .from('api_tokens')
-      .insert({ shop_id: shopId, name, token: ApiTokensService.generateToken(), scopes })
-      .select()
+      .insert({ shop_id: shopId, name, token: tokenHash, token_prefix: tokenPrefix, scopes })
+      .select('id, shop_id, name, token_prefix, scopes, last_used_at, revoked, created_at')
       .single();
     if (error) throw error;
     this.logService.log('create', 'api_token', name);
-    return data as ApiToken;
+    return { ...(data as ApiToken), plain_token: plainToken };
   }
 
   async revoke(id: string): Promise<void> {

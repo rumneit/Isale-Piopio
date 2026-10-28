@@ -7,7 +7,7 @@ import {
   IonButton, IonRefresher, IonRefresherContent, AlertController, ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, keyOutline, copyOutline, banOutline, trashOutline } from 'ionicons/icons';
+import { addOutline, keyOutline, banOutline, trashOutline } from 'ionicons/icons';
 import { ApiTokensService, ApiToken } from '../../core/services/api-tokens.service';
 
 @Component({
@@ -51,15 +51,12 @@ import { ApiTokensService, ApiToken } from '../../core/services/api-tokens.servi
                     <ion-icon slot="start" name="key-outline" [color]="t.revoked ? 'medium' : 'primary'" />
                     <ion-label>
                       <h3>{{ t.name }}</h3>
-                      <p class="mono">{{ mask(t.token) }}</p>
+                      <p class="mono">{{ t.token_prefix }}••••••••</p>
                       <p>Phạm vi: {{ t.scopes }} · dùng lần cuối: {{ t.last_used_at ? (t.last_used_at | date: 'dd/MM HH:mm') : 'chưa' }}</p>
                     </ion-label>
                     @if (t.revoked) {
                       <ion-badge slot="end" color="medium">Đã thu hồi</ion-badge>
                     } @else {
-                      <ion-button slot="end" fill="clear" (click)="copy(t)">
-                        <ion-icon slot="icon-only" name="copy-outline" />
-                      </ion-button>
                       <ion-button slot="end" fill="clear" color="warning" (click)="revoke(t)">
                         <ion-icon slot="icon-only" name="ban-outline" />
                       </ion-button>
@@ -105,7 +102,7 @@ export class ExternalApiPage implements OnInit {
   readonly loading = signal(true);
 
   constructor() {
-    addIcons({ addOutline, keyOutline, copyOutline, banOutline, trashOutline });
+    addIcons({ addOutline, keyOutline, banOutline, trashOutline });
   }
 
   ngOnInit(): void {
@@ -128,11 +125,6 @@ export class ExternalApiPage implements OnInit {
     this.load().finally(() => (event.target as HTMLIonRefresherElement).complete());
   }
 
-  mask(token: string): string {
-    if (token.length <= 14) return token;
-    return token.slice(0, 10) + '••••••••' + token.slice(-4);
-  }
-
   async openAdd() {
     const alert = await this.alertCtrl.create({
       header: 'Tạo API token',
@@ -152,7 +144,8 @@ export class ExternalApiPage implements OnInit {
             try {
               const created = await this.service.create(data.name.trim(), data.scopes?.trim() || 'read');
               await this.load();
-              await this.showToken(created.token);
+              if (!created.plain_token) throw new Error('Không nhận được token vừa tạo.');
+              await this.showToken(created.plain_token);
               return true;
             } catch (e: any) {
               this.toast(e?.message ?? 'Tạo thất bại', 'danger');
@@ -176,10 +169,6 @@ export class ExternalApiPage implements OnInit {
       ],
     });
     await alert.present();
-  }
-
-  async copy(t: ApiToken) {
-    await this.copyText(t.token);
   }
 
   private async copyText(text: string) {

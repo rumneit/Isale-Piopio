@@ -55,7 +55,7 @@ import { IntegrationsService, IntegrationProvider, ProviderMeta } from '../../co
                   <h3>Bật tích hợp</h3>
                   <p>{{ meta()!.description }}</p>
                 </ion-label>
-                <ion-toggle slot="end" [checked]="enabled()" (ionChange)="enabled.set($any($event.detail.checked))" />
+                <ion-toggle slot="end" [checked]="false" [disabled]="true" />
               </ion-item>
 
               @for (f of meta()!.fields; track f.key) {
@@ -65,6 +65,7 @@ import { IntegrationsService, IntegrationProvider, ProviderMeta } from '../../co
                     labelPlacement="stacked"
                     [type]="f.type === 'password' ? 'password' : 'text'"
                     [placeholder]="f.placeholder ?? ''"
+                    [disabled]="f.type === 'password'"
                     [value]="config()[f.key] ?? ''"
                     (ionInput)="setField(f.key, $any($event.detail.value))"
                   />
@@ -78,7 +79,8 @@ import { IntegrationsService, IntegrationProvider, ProviderMeta } from '../../co
           </ion-button>
 
           <ion-note class="page-hint">
-            Cấu hình được lưu theo cửa hàng. Các khoá bí mật chỉ hiển thị cho chủ cửa hàng.
+            Khoá bí mật không được lưu trên trình duyệt. Tích hợp chỉ có thể bật sau khi cấu hình
+            backend/Edge Function và secret manager.
           </ion-note>
         }
       </div>

@@ -23,7 +23,7 @@
 | Unit test | **71/71** (13 file) |
 | SQL integrity (PGlite) | **42/42** (T1–T10; v44 chạy 2 lần để kiểm tra idempotent) |
 | E2E UI (mock API) | **24/24** (E1–E9) |
-| DB production | v43-v45 đã áp phần có thể probe read-only (9/9 APPLIED); thân hàm v46 chưa xác minh |
+| DB production | v43-v48 đã áp; probe public 12/12 APPLIED, v46/v47/v48 đã introspect bằng SQL Editor |
 | Deploy production | **ĐÃ DEPLOY** — bundle mới + prod smoke 7/7 |
 | UAT dữ liệu thật (có đăng nhập) | **CHƯA CHẠY** — dùng `07-live-uat-runbook.md` |
 

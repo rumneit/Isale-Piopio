@@ -8,7 +8,7 @@ và lấy bằng chứng để chuyển GO. Mọi bước dưới đây chạy t
 - [ ] Đã backup/PITR còn hiệu lực (chụp màn hình ngày giờ + điểm khôi phục).
 - [x] Đã chạy v43 (xác nhận bằng `node qa/probe-live.mjs`).
 - [x] Đã chạy **v44** `supabase-migration-v44-return-debt-staff.sql` trong SQL Editor.
-- [x] `node qa/probe-live.mjs` → **9/9 APPLIED** cho phần read-only đến v45 (2026-10-29); v46 cần admin introspection hoặc staging delete test.
+- [x] `node qa/probe-live.mjs` → **12/12 APPLIED** đến v48 (2026-10-29); v46/v47/v48 đã introspect bằng SQL Editor.
 - [x] Frontend mới đã deploy (`quanlykhopiopio.vercel.app`, `qa/prod-smoke.mjs` 7/7).
 
 ## 1. Xác nhận schema v44
@@ -169,7 +169,7 @@ Cách kiểm tra chắc chắn hơn: với 1 khách, lấy toàn bộ ledger the
 Chỉ ký khi:
 
 - 0 P0, 0 P1 mở.
-- 9/9 mục schema read-only đến v45 APPLIED; v46 có bằng chứng admin/staging; 3 kịch bản đối soát trả 0 dòng lệch.
+- 12/12 mục schema đến v48 APPLIED; 3 kịch bản đối soát trả 0 dòng lệch.
 - R1–R7 PASS với ảnh chụp + SQL.
 - 4 vai trò PASS, link reset PASS.
 - Backup/restore có bằng chứng.
