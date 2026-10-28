@@ -142,7 +142,7 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
             {{#unless hideDiscountColumn}}
             <td style="border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;"><b>{{labels.headDiscount}}</b></td>
             {{/unless}}
-            <td style="border-right: 1px solid #000; border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;"><b>{{labels.headAmount}}</b></td>
+            <td style="border-right: 1px solid #000; border-top: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right; vertical-align: middle;"><b>{{labels.headAmount}}</b></td>
         </tr>
         {{#each items}}
         <tr>
@@ -156,7 +156,7 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
             {{#unless ../hideDiscountColumn}}
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;">{{discountText}}</td>
             {{/unless}}
-            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle;">
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right; vertical-align: middle;">
                 {{totalFormatted}}{{#if ../hideDiscountColumn}}{{#if discountText}}<br><span style="font-size: 0.8em;">{{discountText}}</span>{{/if}}{{/if}}
             </td>
         </tr>
@@ -166,17 +166,17 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">{{inc this}}</td>
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
-            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">&nbsp;</td>
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
             {{#unless ../hideDiscountColumn}}
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
             {{/unless}}
-            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
+            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">&nbsp;</td>
         </tr>
         {{/each}}
         <tr>
             <td colspan="3" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"><strong>{{labels.totalAmount}}</strong></td>
-            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">{{totalProductsQuantity}}</td>
+            <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">{{totalProductsQuantity}}</td>
             {{#unless hideDiscountColumn}}
             <td style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;">&nbsp;</td>
             {{/unless}}
@@ -641,4 +641,5 @@ export class InvoiceTemplateService {
     return base + nameColumn + `body{width:148mm;padding:6mm 6mm 6mm 9mm;font-size:10.5px}h1{font-size:15px;margin:10px 0}.shop-name{font-size:13px}.shop-grid{gap:10px}.bank-block{padding-left:10px}.shop-logo{max-width:64px;max-height:46px}.dot-line{min-width:120px}.invoice-table th,.invoice-table td{padding:3px;font-size:10px}.written{margin-top:6px}.signatures{margin-top:18px;min-height:70px}.staff-sign{margin-top:30px}.qr img{max-width:70px}@page{margin:5mm 5mm 5mm 8mm;size:A5}@media print{body{width:100%;padding:0}}`;
   }
 }
+
 
