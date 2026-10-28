@@ -25,7 +25,15 @@ jobs:
           cache: npm
 
       - name: Install dependencies from lockfile
-        run: npm ci
+        # SheetJS 0.20.x is distributed from its own CDN, which occasionally
+        # returns a transient 5xx. Retry the entire clean install, but still
+        # fail the gate after three attempts.
+        run: |
+          for attempt in 1 2 3; do
+            npm ci && exit 0
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep $((attempt * 10))
+          done
 
       - name: Reject high or critical dependency vulnerabilities
         run: npm audit --audit-level=high
