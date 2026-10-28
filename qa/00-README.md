@@ -11,7 +11,7 @@
 | `07-live-uat-runbook.md` | Runbook UAT + 3 truy vấn đối soát 20 đơn / 20 phiếu nhập / 20 công nợ |
 | `sql-integrity.test.mjs` | **42 assert** tiền–nợ–tồn–trả hàng–nhân sự trên PostgreSQL thật (PGlite) |
 | `e2e-smoke.mjs` | **24 assert** UI trên build production với API giả lập |
-| `probe-live.mjs` | Kiểm tra RPC v43/v44 đã có trên DB thật (chỉ dùng anon key công khai) |
+| `probe-live.mjs` | Kiểm tra RPC/schema v43-v45 trên DB thật (chỉ dùng anon key công khai); v46 cần admin/staging |
 | `prod-smoke.mjs` | Smoke bản deploy production (login, guard, reset route, 404) |
 | `evidence/` | Ảnh chụp + JSON kết quả E2E |
 
@@ -23,7 +23,7 @@
 | Unit test | **71/71** (13 file) |
 | SQL integrity (PGlite) | **42/42** (T1–T10; v44 chạy 2 lần để kiểm tra idempotent) |
 | E2E UI (mock API) | **24/24** (E1–E9) |
-| DB production | v43 + **v44 đã áp** (probe 8/8 APPLIED) |
+| DB production | v43-v45 đã áp phần có thể probe read-only (9/9 APPLIED); thân hàm v46 chưa xác minh |
 | Deploy production | **ĐÃ DEPLOY** — bundle mới + prod smoke 7/7 |
 | UAT dữ liệu thật (có đăng nhập) | **CHƯA CHẠY** — dùng `07-live-uat-runbook.md` |
 

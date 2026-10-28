@@ -1,76 +1,43 @@
 # RELEASE GATE — GO / NO-GO
 
-**Cập nhật:** 2026-10-23 (đợt 2)
-**Phiên bản:** nhánh `freebuff/8adbc358850df6f67320d216`, nền `main` + sửa QA + **migration v44**
-**Quyết định: NO-GO (còn 1 bước)** — v44 đã áp (probe 8/8), frontend đã deploy production và smoke 7/7.
-Chỉ còn **UAT tiền–tồn–nợ có đăng nhập** chưa chạy, cùng backup/restore chưa có bằng chứng.
+**Cập nhật:** 2026-10-29
 
-## 1. Trạng thái từng điều kiện GO
+**Phiên bản:** `main` tại `7258d4f` + probe documentation hiện tại
 
-| # | Điều kiện | Thực tế | Đạt? |
-|---|---|---|---|
-| 1 | Không còn P0 | BUG-15 đã sửa; **v44 đã áp** (probe 8/8 APPLIED), frontend có `cash_refund/debt_credit` trên bundle production. | ✅ |
-| 2 | Không còn P1 | BUG-16 (trang đặt lại mật khẩu) và BUG-17 (thêm/xoá nhân viên) đã có mã + test. Email recovery thật chưa gửi thử. | ✅ (code) |
-| 3 | 100% checklist đã test hoặc khai báo lý do | 148 mục: 33 PASS, 15 PARTIAL, 66 CODE, 22 BLOCKED, 10 OPEN (P2/P3), 2 NOT_TESTED. Đã khai báo đủ; **66 mục mới chỉ đọc mã**. | ⚠️ |
-| 4 | Mọi bug retest PASS | 17 bug đã sửa; 12 bug có test chạy lại PASS, 5 bug chỉ verify bằng build/typecheck (ghi PARTIAL). 9 vấn đề P2/P3 còn mở, không chặn GO. | ⚠️ |
-| 5 | Regression hành trình vàng PASS | Unit 71/71, SQL 42/42, E2E 24/24, lint/tsc/build PASS; production smoke 7/7. Chưa chạy luồng tiền có đăng nhập. | ⚠️ |
-| 6 | Tiền–tồn–công nợ khớp 100% | SQL chứng minh 10 nhóm kịch bản; **chưa đối soát 20 đơn + 20 phiếu nhập + 20 công nợ trên DB thật**. | ❌ |
-| 7 | Hạ tầng an toàn | HSTS + nosniff + frame/referrer/permissions policy đã bật; **chưa có bằng chứng backup/restore, PITR, rate limit**. | ⚠️ |
+**Quyết định:** **NO-GO**
 
-## 2. Điểm chất lượng
+Automated regression và production public smoke đều xanh, nhưng chưa đủ bằng chứng để phát hành theo chuẩn enterprise. Không được suy diễn “test hiện có pass” thành “không còn lỗi”.
 
-| Loại | Đã sửa | Còn mở |
+## Trạng thái điều kiện phát hành
+
+| Điều kiện | Trạng thái | Bằng chứng / khoảng trống |
 |---|---|---|
-| P0 | 1 (BUG-15) | **0** |
-| P1 | 8 (BUG-01→07, 16, 17) | **0** |
-| P2 | 5 | 7 (OPEN-04…09, 11) |
-| P3 | 2 | 2 (OPEN-10, 12) |
+| Không còn P0 đã xác nhận | ĐẠT trong phạm vi đã test | Không phát hiện P0 mở; coverage thấp nên không chứng minh P0 không tồn tại ngoài phạm vi. |
+| Không còn P1 release-blocking | KHÔNG ĐẠT | Metadata đơn vị bán chưa atomic; plaintext API/integration secret; backup/restore và production v46 chưa xác minh. |
+| Build và regression | ĐẠT | GitHub Quality Gate `40684613433` success; local 79 unit, 46 SQL, 24 E2E. |
+| Production public smoke | ĐẠT | 7/7 sau deploy; login, guard, reset và 404 không lỗi console. |
+| Schema production | ĐẠT MỘT PHẦN | Probe read-only 9/9 xác nhận v43-v45; v46 giữ nguyên signature nên cần admin introspection hoặc staging delete test. |
+| Cross-browser | ĐẠT MỘT PHẦN | 89/89 route trên Chromium/Firefox/WebKit với tenant rỗng mock; chưa phải CRUD dữ liệu thật. |
+| Accessibility | ĐẠT MỘT PHẦN | Axe 0 violation trên 7 route lõi × 3 engine; chưa screen reader/zoom/device thật. |
+| Coverage | KHÔNG ĐẠT | Line 3,51%; statements 3,59%; functions 3,08%. |
+| Performance | KHÔNG ĐẠT | Lighthouse public login 74; LCP 3,0 s; TBT 470 ms; chưa load/API percentile. |
+| CI enforcement | KHÔNG ĐẠT | Workflow có và đã pass, nhưng GitHub API xác nhận `main` chưa protected, không có ruleset. |
+| Backup/restore/monitoring | KHÔNG ĐẠT | Chỉ có export cơ bản; chưa restore drill, alert, rollback rehearsal. |
 
-> 17 bug đã sửa. Các bug tiền–nợ chỉ có hiệu lực trên production **sau khi chạy v44** và deploy frontend.
+## Bằng chứng hiện tại
 
-## 3. Ba bước còn lại để GO (theo thứ tự)
+- Production: Vercel deployment `dpl_1bJ9DVwGhbgb4JKzTYCScScGiuAs` `READY`, alias chính hoạt động.
+- Headers: HSTS, `nosniff`, frame deny, referrer và permissions policy đã xác nhận trên production.
+- Dependency audit: 4 moderate, 0 high, 0 critical; không dùng `--force` để tránh đổi major mù quáng.
+- Probe production: v43/v44 RPC và cột v44/v45 đều `APPLIED`; không ghi dữ liệu thật.
 
-1. ~~Áp migration v44~~ — **đã xong**, `node qa/probe-live.mjs` → 8/8 APPLIED.
-2. ~~Deploy frontend~~ — **đã xong**, `main-MVQAIBGU.js` chứa route reset, UI nhân viên và `cash_refund`;
-   `qa/prod-smoke.mjs` → 7/7 (login, guard, reset route, 404, không lỗi console).
-3. **Chạy `qa/07-live-uat-runbook.md`** trên staging rồi production:
-   - R1–R7 (trả hàng ↔ công nợ) có ảnh + SQL;
-   - 3 truy vấn đối soát 20/20/20 trả **0 dòng lệch**;
-   - 4 vai trò, link reset, backup/restore.
+## Điều kiện tối thiểu để re-gate
 
-Sau khi có 3 bằng chứng trên, QA ký GO. Không tuyên bố “không còn lỗi” trước đó.
+1. Admin xác minh thân hàm v46 hoặc chạy delete test trên staging cô lập.
+2. Đưa metadata `unit/unit_qty/unit_conversion/unit_price` vào cùng transaction tạo/sửa đơn.
+3. Hash token, mã hóa integration secret và rotate dữ liệu hiện hữu.
+4. Bật branch protection/deploy dependency cho Quality Gate.
+5. Tăng test cho tiền, tồn kho, công nợ và tenant isolation; chạy concurrency hai phiên.
+6. Backup + restore drill, monitoring/alert và rollback runbook có bằng chứng.
 
-## 4. Đã đạt trong đợt 2
-
-- **P0 trả hàng ↔ công nợ:** tách `cash_refund` / `debt_credit`, công nợ đơn trừ hàng đã trả,
-  chỉ hoàn tiền mặt phần đã thu; chi “Trả hàng” gắn đúng đơn.
-- **Quên mật khẩu:** trang `/#/reset-password`, xử lý token hash trước khi router khởi tạo (kể cả hash lồng),
-  báo link hết hạn, đổi xong đăng xuất.
-- **Nhân sự:** thêm/xoá nhân viên theo email, preset quyền theo vai trò, chặn kéo tài khoản đã có dữ liệu riêng,
-  ưu tiên đúng shop được gán cho nhân viên.
-- **Bằng chứng mới:** 42 assert SQL (T7–T10), 24 assert E2E (E7–E9), 71 unit test, ảnh `e2e-reset.png`,
-  `e2e-return-debt.png`.
-- **Công cụ:** `qa/probe-live.mjs` kiểm tra migration trên DB thật; `qa/07-live-uat-runbook.md` để UAT.
-
-## 5. Rủi ro còn lại (đã biết)
-
-| Rủi ro | Mức | Xử lý |
-|---|---|---|
-| Phiếu trả cũ trên đơn chưa thanh toán đã từng chi tiền mặt | P2 dữ liệu | v44 in `NOTICE` + truy vấn kiểm tra; cần rà tay các phiếu trước ngày áp v44 |
-| Không gửi email mời nhân viên | P3 | Nhân viên tự đăng ký rồi chủ shop thêm |
-| Không ban tài khoản ở `auth.users` | P3 | Xoá khỏi shop = thu hồi quyền dữ liệu shop |
-| Chưa phân trang danh sách lớn | P2 | OPEN-07 |
-| Timezone/tiền tệ hard-code | P2 | OPEN-08 |
-| Direct PATCH `products.stock` | P2 | OPEN-04 |
-| `inv_update_order_full` đụng “Thu nợ” | P2 | OPEN-05 |
-| Chưa test WCAG/ma trận trình duyệt | P2 | OPEN-11 |
-
-## 6. Ký duyệt
-
-| Vai trò | Kết luận | Điều kiện |
-|---|---|---|
-| QA Lead | **NO-GO** | 3 bước mục 3 + kết quả đối soát 0 lệch |
-| Release Manager | Chưa ký | Chờ QA re-gate |
-| Product Owner | Đã chốt quy tắc trả hàng: hoàn mặt phần đã trả, bù nợ phần chưa trả | — |
-
-> Kết luận dựa trên bằng chứng trong `qa/03-bug-reports.md`, `qa/06-regression.md` và `qa/07-live-uat-runbook.md`.
+Chi tiết đầy đủ nằm trong `PIOPIO_GLOBAL_AUDIT_REPORT.md` ở thư mục deliverable của phiên kiểm toán. Không ký GO trước khi các điều kiện trên được xử lý hoặc có quyết định chấp nhận rủi ro bằng văn bản.

@@ -13,7 +13,7 @@ Phạm vi: toàn bộ thay đổi đợt 1 + đợt 2 (19 file sửa, 8 file m�
 | Build production | `npm run build` | **PASS**, exit 0 | 3 warning style budget + 2 CommonJS (P3) |
 | SQL integrity | `node qa/sql-integrity.test.mjs` | **42/42 PASS** | PGlite; v44 chạy 2 lần |
 | E2E UI | `node qa/e2e-smoke.mjs` | **24/24 PASS** | build `www/`, Chromium 153 |
-| Probe DB thật | `node qa/probe-live.mjs` | **8/8 APPLIED** | v43 + v44 đã áp |
+| Probe DB thật | `node qa/probe-live.mjs` | **9/9 APPLIED** | v43-v45 đã áp phần probe read-only; v46 cần admin/staging |
 | Legacy route audit | `npm run audit` | **KHÔNG HOÀN TẤT** | script cũ chờ 401/timeout; thay bằng E2E mục tiêu |
 | Production smoke | `node qa/prod-smoke.mjs` | **7/7 PASS** | `quanlykhopiopio.vercel.app` |
 | UAT DB thật (có đăng nhập) | `07-live-uat-runbook.md` | **CHƯA CHẠY** | cần phiên đăng nhập thật |
@@ -99,7 +99,7 @@ Không lỗi biên dịch. Cảnh báo: `sale.page.scss` 17,57 kB, `product-edit
 ## 4. Việc phải chạy sau khi áp v44
 
 1. `supabase-migration-v44-return-debt-staff.sql` trên staging → production (sau backup).
-2. `node qa/probe-live.mjs` phải **8/8 APPLIED**.
+2. `node qa/probe-live.mjs` phải **9/9 APPLIED**; kết quả này không chứng minh thân hàm v46.
 3. Deploy frontend; mở `/#/reset-password` xác nhận không 404.
 4. Chạy `qa/07-live-uat-runbook.md`: R1–R7, 3 truy vấn đối soát 20/20/20, 4 vai trò, backup/restore.
 5. Chạy lại E2E trên domain thật với tài khoản thật cho 3 luồng: bán → in → thu nợ; trả hàng đơn nợ;

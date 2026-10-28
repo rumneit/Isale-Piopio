@@ -1,4 +1,4 @@
-// Kiểm tra nhanh DB production đã có các RPC của v43/v44 chưa.
+// Kiểm tra nhanh DB production đã có schema/RPC của v43-v45 chưa.
 // Chỉ dùng anon key công khai trong src/environments/environment.prod.ts,
 // không đăng nhập, không đọc/ghi dữ liệu nghiệp vụ.
 //
@@ -55,9 +55,23 @@ for (const [label, fn, body] of probes) {
   console.log(`${state.padEnd(8)} v44 return_notes.cash_refund/debt_credit`);
 }
 
+// Cột mới của v45. Probe này chỉ chứng minh phần schema/snapshot công nợ đã áp;
+// v46 thay thân hàm inv_delete_order nhưng giữ nguyên signature nên anon
+// read-only không thể phân biệt v43/v45/v46 nếu không introspect pg_proc hoặc
+// chạy bài xóa trên staging.
+{
+  const res = await fetch(`${url}/rest/v1/orders?select=id,customer_debt_before&limit=0`, {
+    headers: { apikey: key },
+  });
+  const text = await res.text();
+  const state = res.status === 400 && /does not exist/i.test(text) ? 'MISSING' : 'APPLIED';
+  if (state !== 'APPLIED') missing++;
+  console.log(`${state.padEnd(8)} v45 orders.customer_debt_before`);
+}
+
 console.log(
   missing === 0
-    ? '\nTất cả RPC cần thiết đã có trên DB.'
+    ? '\nTất cả schema/RPC có thể kiểm tra read-only đến v45 đã có trên DB. v46 cần admin/staging để xác minh thân hàm.'
     : `\n${missing} mục schema chưa có — cần chạy migration tương ứng trong Supabase SQL Editor.`
 );
 process.exitCode = missing === 0 ? 0 : 1;
