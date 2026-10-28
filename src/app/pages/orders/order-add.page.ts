@@ -103,7 +103,13 @@ export class OrderAddPage implements OnInit {
   readonly isQuoteMode = signal(false);
 
   async ngOnInit(): Promise<void> {
-    this.isQuoteMode.set(this.route.snapshot.queryParamMap.get('mode') === 'quote');
+    // `/quote/add` phải hoạt động cả khi người dùng mở deep link/refresh và
+    // query `?mode=quote` bị mất. Route là nguồn sự thật; query chỉ giữ tương
+    // thích cho các link cũ.
+    this.isQuoteMode.set(
+      this.route.snapshot.routeConfig?.path === 'quote/add' ||
+        this.route.snapshot.queryParamMap.get('mode') === 'quote'
+    );
     // Giữ trang cũ chỉ cho Báo giá. Mọi luồng tạo đơn thường phải dùng SalePage
     // để có đủ thông tin khách và đơn vị bán.
     if (!this.isQuoteMode()) {

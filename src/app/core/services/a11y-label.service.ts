@@ -138,6 +138,15 @@ export class A11yLabelService {
         if (!label) continue;
         this.apply(el, label);
       }
+      // Icon trong Ionic thường chỉ mang tính trang trí; tên hành động nằm ở
+      // nút/link bao ngoài. Ẩn icon không có nhãn riêng khỏi accessibility
+      // tree để screen reader không đọc lặp và để role="img" luôn có tên hợp
+      // lệ khi icon thật sự được dùng độc lập.
+      for (const icon of Array.from(document.querySelectorAll<HTMLElement>('ion-icon'))) {
+        if (!icon.getAttribute('aria-label') && !icon.getAttribute('aria-labelledby')) {
+          icon.setAttribute('aria-hidden', 'true');
+        }
+      }
       // WCAG 3.3.2: ô nhập chỉ có placeholder → dùng placeholder làm accessible name
       const inputs = document.querySelectorAll<HTMLElement>(
         'ion-input, ion-textarea, ion-select, input:not([type="hidden"]), textarea, select'

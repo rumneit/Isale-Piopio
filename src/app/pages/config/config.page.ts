@@ -570,7 +570,7 @@ export class ConfigPage implements OnInit {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      this.toast('Đã tải backup dữ liệu');
+      this.toast('Đã tải bản xuất dữ liệu cơ bản — đây không phải bản sao lưu khôi phục đầy đủ');
     } catch (e: any) {
       this.toast(e?.message ?? 'Backup thất bại', 'danger');
     } finally {

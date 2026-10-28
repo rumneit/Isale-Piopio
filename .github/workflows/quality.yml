@@ -1,0 +1,49 @@
+name: Quality Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies from lockfile
+        run: npm ci
+
+      - name: Reject high or critical dependency vulnerabilities
+        run: npm audit --audit-level=high
+
+      - name: Install Chromium for browser regression
+        run: npx playwright install --with-deps chromium
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test -- --watch=false
+
+      - name: SQL integrity tests
+        run: npm run test:integrity
+
+      - name: Production build
+        run: npm run build
+
+      - name: Browser regression
+        run: npm run test:e2e

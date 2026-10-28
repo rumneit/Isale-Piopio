@@ -79,7 +79,8 @@ create table public.customer_debt_ledger (
   created_by uuid, created_at timestamptz default now()
 );
 create table public.return_notes (
-  id uuid primary key default gen_random_uuid(), shop_id uuid, order_id uuid,
+  id uuid primary key default gen_random_uuid(), shop_id uuid,
+  order_id uuid references public.orders(id) on delete set null,
   order_code text, code text, customer_id uuid, items jsonb not null default '[]'::jsonb,
   total numeric(14,2) not null default 0, refunded boolean not null default true,
   note text, idempotency_key uuid, created_at timestamptz default now()
@@ -118,6 +119,8 @@ insert into public.money_accounts(id, shop_id, name, type, is_default) values ('
 const v41 = readFileSync('supabase-migration-v41-money-debt-integrity.sql', 'utf8');
 const v43 = readFileSync('supabase-migration-v43-order-money-integrity.sql', 'utf8');
 const v44 = readFileSync('supabase-migration-v44-return-debt-staff.sql', 'utf8');
+const v45 = readFileSync('supabase-migration-v45-order-delete-print-customer.sql', 'utf8');
+const v46 = readFileSync('supabase-migration-v46-delete-any-order.sql', 'utf8');
 
 const db = new PGlite();
 await db.exec(BASE);
@@ -125,6 +128,9 @@ await db.exec(v41);
 await db.exec(v43);
 await db.exec(v44);
 await db.exec(v44); // chạy lại phải idempotent
+await db.exec(v45);
+await db.exec(v46);
+await db.exec(v46); // migration xóa đơn cũng phải idempotent
 
 let passed = 0;
 const failures = [];
@@ -194,18 +200,26 @@ console.log('\n== T2: "Chuyển về còn nợ" không được tạo khoản CH
   check('nợ khách đúng 80', Number(await val(`select debt from customers where id=$1`, [c])), 80);
 }
 
-console.log('\n== T3: xóa đơn đã thu tiền phải bị chặn ==');
+console.log('\n== T3: xóa đơn nguyên tử — đảo tiền/nợ, giữ lịch sử trả hàng ==');
 {
   const c = await newCustomer('T3');
   const paidOrder = await newOrder({ status: 'completed', paid: true, total: 100, customer: c });
   await saleIncome(paidOrder, 100);
-  let blocked = false;
-  try {
-    await db.query(`select public.inv_delete_order($1,$2)`, [SHOP, paidOrder]);
-  } catch (e) {
-    blocked = /đã ghi nhận thanh toán/.test(String(e.message));
-  }
-  check('chặn xóa đơn đã ghi nhận thanh toán', blocked, true);
+  const returnId = (await one(
+    `insert into public.return_notes(shop_id,order_id,code,items,total)
+     values ($1,$2,'TH-T3','[]'::jsonb,0) returning id`, [SHOP, paidOrder]
+  )).id;
+  await db.query(`select public.inv_delete_order($1,$2)`, [SHOP, paidOrder]);
+  check('xóa đơn đã ghi nhận thanh toán', Number(await val(`select count(*) from orders where id=$1`, [paidOrder])), 0);
+  check('đảo/xóa giao dịch gắn với đơn', Number(await val(`select count(*) from transactions where order_id=$1`, [paidOrder])), 0);
+  check('giữ phiếu trả hàng nhưng bỏ liên kết đơn', await val(`select order_id from return_notes where id=$1`, [returnId]), null);
+
+  const debtCustomer = await newCustomer('T3 debt');
+  const debtOrder = await newOrder({ status: 'debt', paid: false, total: 75, customer: debtCustomer });
+  check('nợ khách trước khi xóa', Number(await val(`select debt from customers where id=$1`, [debtCustomer])), 75);
+  await db.query(`select public.inv_delete_order($1,$2)`, [SHOP, debtOrder]);
+  check('xóa đơn hoàn lại công nợ khách', Number(await val(`select debt from customers where id=$1`, [debtCustomer])), 0);
+
   const unpaid = await newOrder({ status: 'draft', paid: false, total: 0, customer: null });
   await db.query(`select public.inv_delete_order($1,$2)`, [SHOP, unpaid]);
   check('vẫn xóa được đơn nháp chưa phát sinh', Number(await val(`select count(*) from orders where id=$1`, [unpaid])), 0);

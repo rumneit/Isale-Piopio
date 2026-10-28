@@ -175,10 +175,18 @@ export class OrdersService {
     );
   }
 
+  private static lifecycleMigrationError(action: string): Error {
+    return new Error(
+      `Không thể ${action}: cơ sở dữ liệu chưa có RPC quản lý đơn an toàn. ` +
+        'Hãy chạy đầy đủ migration v43-v46 rồi thử lại.'
+    );
+  }
+
   /**
    * Đổi trạng thái đơn qua RPC v43: server đổi trạng thái trong cùng transaction
    * với bút toán kho/công nợ và bảo đảm đơn "đã thanh toán" luôn có khoản thu.
-   * Fallback UPDATE trực tiếp chỉ khi DB chưa chạy v43.
+   * Fail-closed nếu DB chưa chạy migration: UPDATE trực tiếp có thể làm lệch
+   * tiền, tồn kho và công nợ.
    */
   async setStatus(id: string, status: string): Promise<void> {
     if (!this.sb.isConfigured || !this.shopId) return;
@@ -188,18 +196,15 @@ export class OrdersService {
       p_status: status,
     });
     if (!error) return;
-    if (!OrdersService.isMissingLifecycleRpc(error)) throw error;
-    const fallback = await this.sb
-      .from('orders')
-      .update({ status })
-      .eq('id', id)
-      .eq('shop_id', this.shopId);
-    if (fallback.error) throw fallback.error;
+    if (OrdersService.isMissingLifecycleRpc(error)) {
+      throw OrdersService.lifecycleMigrationError('đổi trạng thái đơn');
+    }
+    throw error;
   }
 
   /**
    * Đặt cờ đã thanh toán qua RPC v43. Server ghi/đảo khoản thu tương ứng để
-   * sổ quỹ và công nợ không lệch; fallback UPDATE khi DB chưa chạy v43.
+   * sổ quỹ và công nợ không lệch; không fallback sang UPDATE trực tiếp.
    */
   async setPaid(id: string, paid: boolean): Promise<void> {
     if (!this.sb.isConfigured || !this.shopId) return;
@@ -209,16 +214,13 @@ export class OrdersService {
       p_paid: paid,
     });
     if (!error) return;
-    if (!OrdersService.isMissingLifecycleRpc(error)) throw error;
-    const fallback = await this.sb
-      .from('orders')
-      .update({ paid })
-      .eq('id', id)
-      .eq('shop_id', this.shopId);
-    if (fallback.error) throw fallback.error;
+    if (OrdersService.isMissingLifecycleRpc(error)) {
+      throw OrdersService.lifecycleMigrationError('đổi trạng thái thanh toán');
+    }
+    throw error;
   }
 
-  /** Đổi hình thức thanh toán qua RPC v43 (fallback UPDATE khi chưa migrate). */
+  /** Đổi hình thức thanh toán qua RPC v43; fail-closed khi chưa migrate. */
   async setPaymentMethod(id: string, method: string | null): Promise<void> {
     if (!this.sb.isConfigured || !this.shopId) return;
     const { error } = await this.sb.client.rpc('inv_set_order_payment', {
@@ -227,13 +229,10 @@ export class OrdersService {
       p_method: method,
     });
     if (!error) return;
-    if (!OrdersService.isMissingLifecycleRpc(error)) throw error;
-    const fallback = await this.sb
-      .from('orders')
-      .update({ payment_method: method })
-      .eq('id', id)
-      .eq('shop_id', this.shopId);
-    if (fallback.error) throw fallback.error;
+    if (OrdersService.isMissingLifecycleRpc(error)) {
+      throw OrdersService.lifecycleMigrationError('đổi hình thức thanh toán');
+    }
+    throw error;
   }
 
   /** Đổi trạng thái nhiều đơn (ISale: bulk status) — từng đơn qua RPC v43. */
@@ -481,33 +480,17 @@ export class OrdersService {
 
   async remove(id: string): Promise<void> {
     if (!this.sb.isConfigured || !this.shopId) return;
-    let { error } = await this.sb.client.rpc('inv_delete_order', {
+    const { error } = await this.sb.client.rpc('inv_delete_order', {
       p_shop: this.shopId,
       p_order_id: id,
     });
     if (!error) return;
-    // v43 cố ý chặn xóa đơn từng có khoản thu. Với các đơn nháp được tạo ở
-    // phiên bản cũ, khoản thu "Bán hàng" lại được sinh tự động. Đảo đúng khoản
-    // thu tự động qua RPC rồi thử xóa lại; khoản Thu nợ thủ công vẫn được giữ và
-    // backend tiếp tục chặn để tránh mất tiền thật.
-    if (/đã ghi nhận thanh toán|recorded payment/i.test(String(error.message ?? ''))) {
-      const paidResult = await this.sb.client.rpc('inv_set_order_paid', {
-        p_shop: this.shopId,
-        p_order_id: id,
-        p_paid: false,
-      });
-      if (paidResult.error && !OrdersService.isMissingLifecycleRpc(paidResult.error)) {
-        throw paidResult.error;
-      }
-      const retried = await this.sb.client.rpc('inv_delete_order', {
-        p_shop: this.shopId,
-        p_order_id: id,
-      });
-      error = retried.error;
-      if (!error) return;
+    // Xóa phải là một transaction duy nhất ở backend. Chuỗi RPC
+    // setPaid(false) -> delete hoặc DELETE trực tiếp có thể để lại đơn đã bị
+    // đổi tiền/công nợ nhưng chưa xóa nếu bước sau thất bại.
+    if (OrdersService.isMissingLifecycleRpc(error)) {
+      throw OrdersService.lifecycleMigrationError('xóa đơn');
     }
-    if (!OrdersService.isMissingLifecycleRpc(error)) throw error;
-    const fallback = await this.sb.from('orders').delete().eq('id', id).eq('shop_id', this.shopId);
-    if (fallback.error) throw fallback.error;
+    throw error;
   }
 }

@@ -3,7 +3,7 @@
 // guard chặn /home khi chưa có session, không lỗi console.
 //
 //   FONTCONFIG_FILE=... LD_LIBRARY_PATH=... node qa/prod-smoke.mjs
-import { chromium } from 'playwright';
+import { chromium, firefox, webkit } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -17,7 +17,10 @@ function check(name, ok, detail = '') {
   console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ' — ' + detail : ''}`);
 }
 
-const browser = await chromium.launch({ args: ['--no-sandbox'] });
+const browserName = process.env.PLAYWRIGHT_BROWSER ?? 'chromium';
+const browserType = { chromium, firefox, webkit }[browserName];
+if (!browserType) throw new Error(`Unsupported browser: ${browserName}`);
+const browser = await browserType.launch(browserName === 'chromium' ? { args: ['--no-sandbox'] } : {});
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
 const page = await ctx.newPage();
 const errors = [];

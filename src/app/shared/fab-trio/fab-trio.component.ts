@@ -82,6 +82,13 @@ export class FabTrioComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    // Ionic hydrate shadow button sau Angular binding. Đồng bộ nhãn vào nút
+    // native để axe/screen reader không thấy một button rỗng trong shadow DOM.
+    setTimeout(() => {
+      const fab = (this.el.nativeElement as HTMLElement).querySelector<HTMLElement>('ion-fab-button');
+      const inner = fab?.shadowRoot?.querySelector<HTMLElement>('button');
+      if (inner && !inner.getAttribute('aria-label')) inner.setAttribute('aria-label', this.mainLabel);
+    }, 0);
     const content = (this.el.nativeElement as HTMLElement).closest('ion-content');
     if (content) {
       this.scrollHandler = (e: CustomEvent) => {

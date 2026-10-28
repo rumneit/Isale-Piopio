@@ -37,6 +37,10 @@ async function walk(dir) {
 const used = new Map(); // name -> Set(file)
 function record(name, rel) {
   if (!name) return;
+  // Angular template bindings such as name="{{ it.icon }}" are resolved at
+  // runtime. Validate their backing TS literals instead of reporting the
+  // interpolation expression as an Ionicons name.
+  if (name.includes('{{') || name.includes('}}')) return;
   if (used.has(name)) used.get(name).add(rel);
   else used.set(name, new Set([rel]));
 }
