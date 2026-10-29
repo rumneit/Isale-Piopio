@@ -1,0 +1,132 @@
+name: Production Monitor
+
+on:
+  schedule:
+    # Chạy lệch giờ để tránh thời điểm GitHub Actions thường quá tải.
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: production-monitor
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser and database probes
+        id: probe
+        continue-on-error: true
+        run: |
+          node qa/prod-smoke.mjs
+          node qa/probe-live.mjs
+
+      - name: Upload failure evidence
+        if: steps.probe.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-monitor-evidence-${{ github.run_id }}
+          path: qa/evidence/
+          retention-days: 14
+
+      - name: Open or update production alert
+        if: steps.probe.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '[ALERT] Production smoke hoặc database probe thất bại';
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'production-alert',
+              per_page: 20,
+            });
+            const body = [
+              `Monitor thất bại lúc ${new Date().toISOString()}.`,
+              '',
+              `Workflow: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              `Commit: ${context.sha}`,
+              '',
+              'Kiểm tra artifact của workflow trước khi thao tác dữ liệu production.'
+            ].join('\n');
+            const existing = issues.find(issue => issue.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body,
+              });
+            } else {
+              try {
+                await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: 'production-alert' });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: 'production-alert',
+                  color: 'B60205',
+                  description: 'Cảnh báo tự động từ production monitor',
+                });
+              }
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['production-alert'],
+              });
+            }
+
+      - name: Close recovered production alert
+        if: steps.probe.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '[ALERT] Production smoke hoặc database probe thất bại';
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'production-alert',
+              per_page: 20,
+            });
+            for (const issue of issues.filter(item => item.title === title)) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `Monitor đã phục hồi lúc ${new Date().toISOString()}. Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+            }
+
+      - name: Fail workflow when probe failed
+        if: steps.probe.outcome == 'failure'
+        run: exit 1
