@@ -146,8 +146,8 @@ html.ion-palette-dark {
   --app-page-max-width: 980px;
   --app-page-max-width-lg: 1120px;
 
-  /* Typography — Isale dùng Roboto stack */
-  --ion-font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+  /* System stack keeps production builds and rendering independent of Google Fonts. */
+  --ion-font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 
   /* Design system */
   --app-radius: 16px;
