@@ -4,11 +4,14 @@ import { resolve } from 'node:path';
 const reportPath = resolve('coverage/app/coverage-summary.json');
 const report = JSON.parse(readFileSync(reportPath, 'utf8'));
 const floors = {
-  total: { lines: 6.8, branches: 9.4, functions: 5.4, statements: 6.8 },
+  total: { lines: 8.2, branches: 10.7, functions: 6.4, statements: 8.1 },
   'src/app/core/permissions.ts': { lines: 100 },
   'src/app/core/services/customers.service.ts': { lines: 39 },
   'src/app/core/services/inventory-ledger.service.ts': { lines: 89 },
   'src/app/core/services/orders.service.ts': { lines: 55 },
+  'src/app/core/services/products.service.ts': { lines: 46 },
+  'src/app/core/services/reports.service.ts': { lines: 45 },
+  'src/app/core/services/returns.service.ts': { lines: 58 },
   'src/app/core/services/transactions.service.ts': { lines: 48 },
 };
 
