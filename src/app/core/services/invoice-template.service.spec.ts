@@ -226,7 +226,7 @@ describe('InvoiceTemplateService', () => {
     });
 
     expect(context.order.totalFormatted).toBe('4.375.000');
-    expect(context.amountToText).toBe('bốn triệu ba trăm bảy mươi lăm nghìn đồng');
+    expect(context.amountToText).toBe('Bốn triệu ba trăm bảy mươi lăm nghìn đồng');
 
     const html = service.render(service.defaultFor('invoice'), context);
     expect(html).toContain('width: 20%;');
@@ -236,7 +236,7 @@ describe('InvoiceTemplateService', () => {
     expect(html).toMatch(/text-align: right; vertical-align: middle;">\s*4\.375\.000\s*<\/td>/);
     expect(service.defaultFor('invoice')).toContain('text-align: center;">{{totalProductsQuantity}}</td>');
     expect(service.defaultFor('invoice')).toContain('text-align: right; vertical-align: middle;"><b>{{labels.headAmount}}</b>');
-    expect(html).toContain('bốn triệu ba trăm bảy mươi lăm nghìn đồng');
+    expect(html).toContain('Bốn triệu ba trăm bảy mươi lăm nghìn đồng');
   });
 
   it('reads zero-padded lower number groups without padding the highest group', () => {
@@ -247,7 +247,19 @@ describe('InvoiceTemplateService', () => {
     };
     const context: any = service.context({ order, items: [], shop: null });
 
-    expect(context.amountToText).toBe('một triệu không trăm lẻ năm nghìn đồng');
+    expect(context.amountToText).toBe('Một triệu không trăm lẻ năm nghìn đồng');
+  });
+
+  it('uses equal left and right print margins on large invoices', () => {
+    const a4 = service.document('<p>Bill A4</p>', 'invoice', false, 'A4');
+    const a5 = service.document('<p>Bill A5</p>', 'invoice', false, 'A5');
+
+    expect(a4).toContain('body{margin:0 auto;padding:18px;');
+    expect(a4).toContain('@page{margin:8mm;size:A4}');
+    expect(a5).toContain('body{width:148mm;padding:6mm;');
+    expect(a5).toContain('@page{margin:5mm;size:A5}');
+    expect(a4).not.toContain('18px 18px 18px 28px');
+    expect(a5).not.toContain('6mm 6mm 6mm 9mm');
   });
 
   it('escapes business data supplied to a template', () => {
