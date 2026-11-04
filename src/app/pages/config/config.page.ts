@@ -297,9 +297,24 @@ export class ConfigPage implements OnInit {
     this.timeFormat = this.settingsService.get('time_format') ?? 'HH:mm';
     this.printNote = this.settingsService.get('print_note') ?? '';
     this.emptyRows = this.settingsService.numberValue('invoice_empty_rows', 0);
-    this.invoiceTemplate = this.settingsService.get('invoice_template_large')
+    const storedInvoiceTemplate = this.settingsService.get('invoice_template_large')
       ?? this.settingsService.get('invoice_template')
       ?? this.defaultInvoiceTemplate;
+    this.invoiceTemplate = this.invoiceTemplates.normalizeOldDebtPlacement(storedInvoiceTemplate);
+    // Ghi cố định cấu trúc mới vào Cấu hình để editor, preview và bản in cùng
+    // dùng một template; render() vẫn giữ lớp tương thích cho shop chưa mở trang này.
+    if (this.invoiceTemplate !== storedInvoiceTemplate) {
+      try {
+        await this.settingsService.set('invoice_template_large', this.invoiceTemplate);
+        if (this.settingsService.get('invoice_template') != null) {
+          await this.settingsService.remove('invoice_template');
+        }
+      } catch (error: any) {
+        // Không chặn toàn bộ trang Cấu hình khi mạng/RLS tạm thời không cho ghi;
+        // template đã chuẩn hóa vẫn hiện trong editor để người dùng có thể lưu lại.
+        this.error = error?.message ?? 'Không thể tự cập nhật template hóa đơn cũ.';
+      }
+    }
     this.receiptTemplate = this.settingsService.get('invoice_template_receipt') ?? this.defaultReceiptTemplate;
     this.savedInvoiceTemplate = this.invoiceTemplate;
     this.savedReceiptTemplate = this.receiptTemplate;
@@ -451,7 +466,10 @@ export class ConfigPage implements OnInit {
 
   async saveTemplate(): Promise<void> {
     const kind = this.templateKind();
-    const template = this.activeTemplate;
+    const template = kind === 'invoice'
+      ? this.invoiceTemplates.normalizeOldDebtPlacement(this.activeTemplate)
+      : this.activeTemplate;
+    this.activeTemplate = template;
     const validation = this.invoiceTemplates.validate(template);
     if (validation) { this.error = validation; return; }
     this.busy.set(true);
@@ -510,7 +528,9 @@ export class ConfigPage implements OnInit {
       const value = String(reader.result ?? '');
       const validation = this.invoiceTemplates.validate(value);
       if (validation) { this.error = validation; input.value = ''; return; }
-      this.activeTemplate = value;
+      this.activeTemplate = this.templateKind() === 'invoice'
+        ? this.invoiceTemplates.normalizeOldDebtPlacement(value)
+        : value;
       this.error = '';
       this.toast('Đã nạp template — nhấn ✓ để lưu');
       input.value = '';
