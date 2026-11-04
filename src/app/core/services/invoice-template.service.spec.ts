@@ -166,6 +166,25 @@ describe('InvoiceTemplateService', () => {
     expect(service.defaultFor('invoice')).not.toMatch(/<td[^>]*>\{\{labels\.oldDebt\}\}/);
   });
 
+  it('moves old debt outside a previously saved legacy template', () => {
+    const legacy = `
+      <table class="legacy-total">
+        <tr><td>Tổng phải trả:</td><td>100.000</td></tr>
+        <tr class="legacy-debt"><td>Công nợ hiện tại:</td><td>250.000</td></tr>
+      </table>
+      <p>Tổng phải trả (viết bằng chữ): Một trăm nghìn đồng</p>
+    `;
+    const html = service.render(legacy, {});
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const table = doc.querySelector('.legacy-total');
+    const debt = table?.nextElementSibling;
+
+    expect(table?.textContent).not.toContain('Công nợ');
+    expect(debt?.classList.contains('old-debt')).toBe(true);
+    expect(debt?.textContent?.trim()).toBe('Công nợ cũ: 250.000');
+    expect(html.indexOf('Công nợ cũ')).toBeGreaterThan(html.indexOf('Tổng phải trả:'));
+  });
+
   it('keeps existing customer debt on a fully-paid new order bill', () => {
     const context: any = service.context({
       order: {

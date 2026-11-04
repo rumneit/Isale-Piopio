@@ -391,7 +391,39 @@ export class InvoiceTemplateService {
   render(template: string, context: Record<string, unknown>): string {
     const error = this.validate(template);
     if (error) throw new Error(error);
-    return this.sanitize(this.engine.compile(template, { noEscape: false })(context));
+    const rendered = this.sanitize(this.engine.compile(template, { noEscape: false })(context));
+    return this.moveLegacyOldDebtOutsideTable(rendered);
+  }
+
+  /**
+   * Các cửa hàng có thể đã lưu một template cũ trong Cấu hình. Template đó
+   * vẫn đặt "Công nợ hiện tại" trong bảng tổng tiền nên chỉ đổi mẫu mặc định
+   * không đủ. Chuẩn hóa HTML sau khi render để cả mẫu cũ lẫn mẫu mới đều đặt
+   * "Công nợ cũ" ngay ngoài bảng, sau hàng Tổng phải trả.
+   */
+  private moveLegacyOldDebtOutsideTable(html: string): string {
+    const doc = new DOMParser().parseFromString(`<main>${html}</main>`, 'text/html');
+    const main = doc.querySelector('main');
+    if (!main) return html;
+
+    for (const row of Array.from(main.querySelectorAll('tr'))) {
+      const text = (row.textContent ?? '').replace(/\s+/g, ' ').trim();
+      if (!/^Công nợ (?:hiện tại|cũ)\b/i.test(text)) continue;
+      const table = row.closest('table');
+      if (!table || !/Tổng phải trả/i.test(table.textContent ?? '')) continue;
+
+      const cells = Array.from(row.querySelectorAll('td,th'));
+      const amount = (cells.at(-1)?.textContent ?? '').replace(/\s+/g, ' ').trim();
+      row.remove();
+
+      const debt = doc.createElement('div');
+      debt.className = 'old-debt';
+      const label = doc.createElement('strong');
+      label.textContent = 'Công nợ cũ:';
+      debt.append(label, doc.createTextNode(amount ? ` ${amount}` : ''));
+      table.insertAdjacentElement('afterend', debt);
+    }
+    return main.innerHTML;
   }
 
   context(input: InvoiceTemplateInput): Record<string, unknown> {
