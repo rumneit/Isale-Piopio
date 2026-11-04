@@ -59,7 +59,7 @@ describe('OrdersService lifecycle safety', () => {
     expect(from).not.toHaveBeenCalled();
   });
 
-  it('calculates money consistently and sends unit metadata through v48', async () => {
+  it('calculates money consistently and sends unit metadata through v49', async () => {
     rpc.mockResolvedValue({ data: { id: 'o1', code: 'DH-1', total: 205 }, error: null });
     const result = await service.create(
       { code: 'DH-1', discount_percent: 10, tax_percent: 5, ship_fee: 10, ship_fee_by_customer: true },
@@ -67,7 +67,7 @@ describe('OrdersService lifecycle safety', () => {
       { idempotencyKey: 'nonce-1', recordIncome: true }
     );
     expect(result.id).toBe('o1');
-    expect(rpc).toHaveBeenCalledWith('inv_create_order_v48', {
+    expect(rpc).toHaveBeenCalledWith('inv_create_order_v49', {
       p_shop: 'shop-1',
       p_order: expect.objectContaining({ code: 'DH-1', total: 200 }),
       p_items: [expect.objectContaining({ unit: 'Thùng', unit_price: 200 })],
@@ -78,9 +78,9 @@ describe('OrdersService lifecycle safety', () => {
   });
 
   it('fails closed when atomic unit metadata migration is absent', async () => {
-    rpc.mockResolvedValue({ data: null, error: { code: 'PGRST202', message: 'inv_create_order_v48 missing' } });
+    rpc.mockResolvedValue({ data: null, error: { code: 'PGRST202', message: 'inv_create_order_v49 missing' } });
     await expect(service.create({}, [{ product_id: null, name: 'x', price: 1, qty: 1 }], { idempotencyKey: 'n' }))
-      .rejects.toThrow(/migration v48/i);
+      .rejects.toThrow(/migration v49/i);
   });
 
   it('updates the complete order atomically and then stores its account', async () => {
@@ -94,7 +94,7 @@ describe('OrdersService lifecycle safety', () => {
     };
     await expect(service.updateFullOrder('o1', input, [{ product_id: null, name: 'x', price: 1, qty: 1 }]))
       .resolves.toMatchObject({ id: 'o1' });
-    expect(rpc).toHaveBeenNthCalledWith(1, 'inv_update_order_full_v48', expect.objectContaining({ p_order_id: 'o1' }));
+    expect(rpc).toHaveBeenNthCalledWith(1, 'inv_update_order_full_v49', expect.objectContaining({ p_order_id: 'o1' }));
     expect(rpc).toHaveBeenNthCalledWith(2, 'inv_set_order_account', { p_shop: 'shop-1', p_order_id: 'o1', p_account: 'a1' });
   });
 
@@ -115,6 +115,7 @@ describe('OrdersService lifecycle safety', () => {
     expect(OrdersService.statusColor('completed')).toBe('success');
     expect(OrdersService.statusColor('legacy')).toBe('medium');
     expect(OrdersService.paymentLabel('BANK-TRANSFER')).toBe('Chuyển khoản');
+    expect(OrdersService.paymentLabel('DEBT')).toBe('Công nợ');
     expect(OrdersService.paymentLabel(null)).toBe('—');
   });
 });

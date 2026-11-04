@@ -87,7 +87,7 @@ async function makeContext(browser, { loggedIn = true, profile = ownerProfile, t
     if (url.pathname.includes('/rest/v1/rpc/')) {
       const fn = url.pathname.split('/').pop();
       const body = req.postData() ? JSON.parse(req.postData()) : {};
-      if (fn === 'inv_create_order_v48') {
+      if (fn === 'inv_create_order_v49') {
         state.rpcCalls.push(body);
         if (state.failNextOrderRpc) {
           state.failNextOrderRpc = false;
@@ -198,6 +198,38 @@ console.log('\n== E2/E3/E4: bán hàng — tính tiền, chặn đưa thiếu, i
   const realErrors = consoleErrors.filter((e) => !/status of 500/.test(e));
   check('không có lỗi console thật', realErrors.length === 0, realErrors.join(' | ').slice(0, 200));
   await page.screenshot({ path: join(OUT, 'e2e-sale.png'), fullPage: false });
+  await ctx.close();
+}
+
+console.log('\n== E4b: chọn Công nợ tạo ngay, không đổi trạng thái giao hàng ==');
+{
+  const customer = {
+    id: '77777777-7777-4777-8777-777777777777', shop_id: SHOP_ID,
+    name: 'Khách Công Nợ QA', phone: '0909000000', address: 'TP.HCM', debt: 300000,
+  };
+  const { ctx, page, state } = await makeContext(browser, {
+    tables: { customers: [customer] },
+    rpc: { crm_list_customers: { items: [customer], total: 1 } },
+  });
+  await page.goto(`${BASE}/#/sale`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await page.waitForSelector('button.catalog-tile', { state: 'attached', timeout: 20000 });
+  await page.click('button.catalog-tile[title="SP QA 1"]');
+  await page.click('button.sale-customer-main');
+  await page.waitForSelector('button.picker-row', { state: 'visible', timeout: 10000 });
+  await page.click('button.picker-row:has-text("Khách Công Nợ QA")');
+  await page.selectOption('select[aria-label="Hình thức thanh toán"]', 'DEBT');
+  await page.waitForTimeout(300);
+  const text = await page.evaluate(() => document.body.innerText);
+  check('Công nợ hiển thị không ghi thu và số sẽ ghi nợ', /Không ghi thu/i.test(text) && /Sẽ ghi công nợ/i.test(text));
+  check('Công nợ không còn ô Khách đưa', (await page.locator('input[aria-label="Khách đưa"]').count()) === 0);
+  await page.click('ion-button[aria-label="Lưu đơn hàng"]');
+  await page.waitForTimeout(1800);
+  const body = state.rpcCalls[0] ?? {};
+  check('RPC nhận payment_method=DEBT và paid=false',
+    body.p_order?.payment_method === 'DEBT' && body.p_order?.paid === false && body.p_record_income === false,
+    JSON.stringify({ payment: body.p_order?.payment_method, paid: body.p_order?.paid, income: body.p_record_income }));
+  check('trạng thái vẫn là Đã giao, không dùng status=debt', body.p_order?.status === 'completed', body.p_order?.status);
+  check('đơn công nợ gắn đúng khách hàng', body.p_order?.customer_id === customer.id, body.p_order?.customer_id);
   await ctx.close();
 }
 

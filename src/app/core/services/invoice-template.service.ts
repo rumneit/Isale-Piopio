@@ -213,18 +213,16 @@ export const DEFAULT_INVOICE_TEMPLATE = `{{!-- Mẫu hóa đơn khổ lớn --}}
             <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;">+{{order.shippingFeeFormatted}}</td>
         </tr>
         {{/if}}
-        {{#if hasOldDebt}}
-        <tr>
-            <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; background-color: #fff3e0;"><strong style="color: #dc3545;">{{labels.oldDebt}}</strong></td>
-            <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right; background-color: #fff3e0;"><strong style="color: #dc3545;">{{oldDebtFormatted}}</strong></td>
-        </tr>
-        {{/if}}
         <tr>
             <td colspan="{{totalColspan}}" style="border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"><strong>{{labels.total}}</strong></td>
             <td style="border-right: 1px solid #000; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: right;"><strong>{{order.totalFormatted}}</strong></td>
         </tr>
     </table>
 </div>
+
+{{#if hasOldDebt}}
+<div class="old-debt"><strong>{{labels.oldDebt}}:</strong> {{oldDebtFormatted}}</div>
+{{/if}}
 
 <div>
     <table style="width: 100%; border: none;" cellpadding="0" cellspacing="0">
@@ -330,11 +328,11 @@ export const DEFAULT_RECEIPT_TEMPLATE = `{{!-- Mẫu bill khổ nhỏ --}}
   {{#if hasPointPayment}}<tr><td>{{labels.payByPoint}}:</td><td>-{{order.amountFromPointFormatted}}</td></tr>{{/if}}
   {{#if showTax}}<tr><td>{{labels.tax}}:</td><td>+{{order.taxFormatted}}</td></tr>{{/if}}
   {{#if hasShipping}}<tr><td>{{labels.shippingFee}}:</td><td>+{{order.shippingFeeFormatted}}</td></tr>{{/if}}
-  {{#if hasOldDebt}}<tr><td>{{labels.oldDebt}}:</td><td>{{order.oldDebtFormatted}}</td></tr>{{/if}}
   <tr class="grand"><td>{{labels.total}}:</td><td>{{order.totalFormatted}}</td></tr>
   <tr><td>{{labels.cash}}:</td><td>{{order.paidFormatted}}</td></tr>
   <tr><td>{{labels.change}}:</td><td>{{order.changeFormatted}}</td></tr>
 </table>
+{{#if hasOldDebt}}<div class="old-debt"><b>{{labels.oldDebt}}:</b> {{order.oldDebtFormatted}}</div>{{/if}}
 {{#if hasOrderPrintNote}}<p class="thanks"><em>{{orderPrintNote}}</em></p>{{/if}}
 {{#if showQr}}<div class="qr"><img src="{{qrCodeUrl}}" alt="QR thanh toán"><span>{{bank.name}} {{bankNumber}}</span><strong>{{labels.paid}} {{totalWithCurrency}}</strong></div>{{/if}}`;
 
@@ -470,7 +468,7 @@ export class InvoiceTemplateService {
       headUnit: 'Đơn vị', headQty: 'Số lượng', headPrice: 'Đơn giá', headDiscount: 'Chiết khấu', headAmount: 'Thành tiền',
       headPriceShort: 'Đ.giá', headQtyShort: 'S.lượng', headDiscountShort: 'C.khấu', headAmountShort: 'T.tiền', totalAmount: 'Tổng tiền hàng',
       totalPromotionDiscount: 'Khuyến mại', discount: 'Chiết khấu', payByPoint: 'Thanh toán bằng điểm', tax: 'Thuế',
-      shippingFee: 'Phí vận chuyển', netValue: 'Tạm tính', total: 'Tổng phải trả', oldDebt: 'Công nợ hiện tại',
+      shippingFee: 'Phí vận chuyển', netValue: 'Tạm tính', total: 'Tổng phải trả', oldDebt: 'Công nợ cũ',
       cash: 'Khách đưa', change: 'Tiền thừa', totalWritten: 'Tổng phải trả (viết bằng chữ):', note: 'Ghi chú:',
       customerTitle: 'KHÁCH HÀNG', buyer: 'NGƯỜI BÁN HÀNG', signHint: 'Ký và ghi rõ họ tên', qrPayment: 'Quét mã để thanh toán', paid: 'Thanh toán:',
     };
@@ -492,7 +490,7 @@ export class InvoiceTemplateService {
       totalProductsQuantity: totalQty,
       totalProductsAmountFormatted: money(merchandise),
       // Alias cấp cao dùng bởi mẫu hóa đơn khổ lớn. Mẫu bill nhỏ dùng
-      // order.oldDebtFormatted; giữ cả hai để template cũ/mới đều hiện số nợ.
+      // order.oldDebtFormatted; giữ cả hai để template cũ/mới đều hiện nợ cũ.
       oldDebtFormatted: money(oldDebt),
       customerName: order.customer_name || 'Khách lẻ', customerPhone: order.customer_phone ?? '', customerAddress: order.customer_address ?? order.shipping_address ?? '',
       hasStaff: !!input.staffDisplay, staffDisplay: input.staffDisplay ?? '', hideDiscountColumn: !!input.hideDiscountColumn,
@@ -623,9 +621,9 @@ export class InvoiceTemplateService {
   }
 
   private baseCss(kind: InvoiceTemplateKind, width: string, paperSize: InvoicePaperSize): string {
-    const screenPadding = kind === 'receipt' ? '10px 8px' : '18px';
-    const pageMargin = '8mm';
-    const base = `*{box-sizing:border-box}body{margin:0 auto;padding:${screenPadding};width:${width};max-width:100%;background:#fff;color:#111;font:13px Arial,sans-serif;line-height:1.35}h1{text-align:center;font-size:18px;margin:14px 0}.shop-head{text-align:center;border-bottom:1px solid #111;padding-bottom:8px}.shop-head em,.receipt-head>*{display:block}.shop-logo,.receipt-logo{display:block;max-width:90px;max-height:64px;object-fit:contain;margin:0 auto 5px}.receipt-logo{max-width:70px;max-height:52px}.shop-name{font-size:15px}.shop-grid{display:grid;grid-template-columns:1fr 1fr;text-align:left;gap:20px;margin-top:8px}.bank-block{border-left:1px dotted #999;padding-left:20px}.invoice-meta>div,.receipt-meta>div,.receipt-bank>div{margin:2px 0}.receipt-bank{padding:6px 0;border-top:1px dashed #777;border-bottom:1px dashed #777}.dot-line{display:inline-block;min-width:180px;border-bottom:1px dotted #333}.invoice-table,.receipt-items,.receipt-total{width:100%;border-collapse:collapse;margin-top:10px}.invoice-table th,.invoice-table td{border:1px solid #111;padding:5px}.center{text-align:center}.number{text-align:right;white-space:nowrap}.written{margin-top:10px}.signatures{display:grid;grid-template-columns:1fr 1fr;text-align:center;margin-top:28px;min-height:90px}.staff-sign{display:block;margin-top:45px}.receipt-head{text-align:center;line-height:1.35}.receipt-meta{margin:8px 0}.receipt-items{border-top:1px dashed #777;border-bottom:1px dashed #777}.receipt-items th,.receipt-items td{padding:4px 2px;border-bottom:1px solid #bbb}.receipt-items .item-name td{padding-top:7px;border-bottom:0;font-weight:600}.receipt-items .subtotal td{border-bottom:0;border-top:1px dashed #777;padding-top:7px}.receipt-total td{padding:3px 2px}.receipt-total td:last-child{text-align:right;white-space:nowrap}.grand{font-weight:700;font-size:15px}.qr{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:10px;text-align:center}.qr img{max-width:${kind === 'receipt' ? '180px' : '90px'}}.thanks{text-align:center}@page{margin:${pageMargin};size:${kind === 'receipt' ? '80mm auto' : 'A4'}}@media print{body{width:100%;padding:0}}`;
+    const screenPadding = kind === 'receipt' ? '10px 8px' : '24px';
+    const pageMargin = kind === 'receipt' ? '8mm' : '10mm';
+    const base = `*{box-sizing:border-box}body{margin:0 auto;padding:${screenPadding};width:${width};max-width:100%;background:#fff;color:#111;font:13px Arial,sans-serif;line-height:1.35}h1{text-align:center;font-size:18px;margin:14px 0}.shop-head{text-align:center;border-bottom:1px solid #111;padding-bottom:8px}.shop-head em,.receipt-head>*{display:block}.shop-logo,.receipt-logo{display:block;max-width:90px;max-height:64px;object-fit:contain;margin:0 auto 5px}.receipt-logo{max-width:70px;max-height:52px}.shop-name{font-size:15px}.shop-grid{display:grid;grid-template-columns:1fr 1fr;text-align:left;gap:20px;margin-top:8px}.bank-block{border-left:1px dotted #999;padding-left:20px}.invoice-meta>div,.receipt-meta>div,.receipt-bank>div{margin:2px 0}.receipt-bank{padding:6px 0;border-top:1px dashed #777;border-bottom:1px dashed #777}.dot-line{display:inline-block;min-width:180px;border-bottom:1px dotted #333}.invoice-table,.receipt-items,.receipt-total{width:100%;border-collapse:collapse;margin-top:10px}.invoice-table th,.invoice-table td{border:1px solid #111;padding:5px}.center{text-align:center}.number{text-align:right;white-space:nowrap}.old-debt{margin-top:7px;color:#dc3545}.written{margin-top:10px}.signatures{display:grid;grid-template-columns:1fr 1fr;text-align:center;margin-top:28px;min-height:90px}.staff-sign{display:block;margin-top:45px}.receipt-head{text-align:center;line-height:1.35}.receipt-meta{margin:8px 0}.receipt-bank{padding:6px 0;border-top:1px dashed #777;border-bottom:1px dashed #777}.receipt-items{border-top:1px dashed #777;border-bottom:1px dashed #777}.receipt-items th,.receipt-items td{padding:4px 2px;border-bottom:1px solid #bbb}.receipt-items .item-name td{padding-top:7px;border-bottom:0;font-weight:600}.receipt-items .subtotal td{border-bottom:0;border-top:1px dashed #777;padding-top:7px}.receipt-total td{padding:3px 2px}.receipt-total td:last-child{text-align:right;white-space:nowrap}.grand{font-weight:700;font-size:15px}.qr{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:10px;text-align:center}.qr img{max-width:${kind === 'receipt' ? '180px' : '90px'}}.thanks{text-align:center}@page{margin:${pageMargin};size:${kind === 'receipt' ? '80mm auto' : 'A4'}}@media print{body{width:100%;padding:0}}`;
     // Cột "Sản phẩm" rộng + được xuống dòng để hiện đủ tên hàng trong kho
     const nameColumn =
       kind === 'invoice'
@@ -639,7 +637,7 @@ export class InvoiceTemplateService {
         : `.receipt-items .item-name td{white-space:normal;word-break:break-word;overflow-wrap:anywhere}`;
     if (kind !== 'invoice' || paperSize !== 'A5') return base + nameColumn;
     // Hóa đơn khổ lớn A5: thu gọn chữ/bảng để vừa 148mm
-    return base + nameColumn + `body{width:148mm;padding:6mm;font-size:10.5px}h1{font-size:15px;margin:10px 0}.shop-name{font-size:13px}.shop-grid{gap:10px}.bank-block{padding-left:10px}.shop-logo{max-width:64px;max-height:46px}.dot-line{min-width:120px}.invoice-table th,.invoice-table td{padding:3px;font-size:10px}.written{margin-top:6px}.signatures{margin-top:18px;min-height:70px}.staff-sign{margin-top:30px}.qr img{max-width:70px}@page{margin:5mm;size:A5}@media print{body{width:100%;padding:0}}`;
+    return base + nameColumn + `body{width:148mm;padding:8mm;font-size:10.5px}h1{font-size:15px;margin:10px 0}.shop-name{font-size:13px}.shop-grid{gap:10px}.bank-block{padding-left:10px}.shop-logo{max-width:64px;max-height:46px}.dot-line{min-width:120px}.invoice-table th,.invoice-table td{padding:3px;font-size:10px}.written{margin-top:6px}.signatures{margin-top:18px;min-height:70px}.staff-sign{margin-top:30px}.qr img{max-width:70px}@page{margin:8mm;size:A5}@media print{body{width:100%;padding:0}}`;
   }
 }
 
