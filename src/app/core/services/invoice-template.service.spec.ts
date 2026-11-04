@@ -304,6 +304,16 @@ describe('InvoiceTemplateService', () => {
     expect(a5).not.toContain('6mm 6mm 6mm 9mm');
   });
 
+  it('styles old debt as a compact row outside the totals table', () => {
+    const invoice = service.document('<div class="old-debt"><strong>Công nợ cũ:</strong> 250.000</div>', 'invoice', false, 'A5');
+    const receipt = service.document('<div class="old-debt"><strong>Công nợ cũ:</strong> 250.000</div>', 'receipt', false, 'A5');
+
+    expect(invoice).toContain('.old-debt{display:flex;align-items:center;justify-content:space-between;');
+    expect(invoice).toContain('margin:6px 5px 0;padding:7px 10px;border-left:3px solid #b42318');
+    expect(invoice).toContain('background:#fff6f5;color:#9f1c13');
+    expect(receipt).toContain('margin:6px 0 0;padding:5px 7px;border-left:2px solid #b42318');
+  });
+
   it('escapes business data supplied to a template', () => {
     const html = service.render('<p>{{customerName}}</p>', { customerName: '<img src=x onerror=alert(1)>' });
     expect(html).toContain('&lt;img');
