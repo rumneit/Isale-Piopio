@@ -230,6 +230,8 @@ describe('InvoiceTemplateService', () => {
   it('uses zero empty rows by default', () => {
     const context: any = service.previewContext(null);
     expect(context.emptyRows).toEqual([]);
+    expect(context.hasOldDebt).toBe(true);
+    expect(context.oldDebtFormatted).toBe('250.000');
   });
 
   it('does not invent a total quantity when an order mixes units', () => {

@@ -598,6 +598,7 @@ export class InvoiceTemplateService {
       printNote,
       emptyRows,
       paidAmount: 1000000,
+      oldDebt: 250000,
       showTax: true,
       staffDisplay: 'Nhân viên bán hàng',
     });
