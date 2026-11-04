@@ -28,6 +28,8 @@ const probes = [
   ['v44 order_debt_value', 'order_debt_value', { p_order_id: ZERO, p_total: 0, p_paid: false, p_status: 'debt' }],
   ['v48 inv_create_order_v48', 'inv_create_order_v48', { p_shop: ZERO, p_order: {}, p_items: [], p_nonce: ZERO, p_record_income: false }],
   ['v48 inv_update_order_full_v48', 'inv_update_order_full_v48', { p_shop: ZERO, p_order_id: ZERO, p_order: {}, p_items: [], p_adjust_income: true }],
+  ['v49 inv_create_order_v49', 'inv_create_order_v49', { p_shop: ZERO, p_order: {}, p_items: [], p_nonce: ZERO, p_record_income: false }],
+  ['v49 inv_update_order_full_v49', 'inv_update_order_full_v49', { p_shop: ZERO, p_order_id: ZERO, p_order: {}, p_items: [], p_adjust_income: true }],
 ];
 
 let missing = 0;
@@ -84,7 +86,7 @@ for (const [label, fn, body] of probes) {
 
 console.log(
   missing === 0
-    ? '\nTất cả schema/RPC có thể kiểm tra read-only đến v48 đã có trên DB.'
+    ? '\nTất cả schema/RPC có thể kiểm tra read-only đến v49 đã có trên DB.'
     : `\n${missing} mục schema chưa có — cần chạy migration tương ứng trong Supabase SQL Editor.`
 );
 process.exitCode = missing === 0 ? 0 : 1;

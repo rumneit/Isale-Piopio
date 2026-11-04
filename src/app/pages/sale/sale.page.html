@@ -285,17 +285,22 @@
           <div class="app-card pay-card">
             <div class="pay-grid">
               <div class="pay-field">
-                <span class="pay-label">Tài khoản</span>
-                <button class="pay-box pay-account" type="button" (click)="selectAccount()">
-                  {{ accountName() }}
-                </button>
+                <span class="pay-label">Thanh toán</span>
+                <div class="pay-box pay-select">
+                  <select [(ngModel)]="paymentMethod" (ngModelChange)="onPaymentMethodChange()" aria-label="Hình thức thanh toán">
+                    @for (m of payMethods; track m.value) {
+                      <option [value]="m.value">{{ m.label }}</option>
+                    }
+                  </select>
+                  <span class="pay-caret"></span>
+                </div>
               </div>
 
               <div class="pay-field">
-                <span class="pay-label">Trạng thái</span>
+                <span class="pay-label">Giao hàng</span>
                 <div class="pay-box pay-select">
-                  <select [(ngModel)]="status" aria-label="Trạng thái đơn hàng">
-                    @for (s of orderStatusList; track s.value) {
+                  <select [(ngModel)]="status" aria-label="Trạng thái giao hàng">
+                    @for (s of deliveryStatuses; track s.value) {
                       <option [value]="s.value">{{ s.label }}</option>
                     }
                   </select>
@@ -303,19 +308,16 @@
                 </div>
               </div>
 
-              @if (hasPaymentMethodColumn) {
-                <div class="pay-field">
-                  <span class="pay-label">Thanh toán</span>
-                  <div class="pay-box pay-select">
-                    <select [(ngModel)]="paymentMethod" aria-label="Hình thức thanh toán">
-                      @for (m of payMethods; track m.value) {
-                        <option [value]="m.value">{{ m.label }}</option>
-                      }
-                    </select>
-                    <span class="pay-caret"></span>
-                  </div>
-                </div>
-              }
+              <div class="pay-field">
+                <span class="pay-label">Tài khoản nhận</span>
+                @if (isDebtPayment()) {
+                  <div class="pay-box pay-readonly">Không ghi thu</div>
+                } @else {
+                  <button class="pay-box pay-account" type="button" (click)="selectAccount()">
+                    {{ accountName() }}
+                  </button>
+                }
+              </div>
 
               <div class="pay-field">
                 <span class="pay-label pay-label-dark">Tổng tiền hàng</span>
@@ -388,28 +390,37 @@
                 <div class="pay-box pay-readonly pay-grand">{{ formatMoney(totalDue()) }}</div>
               </div>
 
-              <div class="pay-field">
-                <span class="pay-label">Khách đưa</span>
-                <input
-                  type="number"
-                  min="0"
-                  inputmode="numeric"
-                  [(ngModel)]="customerPaid"
-                  class="pay-box pay-input"
-                  aria-label="Khách đưa"
-                />
-              </div>
+              @if (isCashPayment()) {
+                <div class="pay-field">
+                  <span class="pay-label">Khách đưa</span>
+                  <input
+                    type="number"
+                    min="0"
+                    inputmode="numeric"
+                    [(ngModel)]="customerPaid"
+                    class="pay-box pay-input"
+                    aria-label="Khách đưa"
+                  />
+                </div>
 
-              <div class="pay-field">
-                <span class="pay-label">Tiền thừa</span>
-                <div class="pay-box pay-readonly">{{ formatMoney(changeDue()) }}</div>
-              </div>
+                <div class="pay-field">
+                  <span class="pay-label">Tiền thừa</span>
+                  <div class="pay-box pay-readonly">{{ formatMoney(changeDue()) }}</div>
+                </div>
+              } @else if (isDebtPayment()) {
+                <div class="pay-field pay-field-wide">
+                  <span class="pay-label pay-label-danger">Sẽ ghi công nợ</span>
+                  <div class="pay-box pay-readonly pay-grand">{{ formatMoney(totalDue()) }}</div>
+                </div>
+              }
             </div>
 
             <div class="currency-note">* Đơn vị tiền: VND</div>
-            <button class="qr-btn" (click)="showQr()">
-              <ion-icon name="qr-code-outline" /> Hiện QR Code thanh toán
-            </button>
+            @if (isBankTransfer()) {
+              <button class="qr-btn" (click)="showQr()">
+                <ion-icon name="qr-code-outline" /> Hiện QR Code thanh toán
+              </button>
+            }
           </div>
         </div>
         </div>

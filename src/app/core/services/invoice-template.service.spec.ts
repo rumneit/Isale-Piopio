@@ -45,8 +45,8 @@ describe('InvoiceTemplateService', () => {
     expect(receipt).toContain('Thanh toán bằng điểm:');
     expect(receipt).toContain('Thuế:');
     expect(receipt).toContain('Phí vận chuyển:');
-    expect(receipt).toContain('Công nợ hiện tại:');
-    expect(receipt.indexOf('Công nợ hiện tại:')).toBeLessThan(receipt.indexOf('Tổng phải trả:'));
+    expect(receipt).toContain('Công nợ cũ:');
+    expect(receipt.indexOf('Công nợ cũ:')).toBeGreaterThan(receipt.indexOf('Tổng phải trả:'));
     expect(receipt).toContain('MB Bank');
     expect(receipt).toContain('C.khấu');
   });
@@ -147,7 +147,7 @@ describe('InvoiceTemplateService', () => {
     expect(generic.items[0].priceFormatted).toBe('288.000');
   });
 
-  it('places customer debt immediately before total payable on the large invoice', () => {
+  it('places old customer debt outside the calculation table, below total payable', () => {
     const context: any = service.context({
       order: {
         id: 'order-debt', shop_id: 'shop-1', code: 'DH-DEBT', customer_id: 'customer-1',
@@ -159,9 +159,11 @@ describe('InvoiceTemplateService', () => {
       oldDebt: 250_000,
     });
     const html = service.render(service.defaultFor('invoice'), context);
-    expect(html).toContain('Công nợ hiện tại');
+    expect(html).toContain('Công nợ cũ');
     expect(html).toContain('250.000');
-    expect(html.indexOf('Công nợ hiện tại')).toBeLessThan(html.indexOf('Tổng phải trả'));
+    expect(html.indexOf('Công nợ cũ')).toBeGreaterThan(html.indexOf('Tổng phải trả'));
+    expect(html).toContain('<div class="old-debt"><strong>Công nợ cũ:</strong> 250.000</div>');
+    expect(service.defaultFor('invoice')).not.toMatch(/<td[^>]*>\{\{labels\.oldDebt\}\}/);
   });
 
   it('keeps existing customer debt on a fully-paid new order bill', () => {
@@ -181,7 +183,7 @@ describe('InvoiceTemplateService', () => {
     expect(context.order.paidFormatted).toBe('180.000');
     expect(context.oldDebtFormatted).toBe('420.000');
     const html = service.render(service.defaultFor('invoice'), context);
-    expect(html).toContain('Công nợ hiện tại');
+    expect(html).toContain('Công nợ cũ');
     expect(html).toContain('420.000');
   });
 
@@ -254,10 +256,10 @@ describe('InvoiceTemplateService', () => {
     const a4 = service.document('<p>Bill A4</p>', 'invoice', false, 'A4');
     const a5 = service.document('<p>Bill A5</p>', 'invoice', false, 'A5');
 
-    expect(a4).toContain('body{margin:0 auto;padding:18px;');
-    expect(a4).toContain('@page{margin:8mm;size:A4}');
-    expect(a5).toContain('body{width:148mm;padding:6mm;');
-    expect(a5).toContain('@page{margin:5mm;size:A5}');
+    expect(a4).toContain('body{margin:0 auto;padding:24px;');
+    expect(a4).toContain('@page{margin:10mm;size:A4}');
+    expect(a5).toContain('body{width:148mm;padding:8mm;');
+    expect(a5).toContain('@page{margin:8mm;size:A5}');
     expect(a4).not.toContain('18px 18px 18px 28px');
     expect(a5).not.toContain('6mm 6mm 6mm 9mm');
   });

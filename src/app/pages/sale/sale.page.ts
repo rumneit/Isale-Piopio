@@ -216,11 +216,17 @@ export class SalePage implements OnInit {
   customerPaid: number | null = 0;
   /** Phí vận chuyển — cộng vào Tổng phải trả khi "Khách trả ship?" bật */
   shipFee: number | null = 0;
-  /** Hình thức thanh toán (ISale, 10 hình thức) — lưu mã CASH/BANK-TRANSFER/... khi cột payment_method có (v17) */
+  /** Hình thức thu tiền chính tại quầy; Công nợ là một cách thanh toán, không phải trạng thái giao hàng. */
   paymentMethod = 'CASH';
   hasPaymentMethodColumn = false;
-  readonly payMethods = OrdersService.paymentMethods;
-  readonly orderStatusList = OrdersService.orderStatuses;
+  readonly payMethods = OrdersService.paymentMethods.filter((method) =>
+    ['CASH', 'BANK-TRANSFER', 'DEBT'].includes(method.value)
+  );
+  readonly deliveryStatuses = [
+    { value: 'pending', label: 'Chưa giao' },
+    { value: 'shipping', label: 'Đang giao' },
+    { value: 'completed', label: 'Đã giao' },
+  ];
   /** Khách hàng: SĐT + địa chỉ nhanh trên đơn (v22) */
   customerPhone = '';
   customerContactPerson = '';
@@ -457,8 +463,11 @@ export class SalePage implements OnInit {
     this.selectedCustomerId = order.customer_id ?? null;
     this.selectedCustomerName = order.customer_name ?? 'Khách lẻ';
     this.selectedCustomerDebt = Number(customer?.debt ?? 0);
-    this.status = order.status || 'completed';
-    this.paymentMethod = order.payment_method || 'CASH';
+    this.status = this.deliveryStatusFor(order.status);
+    const storedPayment = ['debt', 'ship_debt'].includes(order.status || '')
+      ? 'DEBT'
+      : order.payment_method || (order.paid === false ? 'DEBT' : 'CASH');
+    this.paymentMethod = this.payMethods.some((method) => method.value === storedPayment) ? storedPayment : 'CASH';
     this.customerShipPaid = order.ship_fee_by_customer !== false;
     this.discountPercent = merchandise > 0 ? this.roundPercent((discount / merchandise) * 100) : 0;
     this.taxPercent = merchandise > 0 ? this.roundPercent((tax / merchandise) * 100) : 0;
@@ -1101,6 +1110,40 @@ export class SalePage implements OnInit {
     return this.accounts().find((a) => a.id === this.selectedAccountId)?.name ?? 'Chọn ví/tài khoản';
   }
 
+  /** Trạng thái cũ từng trộn công nợ với giao hàng; khi sửa, quy về đúng trạng thái giao hàng. */
+  private deliveryStatusFor(status: string | null | undefined): string {
+    if (status === 'ship_debt' || status === 'shipping') return 'shipping';
+    if (status === 'pending' || status === 'processing' || status === 'draft' || status === 'quote') return 'pending';
+    return 'completed';
+  }
+
+  isDebtPayment(method = this.paymentMethod): boolean {
+    return method === 'DEBT';
+  }
+
+  isCashPayment(method = this.paymentMethod): boolean {
+    return method === 'CASH';
+  }
+
+  isBankTransfer(method = this.paymentMethod): boolean {
+    return method === 'BANK-TRANSFER';
+  }
+
+  /** Tự chọn đúng loại ví khi đổi Tiền mặt/Chuyển khoản; Công nợ không ghi thu vào ví. */
+  onPaymentMethodChange(): void {
+    if (this.isDebtPayment()) {
+      this.customerPaid = 0;
+      this.selectedAccountId = null;
+      return;
+    }
+    const expectedType = this.isBankTransfer() ? 'bank' : 'cash';
+    const current = this.accounts().find((account) => account.id === this.selectedAccountId);
+    if (current?.type === expectedType) return;
+    const matching = this.accounts().find((account) => account.type === expectedType && account.is_default)
+      ?? this.accounts().find((account) => account.type === expectedType);
+    if (matching) this.selectedAccountId = matching.id;
+  }
+
   /** QR VietQR từ thông tin ngân hàng shop (Cấu hình) — như "Hiện QR Code thanh toán" của ISale */
   readonly qrUrl = computed(() => {
     if (!this.qrOpen()) return '';
@@ -1151,6 +1194,14 @@ export class SalePage implements OnInit {
       this.toast('Chưa có sản phẩm nào trong đơn', 'danger');
       return;
     }
+    const debtWithoutCustomer = withItems.find((order) => this.isDebtPayment(order.paymentMethod) && !order.selectedCustomerId);
+    if (debtWithoutCustomer) {
+      this.toast(
+        `Đơn ${debtWithoutCustomer.orderCode}: hãy chọn hoặc lưu khách hàng trước khi ghi Công nợ.`,
+        'danger'
+      );
+      return;
+    }
     if (!this.allowNegativeStock()) {
       const requested = new Map<string, { name: string; qty: number }>();
       for (const order of withItems.filter((s) => !['draft', 'quote', 'cancelled'].includes(s.status))) {
@@ -1175,12 +1226,12 @@ export class SalePage implements OnInit {
     // "Khách đưa" chỉ là tiền khách đưa để tính tiền thừa. Nếu khách đưa
     // thiếu, KHÔNG được lưu đơn thành đã thanh toán đủ (sai sổ quỹ/công nợ).
     for (const order of withItems) {
-      const billable = !['draft', 'quote', 'debt', 'ship_debt', 'consignment', 'cancelled'].includes(order.status);
+      const billable = !['draft', 'quote', 'cancelled'].includes(order.status);
       const tender = Number(order.customerPaid ?? 0);
-      if (billable && tender > 0 && tender + 0.5 < this.dueOf(order)) {
+      if (billable && this.isCashPayment(order.paymentMethod) && tender > 0 && tender + 0.5 < this.dueOf(order)) {
         this.toast(
           `Đơn ${order.orderCode}: khách đưa ${this.formatMoney(tender)} nhưng phải trả ${this.formatMoney(this.dueOf(order))}. ` +
-            'Hãy chọn trạng thái "Công nợ" nếu khách trả một phần.',
+            'Hãy chọn Thanh toán → Công nợ nếu chưa thu đủ tiền.',
           'danger'
         );
         return;
@@ -1192,10 +1243,10 @@ export class SalePage implements OnInit {
       const extras = this.hasOrderExtras();
       let saved = 0;
       for (const s of withItems) {
-        // Các trạng thái này chưa phát sinh doanh thu/thanh toán. Trước đây màn
-        // Bán hàng luôn gửi paid=true nên chọn "Công nợ"/"Báo giá" vẫn ghi thu
-        // đủ tiền và làm sai sổ quỹ/công nợ.
-        const billable = !['draft', 'quote', 'debt', 'ship_debt', 'consignment', 'cancelled'].includes(s.status);
+        // Trạng thái chỉ mô tả giao hàng; phương thức DEBT mới quyết định đơn
+        // có ghi thu hay chuyển ngay vào công nợ.
+        const billable = !['draft', 'quote', 'cancelled'].includes(s.status);
+        const paid = billable && !this.isDebtPayment(s.paymentMethod);
         await this.ordersService.create(
           {
             code: s.orderCode || this.ordersService.newCode(),
@@ -1205,8 +1256,8 @@ export class SalePage implements OnInit {
             discount: Math.round((s.items.reduce((sum, i) => sum + i.price * i.qty, 0) * Number(s.discountPercent ?? 0)) / 100),
             discount_percent: Math.max(0, Number(s.discountPercent ?? 0)),
             tax_percent: Math.max(0, Number(s.taxPercent ?? 0)),
-            paid: billable,
-            account_id: s.selectedAccountId,
+            paid,
+            account_id: paid ? s.selectedAccountId : null,
             note: [s.note.trim(), s.shippingCode.trim() ? `Vận đơn: ${s.shippingCode.trim()}` : '', s.shippingPartner.trim() ? `ĐVVC: ${s.shippingPartner.trim()}` : '']
               .filter(Boolean)
               .join(' — ') || null,
@@ -1235,7 +1286,7 @@ export class SalePage implements OnInit {
             unit_price: i.price,
           })),
           {
-            recordIncome: billable && this.dueOf(s) > 0,
+            recordIncome: paid && this.dueOf(s) > 0,
             // Cùng nonce cho mọi lần thử của đơn này → server trả đơn cũ thay vì tạo trùng.
             idempotencyKey: s.nonce,
           }
@@ -1270,6 +1321,10 @@ export class SalePage implements OnInit {
       await this.toast('Có dòng sản phẩm không hợp lệ. Hãy kiểm tra lại số lượng và giá bán.', 'danger');
       return;
     }
+    if (this.isDebtPayment(snap.paymentMethod) && !snap.selectedCustomerId) {
+      await this.toast('Hãy chọn hoặc lưu khách hàng trước khi chuyển đơn sang Công nợ.', 'danger');
+      return;
+    }
 
     this.busy.set(true);
     try {
@@ -1281,7 +1336,7 @@ export class SalePage implements OnInit {
           customer_name: snap.selectedCustomerName.trim() || 'Khách lẻ',
           status: snap.status,
           payment_method: snap.paymentMethod,
-          account_id: snap.selectedAccountId,
+          account_id: this.isDebtPayment(snap.paymentMethod) ? null : snap.selectedAccountId,
           discount_percent: Math.max(0, Number(snap.discountPercent ?? 0)),
           tax_percent: Math.max(0, Number(snap.taxPercent ?? 0)),
           ship_fee: Math.max(0, Number(snap.shipFee ?? 0)),

@@ -107,6 +107,8 @@ create or replace function public.has_permission(p_shop uuid, p_perm text) retur
 language sql stable as $$ select true $$;
 create or replace function public._inv_stock_status(p_status text) returns boolean
 language sql immutable as $$ select coalesce(p_status,'completed') not in ('draft','quote','cancelled') $$;
+create or replace function public._inv_lock_products(p_items jsonb) returns void
+language plpgsql as $$ begin return; end $$;
 -- Ledger tồn kho là chủ đề test riêng; ở đây chỉ cần trả "áp dụng thành công".
 create or replace function public.inv_apply_note(p_shop uuid, p_ref_type text, p_ref_id uuid, p_items jsonb)
 returns boolean language sql as $$ select true $$;
@@ -116,6 +118,7 @@ insert into public.profiles(id, shop_id, full_name, role) values ('${USER}', '${
 insert into public.money_accounts(id, shop_id, name, type, is_default) values ('${ACC}', '${SHOP}', 'Tiền mặt', 'cash', true);
 `;
 
+const v40 = readFileSync('supabase-migration-v40-sale-order-edit.sql', 'utf8');
 const v41 = readFileSync('supabase-migration-v41-money-debt-integrity.sql', 'utf8');
 const v43 = readFileSync('supabase-migration-v43-order-money-integrity.sql', 'utf8');
 const v44 = readFileSync('supabase-migration-v44-return-debt-staff.sql', 'utf8');
@@ -123,9 +126,11 @@ const v45 = readFileSync('supabase-migration-v45-order-delete-print-customer.sql
 const v46 = readFileSync('supabase-migration-v46-delete-any-order.sql', 'utf8');
 const v43Units = readFileSync('supabase-migration-v43-sale-units.sql', 'utf8');
 const v48 = readFileSync('supabase-migration-v48-atomic-order-units.sql', 'utf8');
+const v49 = readFileSync('supabase-migration-v49-direct-debt-payment.sql', 'utf8');
 
 const db = new PGlite();
 await db.exec(BASE);
+await db.exec(v40);
 await db.exec(v41);
 await db.exec(v43);
 await db.exec(v44);
@@ -136,6 +141,8 @@ await db.exec(v46); // migration xóa đơn cũng phải idempotent
 await db.exec(v43Units);
 await db.exec(v48);
 await db.exec(v48); // wrapper metadata cũng phải idempotent
+await db.exec(v49);
+await db.exec(v49); // luồng thanh toán/công nợ cũng phải idempotent
 
 let passed = 0;
 const failures = [];
@@ -477,6 +484,73 @@ console.log('\n== T12: hai request cùng nonce không tạo đơn trùng ==');
   check('database chỉ có một dòng sản phẩm', Number(await val(
     `select count(*) from order_items where order_id=$1`, [a.rows[0].o.id]
   )), 1);
+}
+
+console.log('\n== T13: Thanh toán=Công nợ độc lập với trạng thái giao hàng ==');
+{
+  const customer = await newCustomer('T13');
+  const product = (await one(
+    `insert into public.products(shop_id,name,unit,price,stock)
+     values ($1,'SP Debt Direct','Cái',100,1000) returning id`, [SHOP]
+  )).id;
+  const item = {
+    product_id: product, name: 'SP Debt Direct', price: 100, qty: 2,
+    unit: 'Cái', unit_qty: 2, unit_conversion: 1, unit_price: 100,
+  };
+  const created = await one(
+    `select public.inv_create_order_v49($1,$2,$3,$4,true) o`,
+    [SHOP, {
+      code: 'DH-T13', customer_id: customer, customer_name: 'T13',
+      status: 'completed', payment_method: 'DEBT', paid: true,
+      discount_percent: 0, tax_percent: 0, total: 200,
+    }, [item], '49111111-1111-4111-8111-111111111111']
+  );
+  const orderId = created.o.id;
+  check('giữ trạng thái giao hàng Đã giao', created.o.status, 'completed');
+  check('Công nợ ép paid=false ở server', created.o.paid, false);
+  check('không ghi khoản thu khi chọn Công nợ', await sum(orderId, 'income'), 0);
+  check('ghi đúng nợ đơn', Number(await val(`select debt_amount from orders where id=$1`, [orderId])), 200);
+  check('ghi đúng nợ khách', Number(await val(`select debt from customers where id=$1`, [customer])), 200);
+
+  const orderItem = await one(`select id from order_items where order_id=$1`, [orderId]);
+  const editItem = { ...item, id: orderItem.id };
+  const baseOrder = {
+    code: 'DH-T13', customer_id: customer, customer_name: 'T13', status: 'completed',
+    account_id: ACC, discount_percent: 0, tax_percent: 0, ship_fee: 0,
+    ship_fee_by_customer: true, note: null,
+  };
+  const paid = await one(
+    `select public.inv_update_order_full_v49($1,$2,$3,$4,true) o`,
+    [SHOP, orderId, { ...baseOrder, payment_method: 'BANK-TRANSFER' }, [editItem]]
+  );
+  check('đổi sang chuyển khoản đặt paid=true', paid.o.paid, true);
+  check('đổi sang chuyển khoản xóa công nợ', Number(await val(`select debt from customers where id=$1`, [customer])), 0);
+  check('đổi sang chuyển khoản ghi đủ khoản thu', await sum(orderId, 'income'), 200);
+
+  const debtAgain = await one(
+    `select public.inv_update_order_full_v49($1,$2,$3,$4,true) o`,
+    [SHOP, orderId, { ...baseOrder, account_id: null, payment_method: 'DEBT' }, [editItem]]
+  );
+  check('đổi lại Công nợ đặt paid=false', debtAgain.o.paid, false);
+  check('đổi lại Công nợ xóa khoản thu cũ', await sum(orderId, 'income'), 0);
+  check('đổi lại Công nợ phục hồi dư nợ', Number(await val(`select debt from customers where id=$1`, [customer])), 200);
+
+  let blockedPaid = false;
+  try {
+    await db.query(`select public.inv_set_order_paid($1,$2,true)`, [SHOP, orderId]);
+  } catch (e) {
+    blockedPaid = /đổi phương thức thanh toán trước/.test(String(e.message));
+  }
+  check('chặn đánh dấu đã trả khi phương thức vẫn là Công nợ', blockedPaid, true);
+
+  const paidFromDetail = await one(
+    `select public.inv_set_order_payment($1,$2,'CASH') o`, [SHOP, orderId]
+  );
+  check('đổi phương thức ở chi tiết đơn cũng đặt paid=true', paidFromDetail.o.paid, true);
+  check('đổi phương thức ở chi tiết đơn cũng ghi khoản thu', await sum(orderId, 'income'), 200);
+  await db.query(`select public.inv_set_order_payment($1,$2,'DEBT')`, [SHOP, orderId]);
+  check('chuyển Công nợ ở chi tiết đơn cũng xóa khoản thu', await sum(orderId, 'income'), 0);
+  check('chuyển Công nợ ở chi tiết đơn cũng phục hồi nợ', Number(await val(`select debt from customers where id=$1`, [customer])), 200);
 }
 
 console.log(`\n${passed} passed, ${failures.length} failed`);

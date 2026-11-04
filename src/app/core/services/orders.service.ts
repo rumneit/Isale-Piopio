@@ -129,6 +129,7 @@ export class OrdersService {
   static readonly paymentMethods = [
     { value: 'CASH', label: 'Tiền mặt' },
     { value: 'BANK-TRANSFER', label: 'Chuyển khoản' },
+    { value: 'DEBT', label: 'Công nợ' },
     { value: 'CREDIT-CARD', label: 'Thẻ tín dụng' },
     { value: 'APPLE-PAY', label: 'Apple Pay' },
     { value: 'BANK-CARD', label: 'Thẻ ngân hàng' },
@@ -278,7 +279,7 @@ export class OrdersService {
     const ship = input.ship_fee_by_customer === false ? 0 : (input.ship_fee ?? 0);
     const total = input.total ?? merchandise - discount + tax + ship;
     const nonce = options.idempotencyKey ?? crypto.randomUUID();
-    const { data: order, error } = await this.sb.client.rpc('inv_create_order_v48', {
+    const { data: order, error } = await this.sb.client.rpc('inv_create_order_v49', {
       p_shop: shopId,
       p_order: { ...input, code: input.code ?? this.newCode(), total },
       p_items: items,
@@ -289,8 +290,8 @@ export class OrdersService {
       if (error.code === '42703' && /channel_id/i.test(error.message)) {
         throw new Error('Cơ sở dữ liệu thiếu cột orders.channel_id. Hãy chạy supabase-migration-v38-sale-order-channel-fix.sql trước khi tạo đơn.');
       }
-      if (error.code === 'PGRST202' || /inv_create_order_v48|schema cache/i.test(error.message)) {
-        throw new Error('Cơ sở dữ liệu chưa có migration v48 để lưu đơn vị bán nguyên tử. Hãy chạy supabase-migration-v48-atomic-order-units.sql.');
+      if (error.code === 'PGRST202' || /inv_create_order_v49|schema cache/i.test(error.message)) {
+        throw new Error('Cơ sở dữ liệu chưa có migration v49 cho luồng thanh toán/công nợ nguyên tử. Hãy chạy supabase-migration-v49-direct-debt-payment.sql.');
       }
       throw error;
     }
@@ -331,7 +332,7 @@ export class OrdersService {
   ): Promise<Order> {
     const shopId = this.shopId;
     if (!shopId) throw new Error('Không tìm thấy cửa hàng. Vui lòng đăng nhập lại.');
-    const { data, error } = await this.sb.client.rpc('inv_update_order_full_v48', {
+    const { data, error } = await this.sb.client.rpc('inv_update_order_full_v49', {
       p_shop: shopId,
       p_order_id: orderId,
       p_order: order,
@@ -339,9 +340,9 @@ export class OrdersService {
       p_adjust_income: true,
     });
     if (error) {
-      if (error.code === 'PGRST202' || /inv_update_order_full_v48|schema cache/i.test(error.message)) {
+      if (error.code === 'PGRST202' || /inv_update_order_full_v49|schema cache/i.test(error.message)) {
         throw new Error(
-          'Cơ sở dữ liệu chưa có hàm sửa đơn nguyên tử (migration v48). Hãy chạy file supabase-migration-v48-atomic-order-units.sql trong Supabase SQL Editor.'
+          'Cơ sở dữ liệu chưa có hàm sửa thanh toán/công nợ nguyên tử (migration v49). Hãy chạy file supabase-migration-v49-direct-debt-payment.sql trong Supabase SQL Editor.'
         );
       }
       if (error.code === '42883' || /_inv_lock_products|_inv_stock_status|_inv_order_item/i.test(error.message)) {

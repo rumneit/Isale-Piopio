@@ -72,8 +72,8 @@ const args = {
 let orderId;
 try {
   const [resultA, resultB] = await Promise.all([
-    clientA.rpc('inv_create_order_v48', args),
-    clientB.rpc('inv_create_order_v48', args),
+    clientA.rpc('inv_create_order_v49', args),
+    clientB.rpc('inv_create_order_v49', args),
   ]);
   if (resultA.error) throw resultA.error;
   if (resultB.error) throw resultB.error;
