@@ -185,6 +185,27 @@ describe('InvoiceTemplateService', () => {
     expect(html.indexOf('Công nợ cũ')).toBeGreaterThan(html.indexOf('Tổng phải trả:'));
   });
 
+  it('normalizes and persists the old-debt position in editable template source', () => {
+    const legacy = `
+      <table class="legacy-total">
+        <tr><td>{{labels.total}}</td><td>{{order.totalFormatted}}</td></tr>
+        {{#if hasOldDebt}}
+        <tr class="legacy-debt"><td>{{labels.oldDebt}}</td><td>{{order.oldDebtFormatted}}</td></tr>
+        {{/if}}
+      </table>
+      <p>{{{labels.totalWritten}}} {{amountToText}}</p>
+    `;
+    const normalized = service.normalizeOldDebtPlacement(legacy);
+    const tableEnd = normalized.indexOf('</table>');
+    const debtStart = normalized.indexOf('<div class="old-debt">');
+
+    expect(normalized).not.toContain('legacy-debt');
+    expect(normalized).toContain('{{#if hasOldDebt}}');
+    expect(normalized).toContain('{{oldDebtFormatted}}');
+    expect(debtStart).toBeGreaterThan(tableEnd);
+    expect(service.normalizeOldDebtPlacement(normalized)).toBe(normalized);
+  });
+
   it('keeps existing customer debt on a fully-paid new order bill', () => {
     const context: any = service.context({
       order: {

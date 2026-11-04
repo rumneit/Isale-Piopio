@@ -396,6 +396,47 @@ export class InvoiceTemplateService {
   }
 
   /**
+   * Chuyển cấu trúc template đời cũ sang cấu trúc hiện tại ngay trong mã
+   * Handlebars. Khác với bước tương thích trong render(), hàm này dùng cho màn
+   * Cấu hình để nội dung đã sửa được nhìn thấy và lưu cố định vào settings.
+   */
+  normalizeOldDebtPlacement(template: string): string {
+    const rows = Array.from(template.matchAll(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi));
+    for (const match of rows) {
+      const row = match[0];
+      if (!/(?:\{\{\s*labels\.oldDebt\s*\}\}|Công nợ\s+(?:hiện tại|cũ))/i.test(row)) continue;
+
+      const rowStart = match.index ?? -1;
+      if (rowStart < 0) continue;
+      const rowEnd = rowStart + row.length;
+      const tableStart = template.toLowerCase().lastIndexOf('<table', rowStart);
+      const tableEndStart = template.toLowerCase().indexOf('</table>', rowEnd);
+      if (tableStart < 0 || tableEndStart < 0) continue;
+      const tableSource = template.slice(tableStart, tableEndStart + '</table>'.length);
+      if (!/(?:\{\{\s*labels\.total\s*\}\}|Tổng phải trả)/i.test(tableSource)) continue;
+
+      let blockStart = rowStart;
+      let blockEnd = rowEnd;
+      const open = template.lastIndexOf('{{#if hasOldDebt}}', rowStart);
+      if (open >= tableStart && template.slice(open + '{{#if hasOldDebt}}'.length, rowStart).trim() === '') {
+        const close = template.indexOf('{{/if}}', rowEnd);
+        if (close >= 0 && template.slice(rowEnd, close).trim() === '') {
+          blockStart = open;
+          blockEnd = close + '{{/if}}'.length;
+        }
+      }
+
+      const withoutLegacyRow = template.slice(0, blockStart) + template.slice(blockEnd);
+      const closingTable = withoutLegacyRow.toLowerCase().indexOf('</table>', tableStart);
+      if (closingTable < 0) return template;
+      const insertAt = closingTable + '</table>'.length;
+      const debtBlock = '\n\n{{#if hasOldDebt}}\n<div class="old-debt"><strong>{{labels.oldDebt}}:</strong> {{oldDebtFormatted}}</div>\n{{/if}}';
+      return withoutLegacyRow.slice(0, insertAt) + debtBlock + withoutLegacyRow.slice(insertAt);
+    }
+    return template;
+  }
+
+  /**
    * Các cửa hàng có thể đã lưu một template cũ trong Cấu hình. Template đó
    * vẫn đặt "Công nợ hiện tại" trong bảng tổng tiền nên chỉ đổi mẫu mặc định
    * không đủ. Chuẩn hóa HTML sau khi render để cả mẫu cũ lẫn mẫu mới đều đặt
