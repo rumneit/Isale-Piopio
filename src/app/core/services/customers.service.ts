@@ -262,7 +262,8 @@ export class CustomersService {
   }
   private isMissingFunction(error: any): boolean { return !!error && (error.code === 'PGRST202' || error.code === '42883' || /function .* does not exist|schema cache/i.test(error.message ?? '')); }
   private friendlyError(error: any): Error {
-    if (error?.code === '23505' || /điện thoại.*tồn tại|phone.*exists/i.test(error?.message ?? '')) return new Error('Số điện thoại đã tồn tại trong hệ thống.');
+    if (/điện thoại.*tồn tại|phone.*exists/i.test(error?.message ?? '')) return new Error('Số điện thoại đã tồn tại trong hệ thống. Hãy chạy migration v45 để cho phép nhiều chi nhánh dùng chung SĐT.');
+    if (error?.code === '23505') return new Error('Mã khách hàng hoặc dữ liệu định danh đã tồn tại trong hệ thống.');
     return error instanceof Error ? error : new Error(error?.message ?? 'Yêu cầu thất bại.');
   }
 }

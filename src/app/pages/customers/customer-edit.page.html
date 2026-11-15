@@ -39,7 +39,14 @@
           <ion-input label="Mã khách hàng" labelPlacement="stacked" placeholder="VD: KH001" [(ngModel)]="code" />
         </ion-item>
         <ion-item>
-          <ion-input label="Số điện thoại" labelPlacement="stacked" type="tel" placeholder="09xx xxx xxx" [(ngModel)]="phone" />
+          <ion-input
+            label="Số điện thoại"
+            labelPlacement="stacked"
+            type="tel"
+            placeholder="09xx xxx xxx"
+            helperText="Có thể để trống hoặc dùng chung cho nhiều chi nhánh."
+            [(ngModel)]="phone"
+          />
         </ion-item>
         <ion-item>
           <ion-select label="Giới tính" labelPlacement="stacked" [(ngModel)]="gender" interface="action-sheet" cancelText="Hủy">
