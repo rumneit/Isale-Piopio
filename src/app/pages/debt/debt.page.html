@@ -7,11 +7,13 @@
       </ion-button>
     </ion-buttons>
     <ion-title>Quản lý công nợ</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="openAdd()">
-        <ion-icon slot="icon-only" name="add-circle-outline" />
-      </ion-button>
-    </ion-buttons>
+    @if (viewMode() === 'loans') {
+      <ion-buttons slot="end">
+        <ion-button (click)="openAdd()">
+          <ion-icon slot="icon-only" name="add-circle-outline" />
+        </ion-button>
+      </ion-buttons>
+    }
   </ion-toolbar>
 </ion-header>
 
@@ -21,6 +23,72 @@
   </ion-refresher>
 
   <div class="app-page-container">
+    <div class="debt-view-tabs" role="tablist" aria-label="Loại công nợ">
+      <button role="tab" [attr.aria-selected]="viewMode() === 'receivables'" [class.active]="viewMode() === 'receivables'" (click)="setViewMode('receivables')">
+        Khách hàng đang nợ <b>{{ debtCustomers().length }}</b>
+      </button>
+      <button role="tab" [attr.aria-selected]="viewMode() === 'loans'" [class.active]="viewMode() === 'loans'" (click)="setViewMode('loans')">
+        Vay/nợ khác <b>{{ allItems().length }}</b>
+      </button>
+    </div>
+
+    @if (viewMode() === 'receivables') {
+      <section class="receivable-hero">
+        <div><span>TỔNG PHẢI THU</span><strong>{{ formatMoney(totalReceivables()) }}</strong></div>
+        <div class="receivable-count"><b>{{ debtCustomers().length }}</b><span>khách đang nợ</span></div>
+      </section>
+
+      <ion-searchbar
+        aria-label="Tìm khách đang nợ"
+        placeholder="Tìm tên quán, người mua, SĐT, địa chỉ…"
+        [debounce]="150"
+        (ionInput)="onCustomerSearch($any($event))"
+      />
+
+      <div class="list-toolbar">
+        <div class="toolbar-left"><span class="toolbar-total">Hiển thị {{ filteredDebtCustomers().length }} khách</span></div>
+        <div class="toolbar-actions">
+          <ion-button fill="clear" size="small" (click)="exportCustomerDebts()" aria-label="Xuất công nợ khách hàng">
+            <ion-icon slot="icon-only" name="download-outline" />
+          </ion-button>
+        </div>
+      </div>
+
+      @if (loading()) {
+        <div class="page-loading"><ion-spinner name="crescent" /></div>
+      } @else if (loadError()) {
+        <div class="app-empty debt-empty error-state">
+          <div><ion-icon name="alert-circle-outline" /></div>
+          <b>Không tải được công nợ</b><span>{{ loadError() }}</span>
+          <ion-button fill="outline" size="small" (click)="load()">Thử lại</ion-button>
+        </div>
+      } @else if (debtCustomers().length === 0) {
+        <div class="app-empty debt-empty">
+          <div><ion-icon name="file-tray-outline" /></div>
+          <b>Không có khách hàng nào đang nợ</b>
+          <span>Các đơn chọn phương thức “Công nợ” sẽ tự động xuất hiện tại đây.</span>
+        </div>
+      } @else if (filteredDebtCustomers().length === 0) {
+        <div class="app-empty debt-empty"><div><ion-icon name="search-outline" /></div><b>Không tìm thấy khách phù hợp</b></div>
+      } @else {
+        <div class="customer-debt-list">
+          @for (customer of filteredDebtCustomers(); track customer.id) {
+            <article class="customer-debt-card" (click)="openCustomer(customer)">
+              <div class="customer-avatar">{{ customer.name.slice(0, 1).toUpperCase() }}</div>
+              <div class="customer-main">
+                <h2>{{ customer.name }}</h2>
+                @if (customer.contact_person) { <p>Người mua: {{ customer.contact_person }}</p> }
+                <p>{{ customer.phone || 'Chưa có SĐT' }} @if (customer.address) { · {{ customer.address }} }</p>
+              </div>
+              <div class="customer-debt-value">
+                <span>Còn nợ</span><strong>{{ formatMoney(customer.debt) }}</strong>
+                <ion-button size="small" (click)="collectDebt(customer, $event)"><ion-icon name="cash-outline" slot="start" /> Thu nợ</ion-button>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    } @else {
     <!-- Tab tháng -->
     <div class="month-tabs">
       @for (m of monthTabs; track m.label; let i = $index) {
@@ -155,8 +223,9 @@
         </ion-button>
       </div>
     }
-  </div>
 
-  <!-- Bộ 3 FAB chuẩn ISale -->
-  <app-fab-trio mainIcon="add" mainLabel="Thêm công nợ" (mainAction)="openAdd()" />
+      <!-- Bộ 3 FAB chỉ dành cho các khoản vay/nợ ngoài đơn bán hàng -->
+      <app-fab-trio mainIcon="add" mainLabel="Thêm vay/nợ khác" (mainAction)="openAdd()" />
+    }
+  </div>
 </ion-content>

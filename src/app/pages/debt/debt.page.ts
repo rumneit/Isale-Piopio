@@ -39,9 +39,11 @@ import {
 } from 'ionicons/icons';
 import { FabTrioComponent } from '../../shared/fab-trio/fab-trio.component';
 import { LoansService, Loan, LoanType, DEBT_TYPES } from '../../core/services/loans.service';
+import { CustomersService } from '../../core/services/customers.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { TransactionsService } from '../../core/services/transactions.service';
 import { DebtFormModalComponent } from './debt-form.modal';
+import { Customer } from '../../core/models/models';
 
 interface MonthTab {
   label: string;
@@ -73,6 +75,7 @@ interface MonthTab {
 })
 export class DebtPage implements OnInit {
   readonly loansService = inject(LoansService);
+  private customersService = inject(CustomersService);
   private transactionsService = inject(TransactionsService);
   private csvExport = inject(CsvExportService);
   private router = inject(Router);
@@ -84,6 +87,10 @@ export class DebtPage implements OnInit {
   readonly debtTypes = DEBT_TYPES;
 
   readonly loading = signal(true);
+  readonly loadError = signal('');
+  readonly viewMode = signal<'receivables' | 'loans'>('receivables');
+  readonly debtCustomers = signal<Customer[]>([]);
+  customerSearch = '';
   readonly allItems = signal<Loan[]>([]);
   readonly searchVisible = signal(false);
   /** 'all' hoac 1 trong 4 kieu vay/no (ISale debt-report debtType filter) */
@@ -122,6 +129,19 @@ export class DebtPage implements OnInit {
   });
 
   readonly totalAmount = computed(() => this.items().reduce((s, l) => s + Number(l.amount ?? 0), 0));
+  readonly filteredDebtCustomers = computed(() => {
+    const term = this.customerSearch.trim().toLocaleLowerCase('vi');
+    if (!term) return this.debtCustomers();
+    const digits = term.replace(/\D/g, '');
+    return this.debtCustomers().filter((customer) => {
+      const haystack = `${customer.name} ${customer.contact_person ?? ''} ${customer.address ?? ''}`.toLocaleLowerCase('vi');
+      const phone = (customer.phone ?? '').replace(/\D/g, '');
+      return haystack.includes(term) || (!!digits && phone.includes(digits));
+    });
+  });
+  readonly totalReceivables = computed(() =>
+    this.debtCustomers().reduce((sum, customer) => sum + Number(customer.debt ?? 0), 0)
+  );
   /** Con phai thu: cac khoan chua tra, khi tra se TIEN VAO (lent/receivable) */
   readonly leftToCollect = computed(() =>
     this.items()
@@ -174,13 +194,78 @@ export class DebtPage implements OnInit {
 
   async load() {
     this.loading.set(true);
+    this.loadError.set('');
     try {
-      this.allItems.set(await this.loansService.list(this.search));
+      const [customersResult, loansResult] = await Promise.allSettled([
+        this.customersService.listAll({ debtMin: 0.000001, sortBy: 'debt', sortDirection: 'desc' }),
+        this.loansService.list(this.search),
+      ]);
+      if (customersResult.status === 'fulfilled') {
+        this.debtCustomers.set(customersResult.value.filter((customer) => Number(customer.debt ?? 0) > 0));
+      } else {
+        throw customersResult.reason;
+      }
+      if (loansResult.status === 'fulfilled') this.allItems.set(loansResult.value);
+      else console.error('load other loans failed', loansResult.reason);
     } catch (e: any) {
-      console.error('load loans failed', e);
-      this.allItems.set([]);
+      console.error('load debts failed', e);
+      this.loadError.set(e?.message ?? 'Không tải được dữ liệu công nợ.');
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  setViewMode(mode: 'receivables' | 'loans') {
+    this.viewMode.set(mode);
+    this.page.set(1);
+  }
+
+  onCustomerSearch(ev: CustomEvent) {
+    this.customerSearch = String((ev.detail as any).value ?? '');
+  }
+
+  openCustomer(customer: Customer) {
+    this.router.navigateByUrl(`/contact/detail/${customer.id}`);
+  }
+
+  async collectDebt(customer: Customer, ev?: Event) {
+    ev?.stopPropagation();
+    const debt = Number(customer.debt ?? 0);
+    const alert = await this.alertCtrl.create({
+      header: `Thu nợ — ${customer.name}`,
+      message: `Dư nợ hiện tại: ${this.formatMoney(debt)}`,
+      inputs: [
+        { name: 'amount', type: 'number', min: 1, max: debt, value: String(debt), placeholder: 'Số tiền thu *' },
+        { name: 'note', type: 'text', placeholder: 'Ghi chú (không bắt buộc)' },
+      ],
+      buttons: [
+        { text: 'Hủy', role: 'cancel' },
+        {
+          text: 'Ghi nhận thu',
+          handler: (data) => {
+            const amount = Number(data.amount);
+            if (!Number.isFinite(amount) || amount <= 0 || amount > debt + 0.5) return false;
+            void this.confirmCollection(customer, amount, String(data.note ?? ''));
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async confirmCollection(customer: Customer, amount: number, note: string) {
+    try {
+      const balance = await this.customersService.adjustDebt(customer.id, amount, 'payment', note);
+      this.debtCustomers.update((list) =>
+        list
+          .map((item) => (item.id === customer.id ? { ...item, debt: balance } : item))
+          .filter((item) => Number(item.debt ?? 0) > 0)
+      );
+      await this.toast(`Đã thu ${this.formatMoney(amount)} từ ${customer.name}`);
+    } catch (e: any) {
+      await this.toast(e?.message ?? 'Ghi nhận thu nợ thất bại', 'danger');
+      await this.load();
     }
   }
 
@@ -399,6 +484,21 @@ export class DebtPage implements OnInit {
     this.csvExport.export(
       'cong-no',
       ['Kiểu', 'Đối tác', 'Số tiền', 'Mục', 'Lãi suất', 'Ngày đến hạn', 'Trạng thái', 'Ghi chú', 'Thời gian'],
+      rows
+    );
+  }
+
+  exportCustomerDebts() {
+    const rows = this.filteredDebtCustomers().map((customer) => [
+      customer.name,
+      customer.contact_person ?? '',
+      customer.phone ?? '',
+      customer.address ?? '',
+      this.csvExport.formatMoney(customer.debt),
+    ]);
+    this.csvExport.export(
+      'cong-no-khach-hang',
+      ['Tên quán / khách hàng', 'Người mua hàng', 'SĐT', 'Địa chỉ', 'Còn nợ'],
       rows
     );
   }
