@@ -231,7 +231,6 @@ export class SalePage implements OnInit {
   customerPhone = '';
   customerContactPerson = '';
   customerAddress = '';
-  private lastPromptedCustomerPhone = '';
   /** Vận chuyển (ISale: 5 trường, v22) */
   shippingCode = '';
   shippingPartner = '';
@@ -1000,55 +999,33 @@ export class SalePage implements OnInit {
     }
   }
 
-  /**
-   * iSale cũ hỏi lưu khách mới khi nhập một số điện thoại chưa tồn tại.
-   * Luồng này cũng nhận diện khách có sẵn để không tạo hồ sơ trùng.
-   */
-  async onCustomerPhoneBlur(): Promise<void> {
-    await this.promptSaveCustomer(false);
-  }
-
-  /** Nút lưu rõ ràng để người dùng không phải phụ thuộc riêng vào sự kiện blur. */
+  /** Lưu một hồ sơ/chi nhánh riêng; SĐT được phép bỏ trống hoặc dùng chung. */
   async saveCustomerFromForm(): Promise<void> {
-    await this.promptSaveCustomer(true);
+    await this.promptSaveCustomer();
   }
 
-  private async promptSaveCustomer(force: boolean): Promise<void> {
+  private async promptSaveCustomer(): Promise<void> {
     const phone = this.customerPhone.trim();
     const normalized = phone.replace(/\D/g, '');
     if (this.selectedCustomerId) return;
-    if (normalized.length < 8 || normalized.length > 15) {
-      if (force) await this.toast('Hãy nhập số điện thoại hợp lệ để lưu khách hàng', 'danger');
+
+    const shopName = this.selectedCustomerName.trim();
+    if (!shopName || shopName === 'Khách lẻ') {
+      await this.toast('Hãy nhập tên quán / khách hàng', 'danger');
       return;
     }
-    if (!force && this.lastPromptedCustomerPhone === normalized) return;
-    this.lastPromptedCustomerPhone = normalized;
+
+    if (phone && (normalized.length < 8 || normalized.length > 15)) {
+      await this.toast('Hãy nhập số điện thoại hợp lệ để lưu khách hàng', 'danger');
+      return;
+    }
 
     try {
-      const existing = await this.customersService.findByPhone(phone);
-      if (existing) {
-        const alert = await this.alertCtrl.create({
-          header: 'Khách hàng đã tồn tại',
-          message: `Số ${phone} thuộc khách “${existing.name}”. Dùng thông tin khách này cho đơn?`,
-          buttons: [
-            { text: 'Không', role: 'cancel' },
-            { text: 'Dùng khách này', role: 'confirm' },
-          ],
-        });
-        await alert.present();
-        const { role } = await alert.onWillDismiss();
-        if (role === 'confirm') this.applyCustomer(existing);
-        return;
-      }
-
-      const shopName = this.selectedCustomerName.trim();
-      if (!shopName || shopName === 'Khách lẻ') {
-        if (force) await this.toast('Hãy nhập tên quán / khách hàng', 'danger');
-        return;
-      }
       const alert = await this.alertCtrl.create({
         header: 'Lưu khách hàng mới?',
-        message: `Lưu “${shopName}” với số điện thoại ${phone} vào danh sách khách hàng?`,
+        message: phone
+          ? `Lưu “${shopName}” với SĐT ${phone}? SĐT này có thể dùng chung cho nhiều chi nhánh.`
+          : `Lưu “${shopName}” không có SĐT vào danh sách khách hàng?`,
         buttons: [
           { text: 'Chỉ dùng cho đơn này', role: 'cancel' },
           { text: 'Lưu khách hàng', role: 'confirm' },
@@ -1060,7 +1037,7 @@ export class SalePage implements OnInit {
       const created = await this.customersService.create({
         name: shopName,
         contact_person: this.customerContactPerson.trim() || null,
-        phone,
+        phone: phone || null,
         address: this.customerAddress.trim() || null,
         debt: 0,
       });
