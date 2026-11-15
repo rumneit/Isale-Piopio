@@ -456,7 +456,13 @@
           </div>
           <div class="sale-row">
             <span class="sale-label">SĐT</span>
-            <ion-input type="tel" [(ngModel)]="customerPhone" (ionInput)="clearSelectedCustomerWhenEdited()" (ionBlur)="onCustomerPhoneBlur()" class="sale-input" placeholder="VD: 09123456789" />
+            <ion-input
+              type="tel"
+              [(ngModel)]="customerPhone"
+              (ionInput)="clearSelectedCustomerWhenEdited()"
+              class="sale-input"
+              placeholder="Có thể bỏ trống hoặc dùng chung SĐT"
+            />
           </div>
           @if (!selectedCustomerId) {
             <ion-button expand="block" fill="outline" (click)="saveCustomerFromForm()">
