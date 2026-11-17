@@ -61,6 +61,7 @@ import {
   baseQtyFor,
   defaultSaleUnit,
   findSaleUnit,
+  parseSaleQuantity,
   productSaleUnits,
 } from '../../core/utils/product-units';
 
@@ -855,14 +856,13 @@ export class SalePage implements OnInit {
     const item = current[index];
     if (!item) return;
 
-    const raw = input.value.trim();
-    const parsed = Number(raw);
-    if (!raw || !Number.isFinite(parsed) || parsed < 1) {
+    const qty = parseSaleQuantity(input.value);
+    if (qty == null) {
       input.value = String(item.qty);
+      this.toast('Số lượng phải lớn hơn 0 và có tối đa 2 số lẻ.', 'danger');
       return;
     }
 
-    const qty = Math.floor(parsed);
     const conversion = item.unitConversion > 0 ? item.unitConversion : 1;
     const newBaseQty = baseQtyFor(qty, conversion);
     const product = this.products().find((p) => p.id === item.product_id);
@@ -907,8 +907,8 @@ export class SalePage implements OnInit {
     }
     current[index] = {
       ...item,
-      qty: item.qty + 1,
-      baseQty: baseQtyFor(item.qty + 1, conversion),
+      qty: Math.round((item.qty + 1) * 100) / 100,
+      baseQty: baseQtyFor(Math.round((item.qty + 1) * 100) / 100, conversion),
     };
     this.items.set(current);
   }
