@@ -4,6 +4,7 @@ import {
   baseQtyFor,
   defaultSaleUnit,
   findSaleUnit,
+  parseSaleQuantity,
   productSaleUnits,
 } from './product-units';
 
@@ -65,5 +66,14 @@ describe('product-units', () => {
   it('findSaleUnit returns null when the unit was removed', () => {
     expect(findSaleUnit(product, 'Thùng')?.conversion).toBe(40);
     expect(findSaleUnit(product, 'Bao')).toBeNull();
+  });
+
+  it('chấp nhận số lượng bán có tối đa 2 chữ số thập phân', () => {
+    expect(parseSaleQuantity('1.25')).toBe(1.25);
+    expect(parseSaleQuantity('1,5')).toBe(1.5);
+    expect(parseSaleQuantity('.75')).toBe(0.75);
+    expect(parseSaleQuantity('1.256')).toBe(1.26);
+    expect(parseSaleQuantity('0')).toBeNull();
+    expect(parseSaleQuantity('abc')).toBeNull();
   });
 });

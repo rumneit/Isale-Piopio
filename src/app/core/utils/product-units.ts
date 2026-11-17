@@ -76,6 +76,19 @@ export function baseQtyFor(unitQty: number, conversion: number): number {
   return qty * positiveNumber(conversion, 1);
 }
 
+/**
+ * Đọc số lượng bán từ ô nhập tay. Chấp nhận cả dấu chấm và dấu phẩy, giới hạn
+ * 2 chữ số thập phân để khớp cột order_items.qty numeric(14,2).
+ */
+export function parseSaleQuantity(value: unknown): number | null {
+  const raw = String(value ?? '').trim().replace(',', '.');
+  if (!raw || !/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  const rounded = Math.round((parsed + Number.EPSILON) * 100) / 100;
+  return rounded >= 0.01 ? rounded : null;
+}
+
 /** Giá bán quy về 1 đơn vị gốc, làm tròn 2 chữ số như cột order_items.price. */
 export function basePriceFor(unitPrice: number, conversion: number): number {
   const price = Number.isFinite(Number(unitPrice)) ? Math.max(0, Number(unitPrice)) : 0;
